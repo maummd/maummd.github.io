@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="마음이음">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마음 이음 — 위기대응 · 절차조력 안내</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* VOICE: 차분하고 분명한 공공 안내. 위기 화면은 짧고 크게, 법 설명은 조문 근거까지.
+   IDEA: 섬(島)과 육지를 잇는 다리 — 고립된 사람이 단계마다 끊기지 않고 건너가는 길.
+   PICTURE: 첫 화면은 그대로 쓰는 위기 연결판. 머리의 섬·다리 그림, 단계 표시는 다리의 교각.
+   COLOUR and TYPE: 깊은 바다색 #0f4c5c, 모래색 바탕, 산호색 #e0533d는 위기 버튼에만. IBM Plex Sans KR + Noto Sans KR.
+   LAYOUT: 상단 탭 5개(지금 위험해요 / 입원과 내 권리 / 절차조력 / 실무자 / 법 체계), 한 열 중심, 600px 아래는 쌓기. */
+:root{color-scheme:light dark;--bg:light-dark(#f5f0e7,#0c1a1f);--panel:light-dark(#fffdf9,#13262d);--ink:light-dark(#14262c,#e7efed);--mut:light-dark(#4f6267,#a5b8b9);--sea:light-dark(#0f4c5c,#5fb3c4);--sea2:light-dark(#d9e9ea,#1a3a43);--hot:#e0533d;--line:light-dark(#ddd3c4,#27434b);--ok:light-dark(#1d6b4f,#7fd0a8)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.6 "Noto Sans KR",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"IBM Plex Sans KR","Noto Sans KR",sans-serif;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(26px,4.4vw,40px)}h2{font-size:clamp(22px,3vw,30px);margin-bottom:6px}h3{font-size:18px}
+a{color:var(--sea)}
+header{background:var(--sea);color:#f5f0e7;padding:18px max(5vw,16px) 0}
+header .top{display:flex;align-items:center;gap:16px;max-width:1100px;margin:auto}
+header svg{flex:none;width:92px;height:52px}
+header p{margin:2px 0 0;color:#cfe3e5;font-size:14px}
+nav{display:flex;gap:4px;overflow-x:auto;max-width:1100px;margin:14px auto 0;scrollbar-width:none}
+nav a{flex:none;color:#e8f1f1;text-decoration:none;padding:12px 16px;border-radius:10px 10px 0 0;font-weight:500;font-size:15px}
+nav a[aria-current]{background:var(--bg);color:var(--ink);font-weight:700}
+nav a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+main{max-width:1100px;margin:auto;padding:26px max(5vw,16px) 60px}
+section[hidden]{display:none}
+.lead{color:var(--mut);max-width:68ch;margin:4px 0 20px}
+.calls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px;margin:18px 0}
+.call{display:block;text-decoration:none;border-radius:16px;padding:18px 20px;background:var(--panel);border:1px solid var(--line);color:var(--ink)}
+.call b{display:block;font:700 clamp(30px,5vw,42px)/1 "IBM Plex Sans KR",sans-serif;color:var(--sea);margin-bottom:6px;letter-spacing:.01em}
+.call.hot{background:var(--hot);border-color:var(--hot);color:#fff}.call.hot b{color:#fff}
+.call span{font-size:15px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:14px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+ol.steps,ul.plain{padding-left:1.3em;margin:8px 0}ol.steps li,ul.plain li{margin:6px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.chip{min-height:44px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:500 15px "Noto Sans KR",sans-serif;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--sea);border-color:var(--sea);color:var(--bg);font-weight:700}
+dl.facts{display:grid;grid-template-columns:8.5em 1fr;gap:8px 16px;margin:12px 0 0}
+dl.facts dt{color:var(--mut);font-size:14.5px}dl.facts dd{margin:0}
+.law{font-size:13.5px;color:var(--mut);margin-top:12px}
+.tag{display:inline-block;font-size:13px;font-weight:700;padding:2px 9px;border-radius:6px;background:var(--sea2);color:var(--sea);margin-right:6px}
+.tag.draft{background:light-dark(#fbe3dd,#4a2620);color:light-dark(#a3301d,#ffb3a3)}
+.bridge{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:16px 0 6px;position:relative}
+.bridge::before{content:"";position:absolute;left:4%;right:4%;top:22px;height:4px;background:var(--sea);border-radius:2px;opacity:.35}
+.pier{position:relative;text-align:center;background:none;border:0;color:var(--ink);cursor:pointer;padding:0 2px;font:500 13.5px "Noto Sans KR",sans-serif;min-height:44px}
+.pier i{display:grid;place-items:center;width:44px;height:44px;margin:0 auto 6px;border-radius:50%;background:var(--panel);border:3px solid var(--sea);font:700 16px "IBM Plex Sans KR";font-style:normal;color:var(--sea)}
+.pier[aria-pressed=true] i{background:var(--sea);color:var(--bg)}
+.pier small{display:block;color:var(--mut);font-size:12.5px}
+label.tick{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+label.tick:last-child{border-bottom:0}
+label.tick input{width:22px;height:22px;flex:none;margin-top:3px;accent-color:var(--sea)}
+label.tick em{display:block;font-style:normal;color:var(--mut);font-size:14px}
+.field{margin:12px 0}.field label{display:block;font-weight:500;margin-bottom:4px}
+input[type=text],textarea,select{width:100%;font:16px "Noto Sans KR",sans-serif;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+textarea{min-height:76px;resize:vertical}
+.btn{min-height:44px;padding:10px 18px;border-radius:10px;border:0;background:var(--sea);color:var(--bg);font:700 15px "Noto Sans KR",sans-serif;cursor:pointer}
+.btn.ghost{background:none;color:var(--sea);border:1px solid var(--sea)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+pre.out{white-space:pre-wrap;background:var(--sea2);border-radius:12px;padding:16px;font:15px/1.6 "Noto Sans KR",sans-serif;margin:12px 0 0}
+.note{font-size:14px;color:var(--mut)}
+.warn{border-left:4px solid var(--hot);padding:10px 14px;background:light-dark(#fff3ef,#2a1c19);border-radius:0 10px 10px 0;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:15px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:14px;color:var(--mut);font-weight:500}
+.map{display:grid;grid-template-columns:1fr 1.25fr 1fr;grid-template-areas:"pol . sui" "er core aft" ". pi .";gap:14px;align-items:stretch}
+.map .n{border-radius:14px;padding:14px 16px;border:2px solid var(--line);background:var(--panel)}
+.map .n h3{font-size:16px;margin-bottom:4px}.map .n p{margin:0;font-size:14.5px;color:var(--mut)}
+.map .core{grid-area:core;border-color:var(--sea);background:var(--sea2)}.map .core h3{color:var(--sea)}
+.map .pol{grid-area:pol}.map .sui{grid-area:sui}.map .er{grid-area:er}.map .aft{grid-area:aft}.map .pi{grid-area:pi;border-style:dashed}
+footer{max-width:1100px;margin:auto;padding:0 max(5vw,16px) 40px;font-size:13.5px;color:var(--mut)}
+@media(max-width:600px){.map{grid-template-columns:1fr;grid-template-areas:"pol" "er" "core" "aft" "sui" "pi"}dl.facts{grid-template-columns:1fr}dl.facts dt{margin-top:6px}.pier{font-size:12px}.pier small{display:none}header svg{display:none}}
+@media(prefers-reduced-motion:no-preference){section{animation:in .25s ease}@keyframes in{from{opacity:0;transform:translateY(6px)}}}
+</style>
+</head>
+<body>
+<header>
+ <div class="top">
+  <svg viewBox="0 0 92 52" aria-hidden="true"><ellipse cx="14" cy="40" rx="13" ry="6" fill="#e9d9b9"/><path d="M6 40c2-9 6-14 9-14s6 6 7 14z" fill="#7fb7a3"/><ellipse cx="80" cy="40" rx="12" ry="6" fill="#e9d9b9"/><path d="M73 40c2-8 5-12 7-12s5 5 6 12z" fill="#7fb7a3"/><path d="M18 34Q47 10 76 34" fill="none" stroke="#f5f0e7" stroke-width="3"/><path d="M18 34H76" stroke="#f5f0e7" stroke-width="2"/><g stroke="#f5f0e7" stroke-width="1.5"><path d="M30 34V23M40 34V18M50 34V18M60 34V23"/></g><path d="M0 47h92" stroke="#5fb3c4" stroke-width="2" stroke-dasharray="6 5"/></svg>
+  <div><h1>마음 이음</h1><p>자살위기 대응과 절차조력 안내 · 법령 기준일 2026. 11. 27.</p></div>
+ </div>
+ <nav aria-label="메뉴">
+  <a href="#now">지금 위험해요</a><a href="#rights">입원과 내 권리</a><a href="#assist">절차조력</a><a href="#worker">실무자</a><a href="#law">법 체계</a>
+ </nav>
+</header>
+<main>
+
+<section id="v-now">
+ <h2>혼자 견디지 않아도 됩니다</h2>
+ <p class="lead">지금 스스로를 해칠 것 같거나 이미 위험한 행동을 했다면 바로 연결하세요. 번호를 눌러도 연결되지 않으면 휴대전화에서 직접 걸어 주세요.</p>
+ <div class="calls">
+  <a class="call hot" href="tel:119"><b>119</b><span>다쳤거나 약·물질을 먹었을 때, 생명이 급할 때</span></a>
+  <a class="call hot" href="tel:112"><b>112</b><span>지금 위험한 장소에 있거나 누군가 위험할 때</span></a>
+  <a class="call" href="tel:109"><b>109</b><span>자살예방상담전화 · 24시간 · 카카오톡 채널 ‘마들랜’</span></a>
+  <a class="call" href="tel:15770199"><b>1577-0199</b><span>정신건강위기상담전화 · 24시간 · 지역 정신건강복지센터 연결</span></a>
+ </div>
+ <div class="grid2">
+  <div class="card">
+   <h3>지금 이 순간</h3>
+   <ol class="steps">
+    <li>위험한 물건(약, 끈, 날카로운 것)에서 몸을 떨어뜨리세요. 다른 방이나 사람이 있는 곳으로 옮기세요.</li>
+    <li>한 사람에게 연락하세요. “지금 많이 힘들어. 같이 있어 줘.” 한 문장이면 충분합니다.</li>
+    <li>숨을 4초 들이쉬고 6초 내쉬기를 다섯 번 해 보세요. 감정의 파도는 지나갑니다.</li>
+    <li>아래에 미리 적어 둔 나의 안전계획을 펼치세요.</li>
+   </ol>
+  </div>
+  <div class="card">
+   <h3>곁에 있는 사람이라면</h3>
+   <ol class="steps">
+    <li>“혹시 죽고 싶은 생각이 드니?”라고 직접 물어도 됩니다. 묻는 것이 위험을 높이지 않습니다.</li>
+    <li>혼자 두지 말고, 위험한 물건을 치우고, 109나 1577-0199에 함께 전화하세요.</li>
+    <li>이미 행동을 했거나 막을 수 없다면 119·112에 신고하세요.</li>
+    <li>병원이나 경찰로 옮겨지면 ‘입원과 내 권리’ 탭에서 다음 단계를 확인하세요.</li>
+   </ol>
+  </div>
+ </div>
+ <div class="card" id="plan">
+  <h3>나의 안전계획</h3>
+  <p class="note">위기가 오기 전에 적어 두는 짧은 계획입니다(Stanley·Brown 안전계획 방식). 이 기기 안에만 저장되고 누구에게도 보내지지 않습니다.</p>
+  <div id="planFields"></div>
+  <div class="row"><button class="btn" id="planCopy" type="button">계획 복사</button><button class="btn ghost" id="planClear" type="button">지우기</button><span class="note" id="planMsg" role="status"></span></div>
+ </div>
+</section>
+
+<section id="v-rights" hidden>
+ <h2>지금 어떤 상황인가요?</h2>
+ <p class="lead">경찰 보호, 응급실, 정신과 입원은 각각 근거 법률과 기간과 권리가 다릅니다. 해당하는 상황을 고르면 기간, 할 수 있는 일, 절차조력인에게 요청할 것을 보여 줍니다.</p>
+ <div class="chips" id="sitChips" role="group" aria-label="상황 선택"></div>
+ <div class="card" id="sitCard" aria-live="polite"></div>
+ <div class="card">
+  <h3>어느 상황에서나 기억할 권리</h3>
+  <ul class="plain">
+   <li><b>절차조력서비스 안내를 받을 권리.</b> 정신건강증진시설의 장은 입원하는 모든 사람에게 절차조력서비스를 받을 수 있다는 것과 이용 방법을 알려야 합니다(정신건강복지법 제38조의2 제3항).</li>
+   <li><b>퇴원 사실 통보에 대한 동의 또는 거부.</b> 퇴원할 때 정신건강복지센터에 알리려면 원칙적으로 본인 동의가 필요하고, 거부하면 정신건강심사위원회 심사를 거친 경우가 아니면 알릴 수 없습니다(같은 법 제52조).</li>
+   <li><b>정보 삭제·파기 요구.</b> 경찰·소방이 자살예방센터 등에 넘긴 내 정보는 상담 등의 지원을 받을 때 삭제와 파기를 요구할 수 있다는 안내를 받아야 하고, 요구하면 지체 없이 파기됩니다(자살예방법 제12조의2).</li>
+   <li><b>통신과 면회.</b> 입원 중에도 통신과 면회의 자유는 원칙적으로 제한되지 않습니다(정신건강복지법 제74조).</li>
+  </ul>
+ </div>
+</section>
+
+<section id="v-assist" hidden>
+ <h2>절차조력: 단계마다 내 뜻이 전달되도록</h2>
+ <p class="lead">절차조력인은 입원과 퇴원 과정에서 당사자의 동의를 받아 서류 작성과 의견 전달, 심사 참여, 심사·구제 청구, 통신과 면회, 자료 열람을 돕는 사람입니다(정신건강복지법 제38조의2 제2항). 다섯 단계 가운데 지금 단계를 누르세요. 체크한 항목은 이 기기에 남습니다.</p>
+ <div class="bridge" id="bridge" role="group" aria-label="단계"></div>
+ <div class="card" id="stageCard"></div>
+ <div class="card">
+  <h3>내 뜻 메모</h3>
+  <p class="note">위기 때 말하기 어려운 것을 미리 적어 절차조력인이나 의료진에게 보여 주는 메모입니다. <span class="tag draft">연구 시안</span>법적 효력이 있는 ‘정신건강 사전선택서’는 아직 현행법에 없고, 연구에서 제안하는 제도(제41조의2 신설안)입니다.</p>
+  <div class="grid2" id="willFields"></div>
+  <div class="row"><button class="btn" id="willMake" type="button">메모 만들기</button><button class="btn ghost" id="willCopy" type="button">복사</button><span class="note" id="willMsg" role="status"></span></div>
+  <pre class="out" id="willOut" hidden></pre>
+ </div>
+</section>
+
+<section id="v-worker" hidden>
+ <h2>현장 실무자 안내</h2>
+ <p class="lead">경찰, 소방, 정신건강복지센터와 자살예방센터 실무자를 위한 요건과 기록 체크입니다. 요건을 지키고 기록을 남긴 개입이 당사자의 권리와 실무자 자신을 함께 지킵니다.</p>
+ <div class="grid2" id="workerCards"></div>
+ <div class="card">
+  <h3>개입 기록 메모</h3>
+  <p class="note">판단 근거와 고지 내용을 그 자리에서 남기기 위한 양식입니다. 기관의 공식 서식을 대신하지 않습니다.</p>
+  <div class="grid2" id="logFields"></div>
+  <div class="row"><button class="btn" id="logMake" type="button">기록 만들기</button><button class="btn ghost" id="logCopy" type="button">복사</button><span class="note" id="logMsg" role="status"></span></div>
+  <pre class="out" id="logOut" hidden></pre>
+ </div>
+</section>
+
+<section id="v-law" hidden>
+ <h2>근거는 하나, 다른 법률은 잇기만</h2>
+ <p class="lead">자살위기 개입 경로는 네 법률에 걸쳐 있습니다. 연구는 절차조력인의 근거를 정신건강복지법 제38조의2 하나에 두고, 다른 법률은 그 조문을 인용하거나 인계로 연결하는 구조를 제안합니다.</p>
+ <div class="map">
+  <div class="n pol"><h3>경찰관 직무집행법</h3><p>제4조 보호조치 · 경찰관서 보호 24시간 이내 · 연고자 통지 또는 보건의료기관 인계</p></div>
+  <div class="n sui"><h3>자살예방법</h3><p>제12조의2 시도자 정보 제공과 사후관리 · 삭제·파기 요구권 · 제24조의3 구조 행위 면책(2027. 4. 21. 시행)</p></div>
+  <div class="n er"><h3>정신건강복지법 제50조</h3><p>응급입원 3일(공휴일 제외) · 의사와 경찰관 동의 · 이후 계속입원 여부 진단</p></div>
+  <div class="n core"><h3>정신건강복지법 제38조의2</h3><p>절차조력인의 단일 근거. 선임과 권한, 자격, 독립성, 비밀유지(제71조), 정보의 목적 외 이용 금지</p></div>
+  <div class="n aft"><h3>퇴원 후 사후관리</h3><p>제52조 퇴원 사실 통보(본인 동의) · 자살예방센터·정신건강복지센터 담당자와 협력</p></div>
+  <div class="n pi"><h3>개인정보 보호법(일반법)</h3><p>제6조 다른 법률의 특별 규정 우선, 단 목적·원칙에 맞게 · 제18조 제2항 · 제23조 민감정보</p></div>
+ </div>
+ <div class="card">
+  <h3>현행과 연구 시안</h3>
+  <table class="stack">
+   <thead><tr><th>쟁점</th><th>현행</th><th>연구 시안</th></tr></thead>
+   <tbody id="draftRows"></tbody>
+  </table>
+  <p class="note">시안은 박사학위 예심 원고(제6장 6절)와 자살예방법 개정방안 연구의 제안이며 시행 중인 법이 아닙니다.</p>
+ </div>
+ <div class="card">
+  <h3>원문 확인</h3>
+  <ul class="plain">
+   <li><a href="https://www.law.go.kr/법령/정신건강증진및정신질환자복지서비스지원에관한법률">정신건강복지법</a> (법률 제21525호, 2026. 10. 8. 시행)</li>
+   <li><a href="https://www.law.go.kr/법령/자살예방및생명존중문화조성을위한법률">자살예방법</a> (법률 제21113호, 2026. 11. 12. 시행)</li>
+   <li><a href="https://www.law.go.kr/법령/경찰관직무집행법">경찰관 직무집행법</a> (법률 제21304호, 2026. 7. 7. 시행)</li>
+   <li><a href="https://www.law.go.kr/법령/개인정보보호법">개인정보 보호법</a> (법률 제21445호, 2026. 9. 11. 시행)</li>
+  </ul>
+ </div>
+</section>
+</main>
+<footer>마음 이음은 연구 기반 시제품입니다 (maumm.org). 법률 자문이나 의료 판단을 대신하지 않으며, 법령은 2026년 11월 27일 국가법령정보센터 본문을 기준으로 정리했습니다. 위급하면 119·112, 상담은 109·1577-0199.</footer>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem('ieum.'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('ieum.'+k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function copy(text,msg){try{await navigator.clipboard.writeText(text);msg.textContent='복사했습니다.'}catch(e){msg.textContent='복사가 막혀 있습니다. 글을 길게 눌러 복사해 주세요.'}}
+
+/* 라우팅 */
+const views=['now','rights','assist','worker','law'];
+function route(){const h=location.hash.slice(1);const v=views.includes(h)?h:'now';views.forEach(x=>{$('#v-'+x).hidden=x!==v});document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.getAttribute('href')==='#'+v));}
+addEventListener('hashchange',()=>{route();scrollTo(0,0)});route();
+
+/* 안전계획 */
+const planQ=[['warn','위기가 다가온다는 나만의 신호','예: 잠을 못 잔다, 연락을 끊고 싶어진다'],['self','혼자 해 볼 수 있는 것','예: 산책, 샤워, 좋아하는 노래'],['place','기분을 돌릴 수 있는 사람과 장소','예: 동네 카페, 친구 ○○'],['ppl','도움을 청할 사람과 연락처','예: 언니 010-…'],['pro','전문가와 기관','예: 담당 선생님, 지역 정신건강복지센터, 109'],['safe','위험한 물건을 멀리 두는 방법','예: 약은 가족에게 맡긴다'],['why','살아야 할 이유','예: 고양이, 내년 여행']];
+const plan=store.get('plan',{});
+$('#planFields').innerHTML=planQ.map(([k,l,p],i)=>`<div class="field"><label for="p-${k}">${i+1}. ${l}</label><textarea id="p-${k}" data-k="${k}" placeholder="${p}"></textarea></div>`).join('');
+planQ.forEach(([k])=>{const t=$('#p-'+k);t.value=plan[k]||'';t.addEventListener('input',()=>{plan[k]=t.value;store.set('plan',plan)})});
+$('#planCopy').onclick=()=>copy(planQ.map(([k,l],i)=>`${i+1}. ${l}\n${plan[k]||'-'}`).join('\n\n'),$('#planMsg'));
+$('#planClear').onclick=()=>{if($('#planClear').dataset.sure){planQ.forEach(([k])=>{plan[k]='';$('#p-'+k).value=''});store.set('plan',plan);$('#planMsg').textContent='지웠습니다.';delete $('#planClear').dataset.sure;$('#planClear').textContent='지우기'}else{$('#planClear').dataset.sure=1;$('#planClear').textContent='한 번 더 누르면 지워집니다'}};
+
+/* 상황별 권리 */
+const sits=[
+ {id:'police',name:'경찰이 데려왔어요',what:'경찰관이 자살을 시도하는 사람 등 응급구호가 필요한 사람을 보건의료기관에 인계하거나 경찰관서에서 보호하는 조치입니다.',time:'경찰관서 보호는 24시간을 넘을 수 없습니다.',can:['가족이나 연고자에게 알려지는 것을 확인하기(경찰은 지체 없이 알려야 함)','어디로 인계되는지 물어보기','의료기관에 인계되면 다음 단계(응급입원 등)의 근거와 기간을 묻기'],ask:'현행법상 이 단계에는 절차조력인이 배정되지 않습니다. 의료기관에 입원하는 순간부터 절차조력서비스 안내를 받습니다.',law:'경찰관 직무집행법 제4조 제1항 제2호, 제4항, 제7항'},
+ {id:'emer',name:'응급입원',what:'자신이나 다른 사람을 해칠 위험이 크고 매우 급박할 때 의사와 경찰관의 동의를 받아 정신의료기관에 입원하는 것입니다.',time:'3일 이내(공휴일 제외). 그 안에 정신건강의학과 전문의가 진단하여 계속 입원이 필요 없으면 즉시 퇴원해야 합니다.',can:['보호의무자 등에게 입원 사유·기간·장소가 서면으로 통지되는지 확인하기','계속 입원이 필요하다고 하면 어떤 입원 유형으로 바뀌는지 묻기','절차조력서비스 이용 방법을 안내받기'],ask:'입원 유형이 바뀌는 과정에서 의견 전달, 서류 작성, 통신과 면회를 도와 달라고 요청하세요.',law:'정신건강복지법 제50조, 제38조의2'},
+ {id:'admin',name:'행정입원(시·군·구청장)',what:'정신건강의학과 전문의나 정신건강전문요원의 신청, 또는 경찰관의 요청으로 시장·군수·구청장이 진단과 보호를 위해 입원시키는 것입니다.',time:'진단을 위한 입원은 2주 범위. 계속 입원은 2명 이상 전문의의 일치된 소견이 있어야 합니다.',can:['입원 사유와 기간, 퇴원등 또는 처우개선 심사를 청구할 수 있다는 사실과 절차를 서면으로 통지받기','퇴원등·처우개선 심사 청구하기(제55조)','인신보호법에 따른 구제청구'],ask:'심사 청구서 작성, 심사 출석과 의견 전달, 인신보호 구제청구를 도와 달라고 요청하세요.',law:'정신건강복지법 제44조, 제55조, 제38조의2 제2항 제3호'},
+ {id:'guard',name:'보호입원(가족 신청)',what:'보호의무자 2명의 신청과 정신건강의학과 전문의의 진단으로 이루어지는 입원입니다.',time:'2주를 넘어 유지하려면 다른 기관에 소속된 전문의의 소견이 일치해야 합니다. 입원적합성심사를 받습니다.',can:['입원적합성심사에서 의견을 말하기','퇴원등·처우개선 심사 청구하기','보호의무자와 이해가 엇갈리면 그 사실을 알리기'],ask:'입원적합성심사 참여와 의견 개진 보조, 심사 청구 보조를 요청하세요.',law:'정신건강복지법 제43조, 제38조의2 제2항 제2호·제3호'},
+ {id:'self',name:'자의·동의입원',what:'본인이 신청해 입원하는 것(자의입원)과 본인 신청에 보호의무자 동의가 더해진 입원(동의입원)입니다.',time:'자의입원은 퇴원을 신청하면 지체 없이 퇴원해야 하며, 병원은 2개월마다 퇴원 의사를 확인해야 합니다.',can:['퇴원을 신청하기','입원 유형과 퇴원 절차를 서면으로 확인하기'],ask:'퇴원 신청서 작성과 의견 전달을 도와 달라고 요청할 수 있습니다.',law:'정신건강복지법 제41조, 제42조'},
+ {id:'out',name:'퇴원과 그 이후',what:'퇴원할 때 병원은 본인 동의를 받아 정신건강복지센터에 퇴원 사실을 알릴 수 있습니다. 경찰·소방을 거친 자살시도자의 정보는 자살예방센터 등에 제공됩니다.',time:'퇴원 사실 통보 전 본인에게 먼저 알려야 하고, 거부하면 원칙적으로 통보할 수 없습니다.',can:['퇴원 사실 통보에 동의하거나 거부하기','제공된 정보의 삭제·파기 요구하기','원하면 센터 담당자와 지원계획 세우기'],ask:'동의·거부·파기 요구를 내 뜻대로 전달하도록 도와 달라고 요청하세요.',law:'정신건강복지법 제52조, 자살예방법 제12조의2'}];
+let cur=store.get('sit','emer');
+function drawSit(){
+ $('#sitChips').innerHTML=sits.map(s=>`<button class="chip" type="button" data-id="${s.id}" aria-pressed="${s.id===cur}">${s.name}</button>`).join('');
+ const s=sits.find(x=>x.id===cur);
+ $('#sitCard').innerHTML=`<h3>${s.name}</h3><dl class="facts"><dt>무슨 일인가</dt><dd>${s.what}</dd><dt>기간</dt><dd>${s.time}</dd><dt>내가 할 수 있는 것</dt><dd><ul class="plain">${s.can.map(c=>`<li>${c}</li>`).join('')}</ul></dd><dt>절차조력인에게</dt><dd>${s.ask}</dd></dl><p class="law">근거: ${s.law}</p>`;
+}
+$('#sitChips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;cur=b.dataset.id;store.set('sit',cur);drawSit()});
+drawSit();
+
+/* 절차조력 단계 */
+const stages=[
+ {n:'현장',s:'경찰·소방',items:[['위험 물건 분리, 안전 확보','먼저 생명'],['어디로 옮겨지는지 묻고 기억하기','기관 이름과 연락처'],['가족·연고자에게 연락되는지 확인','경찰관 직무집행법 제4조 제4항']]},
+ {n:'이송',s:'병원 도착',items:[['입원 근거가 무엇인지 묻기','응급입원(제50조)인지, 다른 유형인지'],['통보받을 보호의무자가 누구인지 확인',''],['내 뜻 메모를 보여 주기','아래에서 미리 작성']]},
+ {n:'응급입원',s:'3일 이내',items:[['절차조력서비스 안내를 받았는지 확인','제38조의2 제3항'],['전문의 진단 결과와 계속 입원 여부 듣기','제50조 제4항·제5항'],['통신·면회가 필요하면 요청','제38조의2 제2항 제4호']]},
+ {n:'계속입원·심사',s:'2주·심사',items:[['입원 유형과 기간, 심사 일정 확인',''],['입원적합성심사·퇴원등 심사에서 의견 전달','조력인이 동석해 보조'],['필요하면 퇴원등·처우개선 심사 또는 인신보호 구제청구','제55조, 인신보호법']]},
+ {n:'퇴원·이후',s:'사후관리',items:[['퇴원 사실 통보에 동의할지 정하기','제52조'],['제공된 정보의 삭제·파기를 원하는지 정하기','자살예방법 제12조의2'],['안전계획을 다시 쓰고 연락할 사람 정하기','지금 위험해요 탭']]}];
+let st=store.get('stage',0);const done=store.get('done',{});
+function drawStage(){
+ $('#bridge').innerHTML=stages.map((x,i)=>`<button class="pier" type="button" data-i="${i}" aria-pressed="${i===st}"><i>${i+1}</i>${x.n}<small>${x.s}</small></button>`).join('');
+ const x=stages[st];
+ $('#stageCard').innerHTML=`<h3>${st+1}. ${x.n}</h3>`+x.items.map(([t,e],j)=>{const k=st+'-'+j;return `<label class="tick"><input type="checkbox" data-k="${k}" ${done[k]?'checked':''}><span>${t}${e?`<em>${e}</em>`:''}</span></label>`}).join('');
+}
+$('#bridge').addEventListener('click',e=>{const b=e.target.closest('.pier');if(!b)return;st=+b.dataset.i;store.set('stage',st);drawStage()});
+$('#stageCard').addEventListener('change',e=>{const k=e.target.dataset.k;if(!k)return;done[k]=e.target.checked;store.set('done',done)});
+drawStage();
+
+/* 내 뜻 메모 */
+const willQ=[['name','이름(별칭 가능)'],['contact','먼저 연락받을 사람과 연락처'],['nocontact','연락하지 않았으면 하는 사람'],['want','원하는 병원·치료·도움'],['nowant','원하지 않는 치료나 조치'],['info','정보 연계에 대한 내 뜻(센터 연락 동의 등)'],['helper','절차조력을 받고 싶은지, 원하는 방식'],['other','그 밖에 꼭 알려 줄 것']];
+const will=store.get('will',{});
+$('#willFields').innerHTML=willQ.map(([k,l])=>`<div class="field"><label for="w-${k}">${l}</label><textarea id="w-${k}"></textarea></div>`).join('');
+willQ.forEach(([k])=>{const t=$('#w-'+k);t.value=will[k]||'';t.addEventListener('input',()=>{will[k]=t.value;store.set('will',will)})});
+const willText=()=>'[내 뜻 메모]\n'+willQ.map(([k,l])=>`· ${l}: ${(will[k]||'').trim()||'-'}`).join('\n')+'\n작성일: '+new Date().toLocaleDateString('ko-KR')+'\n※ 본인의 뜻을 전하기 위한 메모로, 법적 효력이 있는 문서는 아닙니다.';
+$('#willMake').onclick=()=>{const o=$('#willOut');o.textContent=willText();o.hidden=false};
+$('#willCopy').onclick=()=>copy(willText(),$('#willMsg'));
+
+/* 실무자 */
+const wc=[
+ {h:'보호조치(경찰)',tag:'현행',b:['대상: 수상한 행동이나 주위 사정을 합리적으로 판단할 때 자살을 시도하는 사람 등에 해당함이 명백하고 응급구호가 필요하다고 믿을 상당한 이유가 있는 사람','보건의료기관·공공구호기관에 긴급구호 요청 또는 경찰관서 보호(24시간 이내)','지체 없이 가족·연고자에게 통지, 없으면 공공보건의료기관 등에 즉시 인계하고 소속 서장에게 보고'],l:'경찰관 직무집행법 제4조'},
+ {h:'응급입원 의뢰',tag:'현행',b:['정신질환자로 추정되고 자신의 건강·안전이나 타인에게 해를 끼칠 위험이 큰 사람','상황이 매우 급박하여 자의·동의·보호·행정입원을 시킬 시간적 여유가 없을 것','의사와 경찰관의 동의, 동의한 경찰관 또는 구급대원이 호송'],l:'정신건강복지법 제50조 제1항·제2항'},
+ {h:'시도자 정보 제공',tag:'현행',b:['경찰관서·해양경찰관서·소방관서의 장은 자살시도자등의 정보를 자살예방센터, 정신건강복지센터 등에 제공해야 함','현행 제공 항목: 성명, 생년월일, 주소, 연락처. 2027. 4. 21.부터 국적, 신고접수 시각, 발생 장소, 시도 방식, 보호자 유무가 더해지고 응급의료기관도 제공 의무를 짐','받은 기관은 당사자에게 삭제·파기 요구권을 안내해야 함'],l:'자살예방법 제12조의2'},
+ {h:'면책의 범위',tag:'확인',b:['경찰관 직무집행법 제11조의5의 형의 감면은 살인·상해·폭행·강간·강도, 가정폭력·아동학대 범죄 대응에 한정되어 자살시도자 구호는 대상이 아님','자살예방법 제24조의3: 생명이 위급한 자살시도자 구조 등으로 생긴 손해와 사상에 고의·중과실이 없으면 민사·형사 책임 감경 또는 면제(2027. 4. 21. 시행)','요건을 갖춘 판단과 기록이 면책 판단의 바탕이 됨'],l:'경찰관 직무집행법 제11조의5, 자살예방법 제24조의3'}];
+$('#workerCards').innerHTML=wc.map(c=>`<div class="card"><h3><span class="tag">${c.tag}</span>${c.h}</h3><ul class="plain">${c.b.map(x=>`<li>${x}</li>`).join('')}</ul><p class="law">근거: ${c.l}</p></div>`).join('');
+const logQ=[['when','일시와 장소'],['who','대상자(식별 최소화)'],['why','위험 판단 근거(관찰한 사실)'],['act','취한 조치(보호조치·응급입원 의뢰·연계)'],['told','당사자에게 알린 내용(근거, 기간, 절차조력 안내)'],['hand','인계 기관과 담당자, 연고자 통지 여부']];
+$('#logFields').innerHTML=logQ.map(([k,l])=>`<div class="field"><label for="l-${k}">${l}</label><textarea id="l-${k}"></textarea></div>`).join('');
+const logText=()=>'[개입 기록]\n'+logQ.map(([k,l])=>`· ${l}: ${$('#l-'+k).value.trim()||'-'}`).join('\n');
+$('#logMake').onclick=()=>{const o=$('#logOut');o.textContent=logText();o.hidden=false};
+$('#logCopy').onclick=()=>copy(logText(),$('#logMsg'));
+
+/* 현행 대 시안 */
+const rows=[['절차조력의 제공','국가·지자체가 제공할 수 있음(재량)','제공하여야 함. 응급입원과 퇴원 후 사후관리 연계 과정 포함'],['비자의 입원 시 개시','입원하는 모든 사람에게 이용 방법 안내','보호·행정·응급입원 시 절차조력 기관에 즉시 통보, 선제 방문·면담'],['동의할 수 없는 당사자','본인 동의가 있어야 조력','직권 배정(본인이 명시적으로 거부하면 제외)'],['기록 열람','의료법상 대리인 요건(동의서·위임)을 갖춘 경우','동의할 수 없는 경우 기록 보유자 판단으로 최소 범위 열람, 목적 외 이용 금지·파기'],['자격','보건복지부령에 위임','정신건강전문요원, 사회복지사, 변호사, 법학 석사 이상 + 양성 교육'],['다른 법률','근거 조문 사이 연결 규정 없음','근거는 제38조의2 하나, 자살예방법은 협력 조항으로 인용, 경찰관 직무집행법은 개정하지 않음']];
+$('#draftRows').innerHTML=rows.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td><span class="tag draft">시안</span>${esc(r[2])}</td></tr>`).join('');
+}
+</script>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+<style>@media(max-width:600px){table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;color:var(--mut)}}</style>
+</body>
+</html>
