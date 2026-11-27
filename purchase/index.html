@@ -569,7 +569,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.4 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.5 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -817,6 +817,8 @@ function planDay(ds){
   R.pairs.forEach(([x,y])=>{const A=assign.find(a=>a.who===x),B=assign.find(a=>a.who===y);if(A&&B&&A.store&&B.store&&A.name===B.name&&!A.skip){add(A.name,-1);shared.push(`${x}+${y}`)}});
   if(+d.guests>0)add(resolveItem(d.menu).name,+d.guests);
   const main=resolveItem(d.menu).name;
+  if(d.fixed&&d.fixed.length){const arr=d.fixed.filter(l=>l.qty>0).map(l=>({name:l.name,qty:+l.qty,price:+l.price||priceOf(l.name)}));
+    return {d,assign,lines:arr,center:[...center.entries()],skip,shared,notes:R.notes.filter(n=>ruleHit(n.match,d.menu)).map(n=>n.note),total:arr.reduce((s,l)=>s+l.qty*l.price,0),count:arr.reduce((s,l)=>s+l.qty,0),unknown:[],fixed:true}}
   const arr=[...lines.entries()].filter(([,q])=>q>0).sort((a,b)=>(b[0]===main)-(a[0]===main)||b[1]-a[1]).map(([name,qty])=>({name,qty,price:priceOf(name)}));
   const total=arr.reduce((s,l)=>s+l.qty*l.price,0),count=arr.reduce((s,l)=>s+l.qty,0);
   const notes=R.notes.filter(n=>ruleHit(n.match,d.menu)).map(n=>n.note);
@@ -848,7 +850,8 @@ function vLunch(){
   <div class="card"><div class="sum"><div><b>${n}</b><span>주문하는 날</span></div><div><b>${won(cost)}</b><span>기간 예상 비용</span></div><div><b>${c.members.filter(p=>p.active!==false).length}</b><span>회원</span></div></div>
    ${c.menus.some(m=>!+m.price)?'<p class="muted" style="margin-top:8px">💡 메뉴 가격을 넣으면 비용이 계산돼요 (아래 ‘메뉴 · 가격’).</p>':''}</div>
   ${weeks.map(w=>`<div class="card"><h2>${md(w[0])} 주</h2>${w.map(ds=>{const d=lday(ds),pl=planDay(ds),st=d&&d.status||'plan';
-    return `<button class="lrow" data-lday="${ds}"><span class="ldate ${ds===t?'today':''}">${md(ds)}</span><span class="grow" style="text-align:left">${pl?`<b>${esc(orderLine(pl))}</b><span class="muted" style="display:block;font-size:13.5px">${pl.count}개 · ${won(lunchCost(ds))}${pl.center.length?' · 센터: '+pl.center.map(([k,w])=>`${esc(k)} ${w.length}`).join(', '):''}${pl.notes.length?' · ⚠️ '+esc(pl.notes.join(' / ')):''}${pl.unknown.length?' · ❓메뉴 목록에 없음':''}</span>`:`<span class="muted">${d&&d.off?'✕ '+esc(d.note||'주문 안 함'):'메뉴를 정해 주세요'}</span>`}</span>${pl?`<span class="bd ${LST[st][1]}">${LST[st][0]}</span>`:''}</button>`}).join('')}</div>`).join('')}
+    return `<button class="lrow" data-lday="${ds}"><span class="ldate ${ds===t?'today':''}">${md(ds)}</span><span class="grow" style="text-align:left">${pl?`<b>${esc(orderLine(pl))}</b><span class="muted" style="display:block;font-size:13.5px">${pl.count}개 · ${won(lunchCost(ds))}${pl.center.length?' · 센터: '+pl.center.map(([k,w])=>`${esc(k)} ${w.length}`).join(', '):''}${pl.notes.length?' · ⚠️ '+esc(pl.notes.join(' / ')):''}${pl.unknown.length?' · ❓메뉴 목록에 없음':''}${pl.fixed?' · 📥 주문표 수량':''}</span>`:`<span class="muted">${d&&d.off?'✕ '+esc(d.note||'주문 안 함'):'메뉴를 정해 주세요'}</span>`}</span>${pl?`<span class="bd ${LST[st][1]}">${LST[st][0]}</span>`:''}</button>`}).join('')}</div>`).join('')}
+  ${canLunch()?`<div class="card"><h2>📥 기존 주문표 불러오기</h2><p class="muted">예전에 쓰던 주문표 PDF나 한글(HWPX) 파일을 올리면 날짜별 메뉴 · 수량 · X(휴일)를 읽어 넣어요. 한글 .hwp 파일은 한글에서 PDF로 저장해 올려 주세요.</p><label class="btn" style="margin-top:8px;display:inline-block">파일 고르기<input type="file" id="sheetIn" accept=".pdf,.hwpx,.hwp,application/pdf" hidden></label></div>`:''}
   <div class="row w" style="margin-bottom:12px"><button class="btn grow" data-act="lunchSheet">📄 주문표 (PDF)</button>${canLunch()?'<button class="btn ghost grow" data-act="lunchCopyPrev">지난 기간 메뉴 가져오기</button>':''}</div>
   ${canLunch()?lunchSettings(c):''}`;
 }
@@ -885,6 +888,7 @@ function lunchDayForm(ds){
    <div class="two"><div><label class="f">메뉴 (고르거나 직접 입력)</label><input id="ldMenu" list="ldMenus" value="${esc(d.menu||'')}" placeholder="메뉴" ${dis}><datalist id="ldMenus">${c.menus.map(m=>`<option value="${esc(m.name)}">`).join('')}</datalist></div><div><label class="f">주문 안 함 (휴일 · 소풍 등)</label><input id="ldOffNote" placeholder="비우면 주문하는 날" value="${esc(d.off?(d.note||'주문 안 함'):'')}" ${dis}></div></div>
    <div class="two"><div><label class="f">추가 인원 (직원 등 · 메인 메뉴)</label><input type="number" id="ldGuests" value="${+d.guests||0}" min="0" ${dis}></div><div><label class="f">상태</label><select id="ldStatus" ${dis}>${Object.entries(LST).map(([k,[l]])=>`<option value="${k}" ${(d.status||'plan')===k?'selected':''}>${l}</option>`).join('')}</select></div></div>
    <label class="f">실제 결제 금액 (비우면 메뉴 가격으로 계산)</label><input type="number" id="ldPaid" value="${d.paid??''}" ${dis}>
+   ${d.fixed&&d.fixed.length?`<div class="alert w" style="margin-top:10px">📥 주문표에서 가져온 수량을 쓰고 있어요. 회원별 규칙으로 다시 계산하려면 → <button class="btn sm ghost" data-lrecalc="${ds}">규칙으로 다시 계산</button></div>`:''}
    <div id="ldPlan" class="alert ok" style="margin-top:10px">${pl?`<b>${esc(orderLine(pl))}</b> · ${pl.count}개 · ${won(pl.total)}`:'메뉴를 고르고 저장하면 수량이 계산돼요'}</div>
    ${pl&&pl.notes.length?`<div class="alert w">⚠️ ${esc(pl.notes.join(' / '))}</div>`:''}
    <h3>회원별 (출석 · 대체 메뉴)</h3><p class="muted">체크를 끄면 결석. 오른쪽에서 그날만 메뉴를 바꿀 수 있어요.</p>
@@ -912,6 +916,131 @@ function lunchServeDoc(ds){const c=LC(),pl=planDay(ds);if(!pl)return '';
    ${pl.shared.length?`<p>0.5+0.5 (한 개를 나눔): ${esc(pl.shared.join(', '))}</p>`:''}
    ${pl.center.length?`<p>센터 준비: ${pl.center.map(([k,w])=>`${esc(k)} ${w.length}개 (${esc(w.join(', '))})`).join(' · ')}</p>`:''}
    <p>주문 합계: ${pl.count}개 · ${won(pl.total)}${+pl.d.guests?` (추가 인원 ${+pl.d.guests} 포함)`:''}</p>`)}
+
+/* ----- 주문표 읽기 (표 글자 위치 → 날짜별 칸) ----- */
+// 도시락 주문표 읽기 (PDF 글자 위치 → 표) — 앱과 같은 코드를 node에서 시험
+function shParsePages(pages){
+  // pages: [{items:[{s,x,y,w}]}]  y: 위가 큼
+  const out=[];
+  const HDR=/^\s*(\d{1,2})\s*\/\s*(\d{1,2})\s*\(\s*[월화수목금토일]\s*\)\s*(?::\s*[\d+\s]*)?$/;
+  for(const pg of pages){
+    const items=pg.items.filter(i=>i.s.trim());
+    const text=shLines(items).join('\n');
+    const tm=text.match(/\[([^\]]+)\]\s*(\d{4})\s*\.\s*(\d{1,2})\s*\/\s*(\d{1,2})\s*~\s*(\d{1,2})\s*\/\s*(\d{1,2})\s*(.*?)\s*주문표(?:\s*\/\s*([\d-]+))?/);
+    if(!tm)continue;
+    const [,orgName,yy,sm,,em]=tm;const store=tm[7].replace(/\s*\(\s*/g,'(').replace(/\s*\)\s*/g,')').replace(/\s+/g,' ').trim(),storePhone=tm[8]||'';
+    const base=+((text.match(/기본\s*개수는\s*(\d+)\s*개/)||[])[1]||0);
+    const centerPhone=((text.match(/전화\s*\)\s*(\d{2,3}\s*[-–]\s*\d{3,4}\s*[-–]\s*\d{4})/)||[])[1]||'').replace(/\s/g,'').replace(/–/g,'-');
+    // 머리글(날짜) 찾기: '11/16' 와 '(월)'이 따로 떨어진 경우도 합치기
+    const hs=shTokens(items).filter(t=>HDR.test(t.s));
+    const rows=[];hs.sort((a,b)=>b.y-a.y).forEach(h=>{const r=rows.find(r=>Math.abs(r.y-h.y)<4);if(r)r.h.push(h);else rows.push({y:h.y,h:[h]})});
+    rows.forEach(r=>r.h.sort((a,b)=>a.x-b.x));
+    const days=[];
+    rows.forEach((r,ri)=>{
+      const top=r.y-2,bottom=ri+1<rows.length?rows[ri+1].y+2:-1e9;
+      const cols=r.h.map(h=>{const m=h.s.match(HDR);const cm=h.s.match(/:\s*([\d+\s]+)$/);return {cx:h.x+h.w/2,mo:+m[1],d:+m[2],count:cm?cm[1].split('+').reduce((a,b)=>a+(+b||0),0):0}});
+      const cell=cols.map(()=>[]);
+      const hdrIds=new Set(r.h.flatMap(h=>h.parts));
+      items.forEach(i=>{if(i.y<top&&i.y>bottom&&!hdrIds.has(i)&&!rows.some(rr=>rr.h.some(h=>h.parts.includes(i)))){const cx=i.x+i.w/2;let k=0,best=1e9;cols.forEach((c,j)=>{const dd=Math.abs(c.cx-cx);if(dd<best){best=dd;k=j}});cell[k].push(i)}});
+      cols.forEach((c,j)=>{let y=+yy;if(c.mo<+sm&&+sm-c.mo>6)y++;const ds=`${y}-${String(c.mo).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`;
+        days.push({date:ds,count:c.count,raw:shLines(cell[j]).join(' ').replace(/\s+/g,' ').trim()})});
+    });
+    out.push({orgName:orgName.trim(),store,storePhone,centerPhone,base,from:days[0]&&days[0].date,to:days.length?days[days.length-1].date:'',days:days.map(d=>{const p=shParseCell(d.raw);if(p.lines&&d.count){const known=p.lines.reduce((a,l)=>a+l.qty,0);const z=p.lines.filter(l=>!l.qty);if(z.length===1)z[0].qty=Math.max(0,d.count-known)}return {...d,...p}})});
+  }
+  return out;
+}
+// 같은 줄에서 붙어 있는 글자 조각을 한 낱말로 합치기 ('11/16' '(' '월' ')' → '11/16(월)')
+function shTokens(items){const out=[];[...items].sort((a,b)=>b.y-a.y||a.x-b.x).forEach(i=>{const t=out[out.length-1];
+  if(t&&Math.abs(t.y-i.y)<2&&i.x-(t.x+t.w)<=16&&i.x>=t.x){t.s+=(i.x-(t.x+t.w)>2?' ':'')+i.s;t.w=i.x+i.w-t.x;t.parts.push(i)}else out.push({s:i.s,x:i.x,y:i.y,w:i.w,parts:[i]})});return out}
+function shLines(items){const ls=[];[...items].sort((a,b)=>b.y-a.y||a.x-b.x).forEach(i=>{const l=ls.find(l=>Math.abs(l.y-i.y)<3);if(l)l.it.push(i);else ls.push({y:i.y,it:[i]})});
+  return ls.map(l=>l.it.sort((a,b)=>a.x-b.x).map(i=>i.s).join(' ').replace(/\s+/g,' ').trim())}
+function shParseCell(raw){
+  const t=String(raw||'').trim();
+  if(!t||/^[xX✕×]$/.test(t))return {off:true,note:''};
+  if(/^(공휴일|휴일|추석|설날|설|휴무)$/.test(t)||/^[xX]\s*\((.+)\)$/.test(t))return {off:true,note:t.replace(/^[xX]\s*\((.+)\)$/,'$1')};
+  const parts=t.replace(/\s*\+\s*/g,'+').replace(/\s*,\s*(?=[가-힣(])/g,'+').split('+').map(x=>x.trim()).filter(Boolean);
+  const L=[];
+  parts.forEach(p=>{
+    let price=0;const pm=p.match(/\(?\s*([\d,]{3,6})\s*원?\s*\)?/);
+    let q=0;const qm=p.match(/(\d+)\s*개/);if(qm)q=+qm[1];
+    let name=p.replace(/\(\s*[\d,]{3,6}\s*원?\s*\)/g,' ').replace(/(\d+)\s*개/g,' ').replace(/[()]/g,' ');
+    if(pm&&/[\d,]{3,}/.test(pm[1])&&/\(|원/.test(p))price=+pm[1].replace(/,/g,'');
+    const tail=name.match(/^(.*?[가-힣])\s*(\d{1,2})\s*$/);if(tail&&!q){name=tail[1];q=+tail[2]}
+    name=name.replace(/\s+/g,' ').trim();
+    if(!name)return;
+    // '+ 미니반찬 볶음김치 (400원)' 처럼 곁들임은 앞 줄에 붙이기
+    if(/^미니반찬|^오징어젓갈|^볶음김치/.test(name)&&L.length){L[L.length-1].side=(L[L.length-1].side?L[L.length-1].side+' ':'')+name;return}
+    L.push({name,qty:q,price});
+  });
+  if(!L.length)return {off:true,note:t};
+  return {menu:L[0].name,lines:L};
+}
+
+/* ===================== 📥 도시락 주문표 불러오기 (PDF · HWPX) =====================
+   기존 주문표 파일에서 날짜 · 메뉴 · 수량 · X(휴일)를 읽어 날짜별 주문으로 넣습니다.
+   읽는 도구(pdf.js, fflate)는 불러오기를 누를 때만 인터넷에서 받아요. */
+const SHEET_LIB={pdf:'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/pdf.min.mjs',worker:'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/pdf.worker.min.mjs',zip:'https://cdn.jsdelivr.net/npm/fflate@0.8.2/esm/browser.js'};
+async function readPdfPages(buf){
+  const pdfjs=await import(SHEET_LIB.pdf);
+  pdfjs.GlobalWorkerOptions.workerSrc=SHEET_LIB.worker;  // 다른 주소의 작업 파일은 pdf.js가 알아서 감싸 쓰고, 안 되면 화면에서 직접 읽어요
+  const doc=await pdfjs.getDocument({data:new Uint8Array(buf)}).promise,pages=[];
+  for(let i=1;i<=doc.numPages;i++){const p=await doc.getPage(i);const tc=await p.getTextContent();pages.push({items:tc.items.filter(it=>it.str).map(it=>({s:it.str,x:it.transform[4],y:it.transform[5],w:it.width}))})}
+  return pages;
+}
+// HWPX(한글 새 형식): 압축을 풀어 문단 글자와 표(행 · 칸)를 차례대로 읽어 PDF와 같은 모양으로 만듭니다.
+async function readHwpxPeriods(buf){
+  const {unzipSync,strFromU8}=await import(SHEET_LIB.zip);
+  const files=unzipSync(new Uint8Array(buf));
+  const secs=Object.keys(files).filter(n=>/Contents\/section\d+\.xml$/i.test(n)).sort();
+  if(!secs.length)throw new Error('한글 문서 내용을 찾지 못했어요');
+  const pages=[];let y=0;
+  const push=(s,x)=>{if(s.trim())pages[pages.length-1].items.push({s,x,y,w:Math.max(8,s.length*12)})};
+  secs.forEach(n=>{const xml=new DOMParser().parseFromString(strFromU8(files[n]),'application/xml');
+    const ln=e=>e.localName;const textOf=e=>[...e.getElementsByTagNameNS('*','t')].map(t=>t.textContent).join('');
+    const walk=el=>{for(const c of el.children){
+      if(ln(c)==='tbl'){[...c.children].filter(r=>ln(r)==='tr').forEach(tr=>{y-=40;[...tr.children].filter(t=>ln(t)==='tc').forEach((tc,ci)=>{
+          const ps=[...tc.getElementsByTagNameNS('*','p')];let yy=y;ps.forEach(p=>{const s=textOf(p);if(s.trim()){pages[pages.length-1]||pages.push({items:[]});pages[pages.length-1].items.push({s,x:ci*150+10,y:yy,w:120});yy-=12}})})});y-=40;continue}
+      if(ln(c)==='p'&&!c.getElementsByTagNameNS('*','tbl').length){const s=textOf(c);if(/주문표/.test(s)&&/\[.*\]/.test(s)){pages.push({items:[]});y=1000}if(!pages.length)pages.push({items:[]});y-=20;push(s,10);continue}
+      walk(c)}};
+    walk(xml.documentElement)});
+  return pages;
+}
+async function importSheetFile(f){
+  const name=f.name||'',buf=await f.arrayBuffer();
+  if(/\.hwp$/i.test(name))throw new Error('한글(.hwp) 파일은 한글에서 [파일 → 다른 이름으로 저장 → PDF 또는 HWPX]로 저장해 올려 주세요');
+  const pages=/\.hwpx$/i.test(name)?await readHwpxPeriods(buf):await readPdfPages(buf);
+  const res=shParsePages(pages).filter(p=>p.days.length);
+  if(!res.length)throw new Error('주문표 모양을 찾지 못했어요. 제목에 "[기관] 2026. 11/16 ~ 12/4 ○○ 주문표"가 있는 파일인지 확인해 주세요');
+  res.forEach(p=>p.days.forEach(d=>{if(d.lines&&d.lines.length===1&&!d.lines[0].qty&&p.base)d.lines[0].qty=p.base}));
+  return res.sort((a,b)=>(b.from||'').localeCompare(a.from||''));
+}
+let sheetImport=null;
+function sheetPreview(){
+  const R=sheetImport,cut=ymd(addDays(new Date(),-90));
+  modal(`<h3>📥 주문표 불러오기</h3><p class="muted">${R.length}개 기간을 찾았어요. 넣을 기간을 골라 주세요.</p>
+   <div class="row" style="margin:8px 0"><button class="btn sm ghost" data-act="shAll">모두 선택</button><button class="btn sm ghost" data-act="shNone">모두 해제</button></div>
+   <div style="max-height:38vh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:4px 10px">${R.map((p,i)=>{const n=p.days.filter(d=>!d.off).length;return `<label class="row" style="gap:8px;padding:7px 0;border-top:${i?'1px solid var(--line)':'none'}"><input type="checkbox" class="shPick" value="${i}" ${p.to>=cut?'checked':''} style="width:20px;height:20px"><span class="grow"><b>${md(p.from)} ~ ${md(p.to)}</b> <span class="muted">${p.from.slice(0,4)}</span><span class="muted" style="display:block;font-size:13px">${esc(p.store)} · 주문 ${n}일${p.days.some(d=>d.lines&&d.lines.some(l=>l.price))?' · 가격 있음':''}</span></span></label>`}).join('')}</div>
+   <label class="row" style="gap:8px;margin-top:10px"><input type="checkbox" id="shRecv" checked style="width:20px;height:20px">지난 날짜는 ‘받음’으로 (월별 지출 내역에 들어가요)</label>
+   <label class="row" style="gap:8px;margin-top:6px"><input type="checkbox" id="shMenus" checked style="width:20px;height:20px">처음 보는 메뉴를 메뉴 목록에 추가 (가격이 적혀 있으면 함께)</label>
+   <label class="row" style="gap:8px;margin-top:6px"><input type="checkbox" id="shStore" checked style="width:20px;height:20px">업체 · 전화 · 기본 개수를 가장 최근 주문표로 맞추기</label>
+   <label class="row" style="gap:8px;margin-top:6px"><input type="checkbox" id="shOver" style="width:20px;height:20px">이미 정해 둔 날도 덮어쓰기</label>
+   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn ghost" data-act="closeModal">취소</button><button class="btn" data-act="shGo">불러오기</button></div>`);
+}
+function sheetApply(){
+  const c=LC(),picks=[...document.querySelectorAll('.shPick:checked')].map(x=>sheetImport[+x.value]);if(!picks.length){toast('기간을 골라 주세요');return}
+  const recv=$('#shRecv').checked,addMenus=$('#shMenus').checked,over=$('#shOver').checked,t=today();let n=0,skip=0,newMenus=0;
+  if($('#shStore').checked){const p=picks[0];if(p.store){c.store=p.store;if(p.storePhone)c.storePhone=p.storePhone;const st=lStores(c);if(!st.some(x=>x.name===p.store))st.unshift({name:p.store,phone:p.storePhone||''});else st.find(x=>x.name===p.store).phone=p.storePhone||st.find(x=>x.name===p.store).phone;c.stores=st}if(p.orgName)c.orderName=p.orgName;if(p.centerPhone)c.centerPhone=p.centerPhone;if(p.base)c.base=p.base}
+  [...picks].reverse().forEach(p=>p.days.forEach(d=>{
+    const id='d-'+d.date,old=lday(d.date);
+    if(old&&(old.menu||old.off)&&!over){skip++;return}
+    const doc={id,date:d.date,src:'import',status:d.date<t?(recv?'received':'ordered'):(d.date===t?'ordered':'plan'),by:myName(),at:new Date().toISOString()};
+    if(d.off){Object.assign(doc,{off:true,note:d.note||'주문 안 함',menu:''})}
+    else{Object.assign(doc,{menu:d.menu,off:false,note:'',fixed:d.lines.map(l=>({name:l.name,qty:l.qty,price:l.price||0}))});
+      if(addMenus)d.lines.forEach(l=>{const m=c.menus.find(x=>nz(x.name)===nz(l.name));if(!m){c.menus.push({name:l.name,price:l.price||0});newMenus++}else if(l.price&&!+m.price)m.price=l.price})}
+    const i=S.lunch.findIndex(x=>x.id===id);if(i<0)S.lunch.push(doc);else S.lunch[i]={...S.lunch[i],...doc,absent:[],over:{},guests:0,paid:null};n++}));
+  lunchStart=ymd(weekStart(new Date(picks[0].from+'T00:00')));
+  save();closeModal();toast(`${n}일을 불러왔어요${skip?` (이미 정한 ${skip}일은 그대로)`:''}${newMenus?` · 새 메뉴 ${newMenus}개`:''}`);
+}
 
 /* ===================== 휴대폰 알림 (역할별) ===================== */
 function at(dateStr,hm){const [h,m]=(hm||'09:00').split(':').map(Number);const d=new Date(dateStr+'T00:00');d.setHours(h||0,m||0,0,0);return d.getTime()}
@@ -1012,10 +1141,12 @@ document.addEventListener('click',async e=>{
   if(d.lday){lunchDayForm(d.lday);return}
   if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}share(m);return}
   if(d.lserve){const h=lunchServeDoc(d.lserve);if(!h){toast('그날 메뉴가 없어요');return}exportDoc(h,`도시락_배식표_${d.lserve}`);return}
+  if(d.lrecalc){const x=lday(d.lrecalc);if(x){delete x.fixed;save();lunchDayForm(d.lrecalc);toast('회원별 규칙으로 다시 계산했어요')}return}
   if(d.lsave){const ds=d.lsave,old=lday(ds)||{id:'d-'+ds,date:ds};const offNote=$('#ldOffNote').value.trim();
     const over={};document.querySelectorAll('.ldOver').forEach(x=>{if(x.value!=='')over[x.dataset.who]=x.value==='-'?'':x.value});
     const nd={...old,date:ds,menu:$('#ldMenu').value.trim(),off:!!offNote,note:offNote||$('#ldNote').value.trim(),guests:Math.max(0,+$('#ldGuests').value||0),status:$('#ldStatus').value,paid:$('#ldPaid').value===''?null:+$('#ldPaid').value,
       absent:[...document.querySelectorAll('.ldIn')].filter(x=>!x.checked).map(x=>x.value),over,by:myName(),at:new Date().toISOString()};
+    if(nd.fixed&&(nd.menu!==old.menu||JSON.stringify(nd.absent)!==JSON.stringify(old.absent||[])||JSON.stringify(over)!==JSON.stringify(old.over||{})||nd.guests!==(+old.guests||0)))delete nd.fixed;
     const i=S.lunch.findIndex(x=>x.id===nd.id);if(i<0)S.lunch.push(nd);else S.lunch[i]=nd;save();closeModal();toast('저장했어요');return}
   if(d.ckedit){const [kind,id]=d.ckedit.split('|');ckEditForm(kind,id);return}
   if(d.cksave!==undefined){const k=d.cksave,c=CHECKS()[k]||{};const dt=$('#ckDate').value||today();CHECKS()[k]={...c,n:$('#ckN')?+$('#ckN').value:(c.n||1),at:c.at||new Date().toISOString(),name:c.name||myName(),date:dt,memo:$('#ckMemo').value.trim(),editedBy:myName()};save();closeModal();toast('체크 기록을 고쳤어요');return}
@@ -1085,6 +1216,9 @@ document.addEventListener('click',async e=>{
   if(d.testrole){let r=myRoles();r=r.includes(d.testrole)?r.filter(x=>x!==d.testrole):[...r,d.testrole];ST.setMyRoles(r.length?r:['staff']);return}
   switch(d.act){
     case 'closeModal':closeModal();break;
+    case 'shAll':document.querySelectorAll('.shPick').forEach(x=>x.checked=true);break;
+    case 'shNone':document.querySelectorAll('.shPick').forEach(x=>x.checked=false);break;
+    case 'shGo':sheetApply();break;
     case 'lunchInit':{const c=LUNCH_DEFAULT();c.rulesText=($('#liRules')||{}).value||'';const R=parseLunchRules(c.rulesText);
       let names=(($('#liMembers')||{}).value||'').split('\n').map(x=>x.trim()).filter(Boolean);
       if(!names.length)names=[...new Set([...R.rules.flatMap(r=>r.people),...R.mentioned,...R.pairs.flat()])];
@@ -1148,6 +1282,8 @@ document.addEventListener('click',async e=>{
 let _leaveArm=0;function confirmLeave(){if(Date.now()-_leaveArm<4000)return true;_leaveArm=Date.now();toast('한 번 더 누르면 이 휴대폰에서 기관 연결을 끊어요');return false}
 document.addEventListener('change',e=>{
   const el=e.target;
+  if(el.id==='sheetIn'&&el.files[0]){const f=el.files[0];el.value='';modal('<h3>📥 주문표 읽는 중…</h3><p class="muted">파일이 크면 잠시 걸려요.</p>');
+    importSheetFile(f).then(r=>{sheetImport=r;sheetPreview()}).catch(err=>{console.error(err);modal(`<h3>읽지 못했어요</h3><p>${esc(err&&err.message||err)}</p><p class="muted" style="margin-top:6px">인터넷 연결이 필요해요 (읽는 도구를 처음 한 번 받아요).</p><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn" data-act="closeModal">닫기</button></div>`)});return}
   if(el.id==='repMonth'){repMonth=el.value;render();return}
   if(el.id==='expFrom'||el.id==='expTo'){if(el.id==='expFrom')expFrom=el.value;else expTo=el.value;if(expFrom>expTo){const t=expFrom;expFrom=expTo;expTo=t}const y=scrollY;render();scrollTo(0,y);return}
   if(el.id==='expDetail'){expDetail=el.checked;return}
@@ -1179,7 +1315,7 @@ const IS_WEB=!window.AdminAndroid,WEB_URL='https://maummd.github.io/purchase/';
 function webCard(){if(!IS_WEB||matchMedia('(display-mode: standalone)').matches)return '';
   return `<div class="card"><h2>📲 홈 화면에 추가</h2><p class="muted" style="font-size:12.5px">설치 없이 이 주소로 바로 써요. 홈 화면에 추가하면 앱처럼 아이콘이 생겨요.<br>안드로이드: 크롬 메뉴(⋮) → ‘홈 화면에 추가’ · 아이폰: 사파리 공유 → ‘홈 화면에 추가’</p>${_ip?'<button class="btn" style="margin-top:8px" data-act="pwaInstall">홈 화면에 추가</button>':''}</div>`}
 window.nuBack=function(){if($('#modal').innerHTML){closeModal();return true}const T=tabs();if(ORG&&view!==T[0][0]){view=T[0][0];render();scrollTo(0,0);return true}return false};
-window.__test={planDay,parseLunchRules,lunchSheetDoc,lunchServeDoc,S:()=>S,buildReminders,myQueue,monthDoc,handoverDoc,bizValid,sha};
+window.__test={shParsePages,shParseCell,importSheetFile,planDay,parseLunchRules,lunchSheetDoc,lunchServeDoc,S:()=>S,buildReminders,myQueue,monthDoc,handoverDoc,bizValid,sha};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(payPending)onReturn();syncReminders()}});
 </script>
 </body></html>
