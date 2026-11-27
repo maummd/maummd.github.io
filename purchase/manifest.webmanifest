@@ -1,6 +1,6 @@
 {
- "name": "물품 구매 관리",
- "short_name": "물품구매",
+ "name": "마음 살림",
+ "short_name": "마음살림",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
