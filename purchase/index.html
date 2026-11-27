@@ -135,6 +135,9 @@ input:disabled{background:#F2F3F0;color:var(--sub)}
 .lt-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.lt-act{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:12px;border-radius:14px;text-align:left;color:#fff}
 .lt-act span{font-size:22px}.lt-act b{font-size:15.5px}.lt-act small{font-size:12.5px;opacity:.9}.lt-act.a1{grid-column:1/-1;background:linear-gradient(135deg,#12A36B,#0E8C8C)}.lt-act.a2{background:linear-gradient(135deg,#FF8A3D,#FF5E62)}.lt-act.a3{background:#fff;color:#1B2623;border:1.5px solid #D9DED7}.lt-act:disabled{background:#F1F2EE;color:#9AA39E}
 .sg-m{overflow-wrap:anywhere}
+.snd-pre{max-height:150px;overflow:auto;background:#F7F8F5;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13.5px;line-height:1.5;margin:6px 0 10px;white-space:normal}
+.snd{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.snd button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 2px;border-radius:14px;font-weight:700;font-size:13px;color:#1B2623}
+.snd button span{font-size:24px;line-height:1.1}.snd button small{font-size:10px;font-weight:500;color:#4E5B56}.snd .s1{background:#E3F8EE}.snd .s2{background:#FEE500}.snd .s3{background:#E3EEFF}.snd .s4{background:#FFF1E5}.snd .s5{background:#F1F2EE}
 </style></head><body>
 <div class="wrap" id="app"><div class="empty" style="padding-top:40vh">불러오는 중…</div></div>
 <nav id="nav" hidden></nav>
@@ -596,7 +599,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v3.0 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v3.1 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -827,7 +830,7 @@ function smsNum(c,name,force){let n=force?'':smsTarget(c);if(n)return n;
   const st=lStores(c),k=st.findIndex(y=>y.name===x.name);const m=v.replace(/\D/g,'').replace(/^(\d{3})(\d{3,4})(\d{4})$/,'$1-$2-$3');
   if(k>=0){st[k]={...st[k],mobile:m,mobileName:nm};c.stores=st}else c.stores=[{...x,mobile:m,mobileName:nm},...st];
   save();render();toast(`문자 받는 번호: ${nm} ${m}`);return m}
-function sendSms(num,body){if(!num){toast('문자 받을 번호를 업체 목록에 넣어 주세요');return false}const u=smsHref(num,body);
+function sendSms(num,body,allowEmpty){if(!num&&!allowEmpty){toast('문자 받을 번호를 업체 목록에 넣어 주세요');return false}const u=smsHref(num,body);
   if(window.AdminAndroid&&AdminAndroid.openUrl){AdminAndroid.openUrl(u);return true}
   const a=document.createElement('a');a.href=u;document.body.appendChild(a);a.click();a.remove();copy(body,'문자 내용을 복사해 두었어요');return true}
 function lunchStoreCard(c){
@@ -992,12 +995,8 @@ function sheetImage(){const c=LC(),days=lunchPeriod(),sd=s=>`${+s.slice(5,7)}/${
     y+=64+h+24});
   return cv.toDataURL('image/png');
 }
-async function sendSheetImage(text){const c=LC(),url=sheetImage(),name=`식단표_${lunchPeriod()[0]}`,num=smsNum(c);if(!num)return;
-  if(window.AdminAndroid&&AdminAndroid.shareImage){AdminAndroid.shareImage(name,url.split(',')[1],text,num.replace(/[^\d]/g,''));return true}
-  try{const blob=await (await fetch(url)).blob(),file=new File([blob],name+'.png',{type:'image/png'});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true}}catch(e){if(e&&e.name==='AbortError')return false}
-  const a=document.createElement('a');a.href=url;a.download=name+'.png';document.body.appendChild(a);a.click();a.remove();
-  sendSms(num,text);toast('식단표 사진을 저장했어요 — 문자에 사진을 붙여 보내 주세요');return true}
+function sendSheetImage(text,onSent){const c=LC(),url=sheetImage(),days=lunchPeriod();
+  sendMenu({title:'3주 식단표 보내기',subject:`[${c.orderName||orgName()}] 도시락 식단표 ${md(days[0])}~${md(days[days.length-1])}`,text,num:smsTarget(c),askNum:true,image:{name:`식단표_${days[0]}`,url},onSent});return true}
 function sheetChanges(){const c=LC(),snap=(c.sent||{}).days||{};const out=[];
   Object.keys(snap).sort().forEach(ds=>{const now=dayLine(ds);if(now!==snap[ds])out.push({ds,from:snap[ds],to:now})});
   lunchPeriod().forEach(ds=>{if(!(ds in snap)&&c.sent&&ds>=c.sent.from&&ds<=c.sent.to){}});return out}
@@ -1305,7 +1304,40 @@ function exportDoc(html,name){
   try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download=name+'.html';document.body.appendChild(a);a.click();a.remove();toast('문서 파일을 저장했어요')}catch(e){toast('문서를 만들지 못했어요')}
 }
 async function copy(t,msg){try{if(window.AdminAndroid&&AdminAndroid.copyText(t)){toast(msg);return}await navigator.clipboard.writeText(t);toast(msg)}catch(e){toast(t)}}
-function share(t){if(window.AdminAndroid&&AdminAndroid.shareText){AdminAndroid.shareText(t);return}if(navigator.share){navigator.share({text:t}).catch(()=>{});return}copy(t,'메시지를 복사했어요')}
+function share(t,o){sendMenu({text:t,...(o||{})})}
+// ---------- 보내기: 문자 · 카카오톡 · 이메일 · 다른 앱(링크) · 복사 ----------
+// o: {text, title, subject, num(문자 받을 번호), email(받는 메일), image:{name,url(dataURL)}, link}
+let SEND=null;
+function sendMenu(o){if(!o.link){const m=String(o.text||'').match(/https?:\/\/\S+/);if(m)o.link=m[0]}SEND=o;const nat=!!(window.AdminAndroid&&AdminAndroid.sendTo);
+  modal(`<h3>📤 ${esc(o.title||'보내기')}</h3>
+   ${o.image?`<img src="${o.image.url}" alt="" style="width:100%;max-height:220px;object-fit:contain;border:1px solid var(--line);border-radius:10px;background:#fff;margin:6px 0">`:''}
+   <div class="snd-pre">${esc(o.text||'').replace(/\n/g,'<br>')}</div>
+   <div class="snd">
+    <button data-snd="sms" class="s1"><span>✉️</span>문자${o.num?`<small>${esc(o.num)}</small>`:''}</button>
+    <button data-snd="kakao" class="s2"><span>💬</span>카카오톡</button>
+    <button data-snd="email" class="s3"><span>📧</span>이메일</button>
+    <button data-snd="any" class="s4"><span>🔗</span>${o.link?'링크 보내기':'다른 앱'}</button>
+    <button data-snd="copy" class="s5"><span>📋</span>복사</button>
+   </div>
+   ${o.image?'<p class="muted" style="font-size:13px;margin-top:6px">문자 · 카톡 · 이메일에 사진이 함께 붙어요. (컴퓨터 웹에서는 사진을 내려받은 뒤 직접 붙여 주세요)</p>':''}
+   ${!nat?'<p class="muted" style="font-size:13px;margin-top:4px">💡 카카오톡은 휴대폰에서 ‘카카오톡’을 고르면 바로 열려요. 컴퓨터에서는 복사 후 붙여 넣어 주세요.</p>':''}
+   <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn ghost" data-act="closeModal">닫기</button></div>`)}
+async function doSend(kind){const o=SEND;if(!o)return;
+  if(kind==='sms'&&!o.num&&o.askNum){o.num=smsNum(LC());if(!o.num)return}
+  if(o.onSent){const f=o.onSent;o.onSent=null;setTimeout(f,300)}const txt=(o.text||'')+(o.link&&!(o.text||'').includes(o.link)?'\n'+o.link:'');
+  closeModal();const b64=o.image?o.image.url.split(',')[1]:'';const nat=window.AdminAndroid&&AdminAndroid.sendTo;
+  if(kind==='copy'){copy(txt,'복사했어요 — 붙여 넣어 보내세요');return}
+  if(kind==='sms'){if(o.image&&nat){AdminAndroid.sendTo('sms',o.image.name||'',b64,txt,'',String(o.num||'').replace(/[^\d]/g,''));return}
+    if(o.image){await webShareImage(o,txt,true);}sendSms(o.num||'',txt,true);return}
+  if(nat){AdminAndroid.sendTo(kind,(o.image&&o.image.name)||'',b64,txt,o.subject||o.title||'',kind==='email'?(o.email||''):'');return}
+  // 웹(아이폰 · PC)
+  if(kind==='email'){if(o.image)downloadImg(o.image);location.href=`mailto:${encodeURIComponent(o.email||'')}?subject=${encodeURIComponent(o.subject||o.title||'')}&body=${encodeURIComponent(txt)}`;return}
+  if(await webShareImage(o,txt,false))return;
+  if(kind==='kakao'){copy(txt,'복사했어요 — 카카오톡에 붙여 넣어 주세요');return}
+  copy(txt,'복사했어요')}
+async function webShareImage(o,txt,quiet){try{if(o.image){const b=await (await fetch(o.image.url)).blob(),f=new File([b],(o.image.name||'보내기')+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:txt});return true}if(!quiet)downloadImg(o.image)}
+  if(navigator.share&&!quiet){await navigator.share({text:txt,...(o.link?{url:o.link}:{})});return true}}catch(e){if(e&&e.name==='AbortError')return true}return false}
+function downloadImg(im){const a=document.createElement('a');a.href=im.url;a.download=(im.name||'보내기')+'.png';document.body.appendChild(a);a.click();a.remove()}
 
 /* ===================== 동작 ===================== */
 function toggleCheck(id,cycle){
@@ -1335,9 +1367,10 @@ document.addEventListener('click',async e=>{
   if(d.lstore){const c=LC();const x=lStores(c).find(y=>y.name===d.lstore);if(!c.stores)c.stores=lStores(c);c.store=x.name;c.storePhone=x.phone||'';save();render();toast(`${x.name}(으)로 주문해요 — 주문표에도 반영돼요`);return}
   if(d.lnav){const x=new Date(lunchPeriod()[0]+'T00:00');x.setDate(x.getDate()+(+d.lnav)*7*(+(LC()||{}).weeks||3));lunchStart=ymd(x);render();return}
   if(d.lday){lunchDayForm(d.lday);return}
+  if(d.snd){doSend(d.snd);return}
   if(d.ltab){lunchTab=d.ltab;render();scrollTo(0,0);return}
   if(d.lmob){const c=LC(),y=scrollY;smsNum(c,d.lmob,true);scrollTo(0,y);return}
-  if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}const c=LC(),n=smsNum(c);if(n)sendSms(n,m);return}
+  if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}const c=LC();sendMenu({title:'오늘 주문 보내기',text:m,num:smsTarget(c),askNum:true});return}
   if(d.lserve){const h=lunchServeDoc(d.lserve);if(!h){toast('그날 메뉴가 없어요');return}exportDoc(h,`도시락_배식표_${d.lserve}`);return}
   if(d.lreco){$('#ldReco').innerHTML=dayRecoHtml(d.lreco);return}
   if(d.reco){$('#ldMenu').value=d.reco;$('#ldOffNote').value='';toast(`‘${d.reco}’ — 저장을 눌러 주세요`);return}
@@ -1427,13 +1460,13 @@ document.addEventListener('click',async e=>{
     case 'shGo':sheetApply();break;
     case 'smsSheet':{const c=LC(),days=lunchPeriod();const empty=days.filter(ds=>{const d=lday(ds);return orderDays(c).includes(new Date(ds+'T00:00').getDay())&&!(d&&(d.menu||d.off))});
       if(empty.length&&!window._smsArm){window._smsArm=1;setTimeout(()=>window._smsArm=0,4000);toast(`주문 요일인데 메뉴가 없는 날이 ${empty.length}일 있어요 — 그래도 보내려면 한 번 더 누르세요`);break}
-      if(!(await sendSheetImage(sheetGreeting())))break;
+      sendSheetImage(sheetGreeting(),()=>{const c=LC();
       c.sent={from:days[0],to:days[days.length-1],at:new Date().toISOString(),by:myName(),days:Object.fromEntries(days.map(ds=>[ds,dayLine(ds)]))};
-      days.forEach(ds=>{const d=lday(ds);if(d&&d.menu&&!d.off&&(d.status||'plan')==='plan')d.status='ordered'});save();render();toast('식단표 문자를 열었어요 — 문자 앱에서 보내기를 눌러 주세요');break}
-    case 'smsSheetText':{const c=LC();{const n=smsNum(c);if(n)sendSms(n,sheetGreeting()+'\n\n'+sheetSms())}break}
-    case 'smsAddr':{const c=LC();if(!c.address){toast('배달 주소를 먼저 넣어 주세요');break}{const n=smsNum(c);if(n)sendSms(n,`${c.address} 입니다! 도시락 개수는 ${String(c.deadline||'10:00').replace(/^0/,'').replace(':00','시')} 전후로 전화드릴게요!`)}break}
-    case 'smsChanges':{const c=LC(),ch=sheetChanges();if(!ch.length){toast('바뀐 것이 없어요');break}{const n=smsNum(c);if(!n||!sendSms(n,changesSms(ch)))break}
-      ch.forEach(x=>{c.sent.days[x.ds]=x.to});c.sent.changedAt=new Date().toISOString();save();render();toast('변동사항 문자를 열었어요 — 보내기를 눌러 주세요');break}
+      days.forEach(ds=>{const d=lday(ds);if(d&&d.menu&&!d.off&&(d.status||'plan')==='plan')d.status='ordered'});save();render();toast('보낼 앱을 열었어요 — 그 앱에서 보내기를 눌러 주세요')});break}
+    case 'smsSheetText':{const c=LC();sendMenu({title:'식단표 (글자)',subject:'도시락 식단표',text:sheetGreeting()+'\n\n'+sheetSms(),num:smsTarget(c),askNum:true});break}
+    case 'smsAddr':{const c=LC();if(!c.address){toast('배달 주소를 먼저 넣어 주세요');break}sendMenu({title:'배달 주소 보내기',text:`${c.address} 입니다! 도시락 개수는 ${String(c.deadline||'10:00').replace(/^0/,'').replace(':00','시')} 전후로 전화드릴게요!`,num:smsTarget(c),askNum:true});break}
+    case 'smsChanges':{const c=LC(),ch=sheetChanges();if(!ch.length){toast('바뀐 것이 없어요');break}sendMenu({title:'변동사항 보내기',subject:'도시락 변동사항',text:changesSms(ch),num:smsTarget(c),askNum:true,onSent:()=>{const c=LC();
+      ch.forEach(x=>{c.sent.days[x.ds]=x.to});c.sent.changedAt=new Date().toISOString();save();render();toast('보낼 앱을 열었어요 — 그 앱에서 보내기를 눌러 주세요')}});break}
     case 'auPeriod':{const days=lunchPeriod();autoPreview(`${md(days[0])} ~ ${md(days[days.length-1])}`,days);break}
     case 'auApply':{const P=autoPlan;if(!P)break;document.querySelectorAll('.auPick').forEach(x=>{P.list[+x.dataset.i].pick=x.value});let n=0;
       P.list.forEach(x=>{const id='d-'+x.date,i=S.lunch.findIndex(z=>z.id===id),old=i<0?{}:S.lunch[i];const nd={...old,id,date:x.date,menu:x.pick,off:false,note:'',status:old.status||'plan',auto:true,by:myName(),at:new Date().toISOString()};delete nd.fixed;if(i<0)S.lunch.push(nd);else S.lunch[i]=nd;n++});

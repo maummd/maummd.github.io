@@ -164,7 +164,7 @@
   <!-- 출석 -->
   <section id="v-attend" class="view hidden">
     <div class="card">
-      <div class="spread"><h2 style="margin:0">출석 체크인</h2><button id="impAtt">📥 출석부 불러오기</button></div>
+      <div class="spread"><h2 style="margin:0">출석 체크인</h2><div class="row" style="gap:6px"><button id="sendAtt">📤 보내기</button><button id="impAtt">📥 불러오기</button></div></div>
       <div class="row"><input type="date" id="atDate"><span class="muted" id="atWeek"></span></div>
       <p class="muted">출석한 플레이어를 눌러 초록색으로 표시한 뒤 저장하세요.</p>
       <div class="toggle" id="atToggle"></div>
@@ -1181,7 +1181,7 @@ This typically indicates that your device does not have a healthy Internet conne
       else if (t.id === "ccRs") { if (!v("ccE")) return ccMsg("이메일을 먼저 적어 주세요"); await MC.reset(v("ccE")); ccMsg("비밀번호 재설정 메일을 보냈어요"); }
       else if (t.id === "ccOut") { await MC.signOut(); location.reload(); }
       else if (t.id === "ccLeave") { await MC.del(`ppUsers/${cloud.user.uid}`); location.reload(); }
-      else if (t.id === "ccShare") { const txt = `[${cloud.clubDoc.name}] 🏓 마음비타민 탁구\n1) https://maummd.github.io/pingpong/ 열고 이메일로 가입\n2) 플레이어 탭 → 클럽 서버 → 참여 코드 ${cloud.clubDoc.joinCode} 입력`; if (navigator.share) navigator.share({ text: txt }).catch(() => { }); else { await navigator.clipboard.writeText(txt).catch(() => { }); toast("안내 문구를 복사했어요"); } }
+      else if (t.id === "ccShare") { const txt = `[${cloud.clubDoc.name}] 🏓 마음비타민 탁구\n1) https://maummd.github.io/pingpong/ 열고 이메일로 가입\n2) 플레이어 탭 → 클럽 서버 → 참여 코드 ${cloud.clubDoc.joinCode} 입력`; try { (await loadReader()).send({ title: "클럽 참여 안내 보내기", subject: "마음비타민 탁구 참여 안내", text: txt }); } catch (e) { await navigator.clipboard.writeText(txt).catch(() => { }); toast("안내 문구를 복사했어요"); } }
       else if (t.dataset.ccrole) { const x = cloud.members.find(y => y.id === t.dataset.ccrole); const { id, ...d } = x; await MC.set(`ppClubs/${cloud.club}/members/${id}`, { ...d, role: t.dataset.r }); toast(`${x.name}: ${ROLE[t.dataset.r]}`); }
       else if (t.id === "ccJoin") {
         const name = v("ccName"), code = v("ccCode").toUpperCase(); if (!name || !code) return ccMsg("이름과 참여 코드를 넣어 주세요");
@@ -1294,6 +1294,10 @@ This typically indicates that your device does not have a healthy Internet conne
         renderAll(); return `${n}명 스탯을 넣었어요${miss.length ? ` · 건너뜀: ${miss.slice(0, 4).join(", ")}` : ""}`;
       } });
   }
+  $("sendAtt").onclick = async () => { const date = $("atDate").value, doc = state.attendance[date], P = allPlayers();
+    const pres = doc && Array.isArray(doc.present) ? P.filter(p => doc.present.includes(p.id)) : [];
+    const txt = `🏓 마음비타민 탁구 ${date} 출석\n${pres.length ? `출석 ${pres.length}명: ${pres.map(nickOf).join(", ")}` : "아직 저장된 출석이 없어요"}`;
+    try { (await loadReader()).send({ title: "출석 보내기", subject: `탁구 출석 ${date}`, text: txt }); } catch (e) { toast(e.message); } };
   $("impPl").onclick = impPlayers; $("impAtt").onclick = impAttendance; $("impStat").onclick = impStats;
 })();
 </script>

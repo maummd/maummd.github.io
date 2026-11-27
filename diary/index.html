@@ -339,9 +339,12 @@ function vDiary(){
   <h2>나만의 플레이리스트</h2>
   <div class="form pl">${['힘낼 때','마음 가라앉힐 때','잠들 때'].map((t,i)=>`<label for="p${i}">${t}</label><div class="row"><input id="p${i}" type="text" value="${esc(pl[i]||'')}" placeholder="노래 제목 · 가수"><a class="btn" data-pl="${i}" href="#" target="_blank" rel="noopener">▶</a></div>`).join('')}</div>
   <h2>지난 기록</h2><div class="log">${log.length?log.slice().reverse().slice(0,20).map((e,ri)=>`<div class="entry">${W[e.w][1]}<div><b>${e.d} · ${W[e.w][0]} · ${e.a}→${e.b}점</b><p class="muted">${esc(e.s||'')}${e.n?' · '+esc(e.n):''}</p></div><button class="btn ghost" data-del="${log.length-1-ri}" aria-label="이 기록 지우기">지우기</button></div>`).join(''):'<p class="muted">아직 기록이 없어요. 위에서 오늘의 날씨를 골라 첫 기록을 저장해 보세요. (예: 11/26 · 구름 조금 · 5→7점 · 고향의 봄)</p>'}</div>
-  <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" id="impSong" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 노래 목록 불러오기</button><button class="btn" type="button" id="impLog" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 지난 기록 불러오기</button></div>
+  <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" id="sendMine">📤 플레이리스트 · 기록 보내기</button><button class="btn" type="button" id="impSong" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 노래 목록 불러오기</button><button class="btn" type="button" id="impLog" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 지난 기록 불러오기</button></div>
   <p class="muted" style="font-size:13px">엑셀 · 워드 · PDF · 한글(HWPX) · 사진 · CSV 파일을 읽어요. 넣기 전에 미리 보고 고칠 수 있어요.</p>
   <p class="note">기록은 이 휴대폰(브라우저)에만 저장돼요. 다른 사람에게 보이지 않고, 기기를 바꾸면 따라오지 않아요.</p>`;
+  document.getElementById('sendMine').onclick=async()=>{const pl=store.get('pl',['','','']),L=store.get('log',[]).slice(-5);
+    const txt=`🎵 나의 마음 플레이리스트\n${PL_NAMES.map((t,i)=>`· ${t}: ${pl[i]||'-'}`).join('\n')}${L.length?`\n\n📔 최근 마음 기록\n${L.map(e=>`· ${e.d} ${W[e.w]?W[e.w][0]:''} ${e.a}→${e.b}점${e.s?' ♪ '+e.s:''}${e.n?' — '+e.n:''}`).join('\n')}`:''}`;
+    try{(await loadReader()).send({title:'플레이리스트 · 기록 보내기',subject:'나의 마음 다이어리',text:txt})}catch(e){toast(e.message)}};
   document.getElementById('impSong').onclick=impSongs;document.getElementById('impLog').onclick=impLog;
   const plLink=()=>document.querySelectorAll('[data-pl]').forEach(a=>{const v=document.getElementById('p'+a.dataset.pl).value.trim();a.href=v?yt(v+' 가사'):'https://www.youtube.com'});plLink();
   V.querySelectorAll('.pl input').forEach(inp=>inp.addEventListener('input',()=>{store.set('pl',[0,1,2].map(i=>document.getElementById('p'+i).value));plLink()}));

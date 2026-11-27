@@ -345,5 +345,33 @@
     if (/^\d{5}(\.\d+)?$/.test(s)) return new Date(Math.round((+s - 25569) * 864e5)).toISOString().slice(0, 10);
     return '';
   }
-  window.MReader = { read, importWizard, rowsFromItems, similar, closest, toDate, pickFile, close, ocrCanvas };
+
+  // ---------- 보내기: 문자 · 카카오톡 · 이메일 · 다른 앱(링크) · 복사 ----------
+  // send({title, text, subject, num, email, link})
+  const bridge = () => ['AdminAndroid', 'NUAndroid', 'DiaryAndroid', 'NativeDoc', 'PPAndroid'].map((k) => window[k]).find((b) => b && b.sendTo);
+  async function copyText(t) {
+    const b = ['AdminAndroid', 'NUAndroid', 'DiaryAndroid', 'NativeDoc'].map((k) => window[k]).find((x) => x && x.copyText);
+    try { if (b && b.copyText(t)) return true; } catch (e) { }
+    try { await navigator.clipboard.writeText(t); return true; } catch (e) { }
+    const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) { } ta.remove(); return ok;
+  }
+  function note(msg) { let t = document.getElementById('mr-toast'); if (!t) { t = document.createElement('div'); t.id = 'mr-toast'; t.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1B2623;color:#fff;padding:10px 16px;border-radius:12px;z-index:10000;font-size:14.5px;max-width:86vw;text-align:center;font-family:inherit'; document.body.appendChild(t); } t.textContent = msg; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(() => { t.style.display = 'none'; }, 2600); }
+  function send(o) {
+    o = o || {}; if (!o.link) { const m = String(o.text || '').match(/https?:\/\/\S+/); if (m) o.link = m[0]; }
+    const txt = (o.text || '') + (o.link && !(o.text || '').includes(o.link) ? '\n' + o.link : '');
+    const sh = sheet(`<h3>📤 ${esc(o.title || '보내기')}</h3><div style="max-height:150px;overflow:auto;background:#F7F8F5;border:1px solid #D9DED7;border-radius:10px;padding:8px 10px;font-size:13.5px;margin:6px 0 12px">${esc(txt).replace(/\n/g, '<br>')}</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">${[['sms', '✉️', '문자', '#E3F8EE'], ['kakao', '💬', '카카오톡', '#FEE500'], ['email', '📧', '이메일', '#E3EEFF'], ['any', '🔗', o.link ? '링크' : '다른 앱', '#FFF1E5'], ['copy', '📋', '복사', '#F1F2EE']].map(([k, i, l, c]) => `<button data-mrs="${k}" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 2px;border:0;border-radius:14px;background:${c};font:inherit;font-weight:700;font-size:13px;color:#1B2623;cursor:pointer"><span style="font-size:24px;line-height:1.1">${i}</span>${l}</button>`).join('')}</div>
+      <div class="mr-r" style="justify-content:flex-end;margin-top:12px"><button class="mr-b g" id="mr-x">닫기</button></div>`);
+    sh.querySelector('#mr-x').onclick = close;
+    sh.querySelectorAll('[data-mrs]').forEach((b) => { b.onclick = async () => {
+      const k = b.dataset.mrs, nat = bridge(); close();
+      if (k === 'copy') { note((await copyText(txt)) ? '복사했어요 — 붙여 넣어 보내세요' : '복사하지 못했어요'); return; }
+      if (nat) { nat.sendTo(k, '', '', txt, o.subject || o.title || '', k === 'email' ? (o.email || '') : k === 'sms' ? String(o.num || '').replace(/[^\d]/g, '') : ''); return; }
+      if (k === 'sms') { const ios = /iPhone|iPad|Mac/i.test(navigator.userAgent); location.href = `sms:${String(o.num || '').replace(/[^\d]/g, '')}${ios ? '&' : '?'}body=${encodeURIComponent(txt)}`; return; }
+      if (k === 'email') { location.href = `mailto:${encodeURIComponent(o.email || '')}?subject=${encodeURIComponent(o.subject || o.title || '')}&body=${encodeURIComponent(txt)}`; return; }
+      if (navigator.share) { try { await navigator.share({ text: txt }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+      note((await copyText(txt)) ? (k === 'kakao' ? '복사했어요 — 카카오톡에 붙여 넣어 주세요' : '복사했어요 — 붙여 넣어 보내세요') : '복사하지 못했어요');
+    }; });
+  }
+  window.MReader = { send, copyText, read, importWizard, rowsFromItems, similar, closest, toDate, pickFile, close, ocrCanvas };
 })();
