@@ -9,13 +9,12 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f4e79">
+<meta name="theme-color" content="#2D6CDF">
 <title>Nurse United</title>
 <style>
-:root{--bg:#f4f6f9;--card:#fff;--ink:#1b2330;--sub:#667085;--line:#e2e6ec;--brand:#1f4e79;--brand2:#2f6fa8;--soft:#e7eff8;
---S:#1f6f4a;--A:#2f7f9a;--B:#5b6b80;--C:#b2762b;--D:#b04a3a;--okbg:#e4f3ea;--okfg:#22704a;--wbg:#fbeee2;--wfg:#a65a1f;--ebg:#f9e3e1;--efg:#a2392c}
-@media (prefers-color-scheme:dark){:root{--bg:#12151a;--card:#1c2027;--ink:#e8ebf0;--sub:#9aa3b2;--line:#2c323c;--brand:#8fb8e3;--brand2:#8fb8e3;--soft:#1f2b3a;
---S:#6fcf9f;--A:#6fc0dc;--B:#a6b3c4;--C:#e5ad69;--D:#ee8a7c;--okbg:#1b3127;--okfg:#7fd3a5;--wbg:#3a2b1e;--wfg:#f0b07a;--ebg:#3d2220;--efg:#f19a8f}}
+:root{--bg:#F3F7FF;--card:#fff;--ink:#17233A;--sub:#5B6B85;--line:#E1E8F5;--brand:#2D6CDF;--brand2:#4C8DFF;--soft:#E8F0FF;
+--pink:#FF6B9A;--mint:#16C2A3;--sun:#FFB020;--grape:#8B6CFF;
+--S:#12B76A;--A:#2E90FA;--B:#7A8BA8;--C:#F79009;--D:#F04438;--okbg:#E3FAF0;--okfg:#0E8A55;--wbg:#FFF4E0;--wfg:#C26A00;--ebg:#FFE9E7;--efg:#C4312A}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55;
  padding:calc(env(safe-area-inset-top) + 8px) 0 calc(env(safe-area-inset-bottom) + 80px)}
@@ -116,15 +115,52 @@ details summary::-webkit-details-marker{display:none}
 .pin{display:flex;gap:10px}.pin i{width:14px;height:14px;border-radius:50%;border:2px solid var(--brand)}.pin i.on{background:var(--brand)}
 .keys{display:grid;grid-template-columns:repeat(3,72px);gap:10px}.keys button{height:58px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:22px}
 .loader{display:grid;place-items:center;min-height:50vh;color:var(--sub)}
+/* ---------- 밝은 디자인 ---------- */
+body{background:linear-gradient(180deg,#EAF2FF 0,#F3F7FF 220px,#F7F9FD 100%) fixed}
+header h1{font-size:20px;font-weight:800;letter-spacing:-.3px}
+.logo{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#4C8DFF,#8B6CFF);font-size:14px;font-weight:800;box-shadow:0 4px 12px rgba(76,141,255,.35)}
+.card{border:none;border-radius:20px;padding:16px;box-shadow:0 2px 10px rgba(23,35,58,.06);margin-bottom:14px}
+.card h2{font-size:15.5px;font-weight:800;letter-spacing:-.2px}
+.em{font-size:1.15em;margin-right:4px}
+.btn{border-radius:12px;padding:10px 16px;font-weight:700;background:linear-gradient(135deg,#2D6CDF,#4C8DFF);box-shadow:0 3px 10px rgba(45,108,223,.25)}
+.btn.ghost{background:var(--soft);box-shadow:none}
+.btn.danger{background:var(--ebg);box-shadow:none}
+input,textarea,select{background:#F7F9FD;border:1.5px solid var(--line);border-radius:12px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand2);background:#fff}
+.person{border:none;border-radius:18px;box-shadow:0 2px 8px rgba(23,35,58,.06);padding:13px 14px}
+.person:active{transform:scale(.99)}
+.av{width:46px;height:46px;font-size:14px;font-weight:800;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.12)}
+.score{font-size:19px;font-weight:800}
+.bd{border:none;background:#EEF2F8;font-weight:600}
+.tabs{border:none;border-radius:16px;padding:4px;box-shadow:0 2px 8px rgba(23,35,58,.06);gap:2px}
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:12.5px;font-weight:600;padding:6px 0}
+.tabs button .em{font-size:19px;margin:0}
+.tabs button.on{background:linear-gradient(135deg,#2D6CDF,#8B6CFF);box-shadow:0 3px 10px rgba(76,141,255,.35)}
+.sum div{background:linear-gradient(135deg,#F0F6FF,#F6F1FF);border-radius:14px;padding:10px 4px}
+.sum b{font-size:22px;font-weight:800}
+.notice{background:linear-gradient(135deg,#EAF2FF,#F3EEFF);border-radius:14px}
+.seg button{border-radius:12px;font-weight:600}
+.grades button{border-radius:12px;height:44px}
+.chip{border:none;background:#fff;box-shadow:0 1px 4px rgba(23,35,58,.08);font-weight:600}
+.chip.on{background:linear-gradient(135deg,#2D6CDF,#4C8DFF);color:#fff}
+nav{border-top:none;box-shadow:0 -4px 16px rgba(23,35,58,.08);border-radius:20px 20px 0 0}
+nav button{font-size:11.5px;font-weight:600}
+nav button .em{font-size:24px;line-height:1.15;margin:0;filter:grayscale(.35);opacity:.75;transition:.15s}
+nav button.on .em{filter:none;opacity:1;transform:translateY(-2px) scale(1.1)}
+nav button.on{color:var(--brand);font-weight:800}
+.bar{background:#EAF0FA}.bar i{background:linear-gradient(90deg,#4C8DFF,#8B6CFF)}
+.modal .sheet{border-radius:24px 24px 0 0}
+.toast{background:#17233A;color:#fff}
+.keys button{border-radius:18px;box-shadow:0 2px 6px rgba(23,35,58,.08);border:none}
 </style>
 </head>
 <body>
 <div class="wrap" id="app"><div class="loader">불러오는 중…</div></div>
 <nav id="nav" style="display:none">
- <button data-v="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg>평가 대상자</button>
- <button data-v="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>병동 현황</button>
- <button data-v="rules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>평가 기준</button>
- <button data-v="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>설정</button>
+ <button data-v="list"><span class="em">👩‍⚕️</span>평가 대상자</button>
+ <button data-v="dash"><span class="em">📊</span>병동 현황</button>
+ <button data-v="rules"><span class="em">📘</span>평가 기준</button>
+ <button data-v="settings"><span class="em">⚙️</span>설정</button>
 </nav>
 <div class="toast" id="toast"></div>
 <div id="modal"></div>
@@ -299,7 +335,13 @@ function render(){
   $('#nav').style.display='flex';
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(view==='person'?'list':view)));
   $('#app').innerHTML=view==='list'?vList():view==='person'?vPerson():view==='dash'?vDash():view==='rules'?vRules():vSettings();
+  decorate();
 }
+const AV_COLORS=['linear-gradient(135deg,#4C8DFF,#2D6CDF)','linear-gradient(135deg,#FF8FB1,#FF6B9A)','linear-gradient(135deg,#34D8B8,#16C2A3)','linear-gradient(135deg,#FFC659,#FFB020)','linear-gradient(135deg,#A58BFF,#8B6CFF)','linear-gradient(135deg,#6FD3FF,#2EA8E6)','linear-gradient(135deg,#FF9F7A,#FF7A45)'];
+function avColor(n){let h=0;for(const ch of String(n||''))h=(h*31+ch.charCodeAt(0))>>>0;return AV_COLORS[h%AV_COLORS.length]}
+// 카드 제목 앞에 어울리는 이모티콘
+const H2_EM=[['AI 도우미','🤖'],['개발 계획','🗺️'],['개인별 점수','🏅'],['경력개발 컨설팅','🧭'],['계정','👤'],['관심 커리어','🚀'],['관찰 기록 추가','✍️'],['관찰기록','👀'],['교육 · 개발','📚'],['교육 보완','🎓'],['기록','📝'],['나의 비전','🌟'],['내보내기','📤'],['등급 분포','📊'],['로그인','🔐'],['면담 사전 설문 종합','🗂️'],['면담 사전 설문','📋'],['면담 설문 가져오기','📨'],['면담 질문 추천','💡'],['백업','💾'],['병동 역량지수','📈'],['병동 정보','🏥'],['비계량평가','🔒'],['비전','🌟'],['새 연도','🎉'],['설문 종합','🗂️'],['시작하기','👋'],['앱 잠금','🔑'],['업적평가','🎯'],['역량지수','📈'],['역량평가','💪'],['올해 돋보인','✨'],['월별 기록','🗓️'],['인적사항','🪪'],['점수','🏅'],['커리어 경로','🧭'],['커리어 관심','🚀'],['컨설팅 메모','🧭'],['평가 개요','📌'],['평가 결과','🏆'],['평가 오류','🩺'],['평가대상자 피드백','💌'],['평가면담','💬'],['평균 점수','📊'],['Nurse United','💙']];
+function decorate(){document.querySelectorAll('#app .card h2').forEach(h=>{if(h.dataset.em)return;h.dataset.em=1;const t=h.textContent.trim();if(/^\p{Extended_Pictographic}/u.test(t))return;const m=H2_EM.find(([k])=>t.startsWith(k));if(!m)return;const sp=document.createElement('span');sp.className='em';sp.textContent=m[1];const f=h.firstChild;if(f&&f.nodeType===1&&f.tagName==='SPAN'){f.insertBefore(sp,f.firstChild);return}const w=document.createElement('span');w.appendChild(sp);if(f)w.appendChild(f);h.insertBefore(w,h.firstChild)})}
 function hdr(title,sub,back){
   return `<header>${back?`<button class="back" data-go="${back}">‹</button>`:'<span class="logo">NU</span>'}<h1>${title}${sub?`<small>${sub}</small>`:''}</h1><span class="sync">${FB?'☁️ 서버 저장<br>🔒 나만 보기':'🔒 이 기기에만<br>저장'}</span></header>`;
 }
@@ -328,7 +370,7 @@ function vList(){
   <div class="row" style="margin-bottom:10px"><input placeholder="이름 검색" value="${esc(q)}" id="search" class="grow"><button class="btn ghost" data-act="addStaff">+ 추가</button></div>
   <div class="chips">${[['전체','전체'],['nurse','간호직'],['aide','간호운영기능직'],['제외','평가 제외']].map(([k,l])=>`<button class="chip ${filter===k?'on':''}" data-filter="${k}">${l}</button>`).join('')}</div>
   ${arr.length?arr.map(p=>{const c=calc(p),ex=exclusion(p),oc=obsCheck(p),cl=p.eval&&(p.eval.closed||'').replace(/＊[^:]+:/g,'').trim();
-   return `<button class="person" data-open="${p.id}"><span class="av">${esc((p.name||'?').slice(-2))}</span>
+   return `<button class="person" data-open="${p.id}"><span class="av" style="background:${avColor(p.name)}">${esc((p.name||'?').slice(-2))}</span>
    <span class="grow"><span class="nm">${esc(p.name)}</span> <span class="muted">${esc(T(p.job).label.replace('(부서원)',''))}${p.rank?' · '+esc(p.rank):''}</span>
    <span class="badges">${ex?`<span class="bd e">${esc(ex.replace('평가 제외 — ',''))}</span>`:`
     <span class="bd">관찰 ${(p.obs||[]).length}</span>${p.interview&&p.interview.text?'<span class="bd ok">면담</span>':''}
@@ -342,9 +384,9 @@ function vList(){
 function vPerson(){
   const p=staff[cur]; if(!p){view='list';return vList()}
   const c=calc(p), ex=exclusion(p);
-  const tabs=[['info','정보'],['obs','관찰'],['meet','면담'],['eval','평가'],['grow','성장']];
+  const tabs=[['info','🪪 정보'],['obs','👀 관찰'],['meet','💬 면담'],['eval','⭐ 평가'],['grow','🌱 성장']];
   return hdr(esc(p.name),`${esc(T(p.job).label)}${p.rank?' · '+esc(p.rank):''} · ${ex?'평가 제외':`업적 ${fmt(c.perf)} · 역량 ${fmt(c.comp)} · 종합 ${fmt(c.total)}`}`,'list')+
-  `<div class="tabs">${tabs.map(([k,l])=>`<button data-tab="${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`+
+  `<div class="tabs">${tabs.map(([k,l])=>{const [e,t]=l.split(' ');return `<button data-tab="${k}" class="${tab===k?'on':''}"><span class="em">${e}</span>${t}</button>`}).join('')}</div>`+
   (ex?`<div class="alert e">${esc(ex)} (인사평가규정 제8조). 평균 계산에서 빠져요.</div>`:'')+
   ({info:tInfo,obs:tObs,meet:tMeet,eval:tEval,grow:tGrow})[tab](p);
 }
