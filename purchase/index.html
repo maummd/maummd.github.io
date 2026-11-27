@@ -569,7 +569,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.6 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.7 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -784,14 +784,23 @@ const HSD={menu:'https://www.hsd.co.kr/menu/menu_list',store:'https://www.hsd.co
 const lStores=c=>c.stores&&c.stores.length?c.stores:[{name:c.store,phone:c.storePhone},{name:'한솥도시락(구의점)',phone:''}];
 const telHref=p=>'tel:'+String(p||'').replace(/[^\d+]/g,'');
 const mapHref=n=>`https://map.naver.com/p/search/${encodeURIComponent(n)}`;
+const IS_IOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+const smsHref=(num,body)=>`sms:${String(num||'').replace(/[^\d+]/g,'')}${body?(IS_IOS?'&':'?')+'body='+encodeURIComponent(body):''}`;
+const curStore=c=>{const st=lStores(c);return st.find(x=>x.name===c.store)||st[0]||{}};
+const smsTarget=c=>{const x=curStore(c);return x.mobile||x.phone||''};
+function sendSms(num,body){if(!num){toast('문자 받을 번호를 업체 목록에 넣어 주세요');return false}const u=smsHref(num,body);
+  if(window.AdminAndroid&&AdminAndroid.openUrl){AdminAndroid.openUrl(u);return true}
+  const a=document.createElement('a');a.href=u;document.body.appendChild(a);a.click();a.remove();copy(body,'문자 내용을 복사해 두었어요');return true}
 function lunchStoreCard(c){
-  const st=lStores(c),cur=st.find(x=>x.name===c.store)||st[0];
+  const st=lStores(c);
   return `<div class="card"><h2>📞 도시락 업체 · 메뉴</h2>
-   ${st.map(x=>`<div class="ord"><div class="row" style="justify-content:space-between"><div><b>${esc(x.name)}</b>${x.name===c.store?' <span class="bd ok">주문하는 곳</span>':''}<div class="muted">${x.phone?esc(x.phone):'전화번호를 아직 넣지 않았어요'}${x.note?' · '+esc(x.note):''}</div></div></div>
-     <div class="row w" style="margin-top:6px">${x.phone?`<a class="btn sm" href="${telHref(x.phone)}" data-ext="1" style="text-decoration:none">📞 전화</a><a class="btn sm ghost" href="sms:${String(x.phone).replace(/[^\d]/g,'')}" data-ext="1" style="text-decoration:none">✉️ 문자</a>`:''}<a class="btn sm ghost" href="${mapHref(x.name.replace(/[()]/g,' '))}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none">🗺 지도${x.phone?'':' · 번호 찾기'}</a>${canLunch()&&x.name!==c.store?`<button class="btn sm ghost" data-lstore="${esc(x.name)}">여기로 주문</button>`:''}</div></div>`).join('')}
+   ${st.map(x=>`<div class="ord"><div><b>${esc(x.name)}</b>${x.name===c.store?' <span class="bd ok">주문하는 곳</span>':''}<div class="muted">${x.phone?'가게 '+esc(x.phone):'가게 전화 없음'}${x.mobile?` · ${esc(x.mobileName||'휴대폰')} ${esc(x.mobile)}`:''}${x.note?' · '+esc(x.note):''}</div></div>
+     <div class="row w" style="margin-top:6px">${x.phone?`<a class="btn sm" href="${telHref(x.phone)}" data-ext="1" style="text-decoration:none">📞 가게</a>`:''}${x.mobile?`<a class="btn sm" href="${telHref(x.mobile)}" data-ext="1" style="text-decoration:none">📱 ${esc(x.mobileName||'휴대폰')}</a><a class="btn sm ghost" href="${smsHref(x.mobile)}" data-ext="1" style="text-decoration:none">✉️ 문자</a>`:x.phone?`<a class="btn sm ghost" href="${smsHref(x.phone)}" data-ext="1" style="text-decoration:none">✉️ 문자</a>`:''}<a class="btn sm ghost" href="${mapHref(x.name.replace(/[()]/g,' '))}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none">🗺 지도</a>${canLunch()&&x.name!==c.store?`<button class="btn sm ghost" data-lstore="${esc(x.name)}">여기로 주문</button>`:''}</div></div>`).join('')}
+   ${canLunch()&&!curStore(c).mobile?'<p class="muted" style="margin-top:8px">💡 사장님 · 사모님 휴대폰을 아래 ‘업체 목록’에 넣으면 식단표 · 변동사항 문자를 바로 보낼 수 있어요.</p>':''}
    <div class="row w" style="margin-top:10px"><a class="btn grow" href="${HSD.menu}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none;text-align:center">🍱 한솥 메뉴 보기</a><a class="btn ghost grow" href="${HSD.store}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none;text-align:center">매장 찾기</a></div>
    <p class="muted" style="margin-top:8px">단체주문 <a href="${telHref(HSD.group)}" data-ext="1">${HSD.group}</a> (2~3일 전 예약) · 한솥 고객상담실 <a href="${telHref(HSD.cs)}" data-ext="1">${HSD.cs}</a></p></div>`;
 }
+
 const LR=()=>{const c=LC();if(!c)return {rules:[],pairs:[],notes:[]};if(!LR._c||LR._t!==c.rulesText){LR._c=parseLunchRules(c.rulesText);LR._t=c.rulesText}return LR._c};
 const lday=ds=>S.lunch.find(x=>x.id==='d-'+ds);
 const ruleHit=(match,menu)=>{const m=nz(menu);return match.some(k=>k&&m.includes(nz(k)))};
@@ -851,6 +860,7 @@ function vLunch(){
    ${c.menus.some(m=>!+m.price)?'<p class="muted" style="margin-top:8px">💡 메뉴 가격을 넣으면 비용이 계산돼요 (아래 ‘메뉴 · 가격’).</p>':''}</div>
   ${weeks.map(w=>`<div class="card"><h2>${md(w[0])} 주</h2>${w.map(ds=>{const d=lday(ds),pl=planDay(ds),st=d&&d.status||'plan';
     return `<button class="lrow" data-lday="${ds}"><span class="ldate ${ds===t?'today':''}">${md(ds)}</span><span class="grow" style="text-align:left">${pl?`<b>${esc(orderLine(pl))}</b><span class="muted" style="display:block;font-size:13.5px">${pl.count}개 · ${won(lunchCost(ds))}${pl.center.length?' · 센터: '+pl.center.map(([k,w])=>`${esc(k)} ${w.length}`).join(', '):''}${pl.notes.length?' · ⚠️ '+esc(pl.notes.join(' / ')):''}${pl.unknown.length?' · ❓메뉴 목록에 없음':''}${pl.fixed?' · 📥 주문표 수량':''}</span>`:`<span class="muted">${d&&d.off?'✕ '+esc(d.note||'주문 안 함'):'메뉴를 정해 주세요'}</span>`}</span>${pl?`<span class="bd ${LST[st][1]}">${LST[st][0]}</span>`:''}</button>`}).join('')}</div>`).join('')}
+  ${canLunch()?ruleCard(c):''}
   ${canLunch()?autoCard(c):''}
   ${canLunch()?`<div class="card"><h2>📥 기존 주문표 불러오기</h2><p class="muted">예전에 쓰던 주문표 PDF나 한글(HWPX) 파일을 올리면 날짜별 메뉴 · 수량 · X(휴일)를 읽어 넣어요. 한글 .hwp 파일은 한글에서 PDF로 저장해 올려 주세요.</p><label class="btn" style="margin-top:8px;display:inline-block">파일 고르기<input type="file" id="sheetIn" accept=".pdf,.hwpx,.hwp,application/pdf" hidden></label></div>`:''}
   <div class="row w" style="margin-bottom:12px"><button class="btn grow" data-act="lunchSheet">📄 주문표 (PDF)</button>${canLunch()?'<button class="btn ghost grow" data-act="lunchCopyPrev">지난 기간 메뉴 가져오기</button>':''}</div>
@@ -864,7 +874,7 @@ function lunchSettings(c){
    <div class="two"><div><label class="f">업체 전화</label><input data-lc="storePhone" value="${esc(c.storePhone)}"></div><div><label class="f">센터 전화</label><input data-lc="centerPhone" value="${esc(c.centerPhone)}"></div></div>
    <div class="two"><div><label class="f">배달</label><input data-lc="deliver" value="${esc(c.deliver)}"></div><div><label class="f">결제</label><input data-lc="pay" value="${esc(c.pay)}"></div></div>
    <div class="two"><div><label class="f">기본 개수</label><input type="number" data-lc="base" value="${c.base}"></div><div><label class="f">변경 연락 마감</label><input type="time" data-lc="deadline" value="${esc(c.deadline)}"></div></div>
-   <label class="f">업체 목록 (한 줄에 하나: <b>업체 이름 | 전화 | 메모</b>)</label><textarea id="lcStores" style="min-height:90px">${esc(lStores(c).map(x=>[x.name,x.phone||'',x.note||''].join(' | ').replace(/ \| $/,'')).join('\n'))}</textarea><button class="btn sm" style="margin-top:6px" data-act="lcStoresSave">업체 목록 저장</button>
+   <label class="f">업체 목록 (한 줄에 하나: <b>업체 이름 | 가게 전화 | 문자 받을 휴대폰 | 휴대폰 주인 | 메모</b>)</label><p class="muted" style="font-size:13px">예: 한솥도시락(자양고점) | 02-455-1150 | 010-0000-0000 | 사모님</p><textarea id="lcStores" style="min-height:90px">${esc(lStores(c).map(x=>[x.name,x.phone||'',x.mobile||'',x.mobileName||'',x.note||''].join(' | ').replace(/( \| )+$/,'')).join('\n'))}</textarea><button class="btn sm" style="margin-top:6px" data-act="lcStoresSave">업체 목록 저장</button>
    <label class="f">주문표 기간 (주)</label><select data-lc="weeks">${[1,2,3,4].map(w=>`<option ${+c.weeks===w?'selected':''}>${w}</option>`).join('')}</select></div>
   ${prefsCard(c)}
   <div class="card"><h2>👥 회원 명단 <span class="muted">${c.members.filter(p=>p.active!==false).length}명</span></h2><p class="muted">한 줄에 한 명. 앞에 <b>-</b>를 붙이면 ‘쉬는 중’(주문에서 빠짐).</p>
@@ -897,9 +907,56 @@ function lunchDayForm(ds){
    <h3>회원별 (출석 · 대체 메뉴)</h3><p class="muted">체크를 끄면 결석. 오른쪽에서 그날만 메뉴를 바꿀 수 있어요.</p>
    ${c.members.filter(p=>p.active!==false).map(p=>{const a=pl&&pl.assign.find(x=>x.who===p.name);return `<div class="row" style="padding:6px 0;border-top:1px solid var(--line)"><label class="row grow" style="gap:8px"><input type="checkbox" class="ldIn" value="${esc(p.name)}" ${absent.has(p.name)?'':'checked'} style="width:20px;height:20px" ${dis}><span><b>${esc(p.name)}</b>${a&&a.why?`<span class="muted" style="display:block;font-size:13px">${esc(a.name)} · ${esc(a.why)}</span>`:a?`<span class="muted" style="display:block;font-size:13px">${esc(a.name)}</span>`:''}</span></label><select class="ldOver" data-who="${esc(p.name)}" style="width:44%;font-size:14px;padding:6px" ${dis}>${itemOpts(over[p.name]===undefined?'':(over[p.name]||'-'))}</select></div>`}).join('')}
    <label class="f">메모</label><input id="ldNote" value="${esc(d.off?'':(d.note||''))}" ${dis}>
+   ${edit&&d.menu&&!d.off?`<label class="f">요일 바꾸기 (이 주문을 다른 날로 옮기기)</label><div class="row"><select id="ldMoveTo" class="grow">${(()=>{const o=[];for(let i=-7;i<=14;i++){const x=ymd(addDays(new Date(ds+'T00:00'),i)),w=new Date(x+'T00:00').getDay();if(i&&w>0&&w<6)o.push(`<option value="${x}">${md(x)}${lday(x)&&lday(x).menu&&!lday(x).off?' — '+esc(lday(x).menu)+' (서로 바꾸기)':''}</option>`)}return o.join('')})()}</select><button class="btn sm ghost" data-lmove="${ds}">옮기기</button></div>`:''}
    <div class="row w" style="margin-top:14px;justify-content:flex-end"><button class="btn ghost" data-lmsg="${ds}">주문 문자</button><button class="btn ghost" data-lserve="${ds}">배식표</button><span class="grow"></span><button class="btn ghost" data-act="closeModal">닫기</button>${edit?`<button class="btn" data-lsave="${ds}">저장</button>`:''}</div>`);
 }
-function lunchMsg(ds){const c=LC(),pl=planDay(ds);if(!pl)return '';return `[${c.orderName}] ${md(ds)} 도시락 주문\n${orderLine(pl)} (총 ${pl.count}개)\n${c.deliver} / ${c.pay}\n연락처 ${c.centerPhone}`}
+const dayLine=ds=>{const d=lday(ds),pl=planDay(ds);return pl?orderLine(pl):(d&&d.off&&d.note&&d.note!=='주문 안 함'?`X (${d.note})`:'X')};
+function sheetGreeting(){const c=LC();return c.sheetMsg||'다음 3주간 식단표 보내드립니다~ 감사합니다!'}
+function sheetSms(){const c=LC(),days=lunchPeriod(),sd=s=>`${+s.slice(5,7)}/${+s.slice(8,10)}`;
+  return `[${c.orderName}] ${c.store} 도시락 주문표 (${sd(days[0])}~${sd(days[days.length-1])})\n기본 ${+c.base||0}개, 요일에 따라 1~4개 가감 / ${c.deliver} / ${c.pay}\n`+days.map(ds=>`${md(ds)} ${dayLine(ds)}`).join('\n')+`\n추가 · 변경은 당일 오전 ${String(c.deadline||'10:00').replace(/^0/,'').replace(':00','시')} 전에 연락드리겠습니다. ${c.centerPhone?'('+c.centerPhone+')':''}`}
+// 식단표 사진 (주문표와 같은 표 모양)
+function sheetImage(){const c=LC(),days=lunchPeriod(),sd=s=>`${+s.slice(5,7)}/${+s.slice(8,10)}`;
+  const W=1600,cw=(W-80)/5,F="'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+  const weeks=[];for(let i=0;i<days.length;i+=5)weeks.push(days.slice(i,i+5));
+  const cv=document.createElement('canvas'),g=cv.getContext('2d');
+  const wrap=(t,maxW,font)=>{g.font=font;const out=[];String(t).split('\n').forEach(par=>{let line='';for(const ch of par){if(g.measureText(line+ch).width>maxW&&line){out.push(line);line=ch}else line+=ch}out.push(line)});return out};
+  const cells=weeks.map(w=>w.map(ds=>{const pl=planDay(ds);return pl?pl.lines.map((l,i)=>`${i?'+ ':''}${l.name} ${l.qty}개`).join('\n'):'X'}));
+  const cellFont=`600 30px ${F}`,lh=40;
+  const rowH=cells.map(r=>Math.max(130,...r.map(t=>wrap(t,cw-30,cellFont).length*lh+40)));
+  const H=250+rowH.reduce((a,h)=>a+h+64,0)+40;cv.width=W;cv.height=H;
+  g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#111';g.textBaseline='top';
+  g.font=`800 40px ${F}`;g.fillText(`[${c.orderName}] ${days[0].slice(0,4)}. ${sd(days[0])} ~ ${sd(days[days.length-1])} ${c.store} 주문표${c.storePhone?' / '+c.storePhone:''}`,40,34);
+  g.font=`500 28px ${F}`;g.fillStyle='#333';
+  g.fillText(`기본 개수는 ${+c.base||0}개이고, 요일에 따라 1~4개 가감될 수 있습니다.`,40,100);
+  g.fillText(`추가분이 발생하면 당일 오전 ${String(c.deadline||'10:00').replace(/^0/,'').replace(':00','시')} 전에 전화 드리겠습니다.`,40,140);
+  g.fillStyle='#C0392B';g.textAlign='right';g.fillText(`전화) ${c.centerPhone||''}`,W-40,140);g.textAlign='left';g.fillStyle='#333';
+  g.fillText(`${c.deliver} / ${c.pay}`,40,180);
+  let y=240;g.lineWidth=2;
+  weeks.forEach((w,wi)=>{g.fillStyle='#F3EAC2';g.fillRect(40,y,W-80,64);g.fillStyle='#111';g.font=`700 30px ${F}`;g.textAlign='center';
+    w.forEach((ds,i)=>g.fillText(`${sd(ds)} (${DOW[new Date(ds+'T00:00').getDay()]})`,40+cw*i+cw/2,y+16));
+    const h=rowH[wi];w.forEach((ds,i)=>{const t=cells[wi][i],x=40+cw*i;if(t==='X'){g.fillStyle='#C0392B';g.font=`500 54px ${F}`;g.fillText('X',x+cw/2,y+64+h/2-30)}else{g.fillStyle='#111';const ls=wrap(t,cw-30,cellFont);g.font=cellFont;ls.forEach((l,k)=>g.fillText(l,x+cw/2,y+64+(h-ls.length*lh)/2+k*lh))}});
+    g.textAlign='left';g.strokeStyle='#555';g.strokeRect(40,y,W-80,64+h);for(let i=1;i<5;i++){g.beginPath();g.moveTo(40+cw*i,y);g.lineTo(40+cw*i,y+64+h);g.stroke()}g.beginPath();g.moveTo(40,y+64);g.lineTo(W-40,y+64);g.stroke();
+    y+=64+h+24});
+  return cv.toDataURL('image/png');
+}
+async function sendSheetImage(text){const c=LC(),url=sheetImage(),name=`식단표_${lunchPeriod()[0]}`,num=smsTarget(c);
+  if(window.AdminAndroid&&AdminAndroid.shareImage){AdminAndroid.shareImage(name,url.split(',')[1],text,num.replace(/[^\d]/g,''));return true}
+  try{const blob=await (await fetch(url)).blob(),file=new File([blob],name+'.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true}}catch(e){if(e&&e.name==='AbortError')return false}
+  const a=document.createElement('a');a.href=url;a.download=name+'.png';document.body.appendChild(a);a.click();a.remove();
+  sendSms(num,text);toast('식단표 사진을 저장했어요 — 문자에 사진을 붙여 보내 주세요');return true}
+function sheetChanges(){const c=LC(),snap=(c.sent||{}).days||{};const out=[];
+  Object.keys(snap).sort().forEach(ds=>{const now=dayLine(ds);if(now!==snap[ds])out.push({ds,from:snap[ds],to:now})});
+  lunchPeriod().forEach(ds=>{if(!(ds in snap)&&c.sent&&ds>=c.sent.from&&ds<=c.sent.to){}});return out}
+function relDay(ds){const t=today();if(ds===t)return '오늘';if(ds===ymd(addDays(new Date(),1)))return '내일';if(ds===ymd(addDays(new Date(),2)))return '모레';return md(ds)}
+function changesSms(ch){const c=LC();const used=new Set();
+  ch.forEach(x=>{const m=x.to.match(/요일 변경 → (\d+)\/(\d+)/);if(!m)return;const T=ch.find(y=>y!==x&&+y.ds.slice(5,7)===+m[1]&&+y.ds.slice(8,10)===+m[2]);if(T){used.add(T);x.moved=T}});
+  const L=ch.filter(x=>!used.has(x)).map(x=>{if(x.moved)return `${relDay(x.ds)} 주문을 ${relDay(x.moved.ds)}로 옮겨 주세요 (${x.moved.to})`;const d=relDay(x.ds),was=x.from==='X'||/^X /.test(x.from),now=x.to==='X'||/^X /.test(x.to);
+    if(now)return `${d}은 주문 취소 부탁드려요${x.to.match(/\((.+)\)/)?' ('+x.to.match(/\((.+)\)/)[1]+')':''}`;
+    if(was)return `${d} ${x.to.replace(/ \+ /g,' + ')} 주문 부탁드려요`;
+    return `${d} ${x.to}로 변경 부탁드려요`});
+  return (L.length>1?L.map(l=>'- '+l).join('\n'):L[0])+' 감사합니다!'}
+function lunchMsg(ds){const c=LC(),pl=planDay(ds);if(!pl)return '';const snap=((c.sent||{}).days||{})[ds];return `[${c.orderName}] ${md(ds)} 도시락 주문${snap&&snap!==orderLine(pl)?' (변경)':''}\n${orderLine(pl)} (총 ${pl.count}개)${snap&&snap!==orderLine(pl)?`\n(처음 주문표: ${snap})`:''}\n${c.deliver} / ${c.pay}\n연락처 ${c.centerPhone}`}
 function lunchSheetDoc(){
   const c=LC(),days=lunchPeriod(),y=days[0].slice(0,4),f=days[0],l=days[days.length-1],sd=s=>`${+s.slice(5,7)}/${+s.slice(8,10)}`;
   const weeks=[];for(let i=0;i<days.length;i+=5)weeks.push(days.slice(i,i+5));
@@ -913,7 +970,7 @@ function lunchSheetDoc(){
    </body></html>`;
 }
 function lunchServeDoc(ds){const c=LC(),pl=planDay(ds);if(!pl)return '';
-  return docShell(`${md(ds)} 도시락 배식표`,`${c.store} · ${orderLine(pl)}`,`
+  return docShell(`${md(ds)} 도시락 배식표 (센터 내부용)`,`${c.store} · ${orderLine(pl)} · 회원 이름이 있어 외부로 보내지 마세요`,`
    ${pl.notes.length?`<p style="font-size:12pt"><b>⚠️ ${esc(pl.notes.join(' / '))}</b></p>`:''}
    <table><tr><th style="width:8%">✔</th><th style="width:22%">이름</th><th>받을 것</th><th style="width:28%">이유</th></tr>${pl.assign.map(a=>`<tr><td></td><td>${esc(a.who)}</td><td>${esc(a.name)}${a.store?'':' (센터 준비)'}</td><td>${esc(a.why||'')}</td></tr>`).join('')}</table>
    ${pl.shared.length?`<p>0.5+0.5 (한 개를 나눔): ${esc(pl.shared.join(', '))}</p>`:''}
@@ -988,6 +1045,16 @@ function autoPreview(title,days){
 }
 function dayRecoHtml(ds){const ctx=autoCtx();ctx.used=ctx.used.filter(u=>u.date!==ds);const rk=rankDay(ds,ctx).slice(0,5);
   return `<div class="card" style="margin:10px 0 0;padding:12px"><h3 style="margin-top:0">✨ ${md(ds)} 추천 메뉴</h3>${rk.map((r,i)=>`<button class="lrow" data-reco="${esc(r.menu)}" style="padding:8px 0"><span class="ldate" style="width:28px">${i+1}</span><span class="grow"><b>${esc(r.menu)}</b><span class="muted" style="display:block;font-size:13px">${esc(r.why.join(' · ')||'모두 먹을 수 있어요 👍')}</span></span><span class="bd ${r.score>=0?'ok':'w'}">${r.score>0?'+':''}${r.score}</span></button>`).join('')}<p class="muted" style="font-size:12.5px">누르면 메뉴 칸에 들어가요. 저장해야 반영돼요.</p></div>`}
+function ruleCard(c){const ch=c.sent?sheetChanges():[],od=orderDays(c),days=lunchPeriod();const sentThis=c.sent&&c.sent.from===days[0];
+  return `<div class="card" style="border-color:var(--warn)"><h2>📩 주문 규칙 · 문자</h2>
+   <ol class="steps" style="margin:0 0 8px"><li><b>3주씩</b> 도시락 식단표를 업체에 문자로 보내요.</li><li><b>요일 · 메뉴 · 수량</b>이 바뀌면 변동사항을 문자로 보내요.</li><li>당일 추가 · 변경은 <b>오전 ${esc(String(c.deadline||'10:00'))} 전</b>에 연락해요.</li></ol>
+   <label class="f">주문 요일 (누르면 바뀌어요)</label><div class="row w">${[1,2,3,4,5].map(w=>`<button class="chip ${od.includes(w)?'on':''}" data-auday="${w}">${DOWK[w]}</button>`).join('')}</div>
+   <p class="muted" style="margin-top:6px;font-size:13px">받는 사람: ${esc(curStore(c).mobileName||curStore(c).name||'')} ${esc(smsTarget(c)||'(번호 없음)')}${c.sent?` · 마지막 식단표 ${md(c.sent.from)}~${md(c.sent.to)} (${esc((c.sent.at||'').slice(5,10).replace('-','/'))} 보냄)`:''}</p>
+   <label class="f">식단표 보낼 때 인사말</label><input data-lc="sheetMsg" value="${esc(sheetGreeting())}">
+   <div class="row w" style="margin-top:10px"><button class="btn grow" data-act="smsSheet">📩 ${md(days[0])}~ 3주 식단표 보내기 (사진)</button><button class="btn ghost" data-act="smsSheetText">글자로</button><button class="btn ${ch.length?'':'ghost'} grow" data-act="smsChanges" ${ch.length?'':'disabled'}>🔁 변동사항 문자${ch.length?` (${ch.length})`:''}</button></div>
+   <label class="f">배달 주소 (업체가 물어볼 때 보내기)</label><div class="row"><input class="grow" data-lc="address" value="${esc(c.address||'')}" placeholder="예: ○○시 ○○구 ○○로 00 0층"><button class="btn sm ghost" data-act="smsAddr">보내기</button></div>
+   ${ch.length?`<p class="muted" style="margin-top:8px;font-size:13px">보낼 문자: “${esc(changesSms(ch))}”</p>`:''}
+   ${ch.length?`<div class="alert w" style="margin-top:10px">보낸 식단표와 달라진 날 ${ch.length}일<br>${ch.slice(0,6).map(x=>`${md(x.ds)} ${esc(x.from)} → <b>${esc(x.to)}</b>`).join('<br>')}${ch.length>6?'<br>…':''}</div>`:sentThis?'<p class="muted" style="margin-top:8px">✅ 이 기간 식단표를 보냈고, 그 뒤로 바뀐 것이 없어요.</p>':''}</div>`}
 function autoCard(c){const m=today().slice(0,7);const ms=[m,ymd(new Date(+m.slice(0,4),+m.slice(5,7),1)).slice(0,7)];
   return `<div class="card" style="border-color:var(--brand2)"><h2>✨ 메뉴 자동 추천</h2><p class="muted">회원 호불호 · 못 먹는 메뉴(대체 인원) · 최근에 먹은 메뉴 · 같은 종류 반복 · 가격을 따져서 골라요.</p>
    <div class="row w" style="margin-top:10px"><button class="btn" data-act="auPeriod">이 기간 빈 날 채우기</button>${ms.map(x=>`<button class="btn ghost" data-aumonth="${x}">${+x.slice(5,7)}월 한 달</button>`).join('')}</div>
@@ -1223,12 +1290,16 @@ document.addEventListener('click',async e=>{
   if(d.lstore){const c=LC();const x=lStores(c).find(y=>y.name===d.lstore);if(!c.stores)c.stores=lStores(c);c.store=x.name;c.storePhone=x.phone||'';save();render();toast(`${x.name}(으)로 주문해요 — 주문표에도 반영돼요`);return}
   if(d.lnav){const x=new Date(lunchPeriod()[0]+'T00:00');x.setDate(x.getDate()+(+d.lnav)*7*(+(LC()||{}).weeks||3));lunchStart=ymd(x);render();return}
   if(d.lday){lunchDayForm(d.lday);return}
-  if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}share(m);return}
+  if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}const c=LC();if(smsTarget(c))sendSms(smsTarget(c),m);else share(m);return}
   if(d.lserve){const h=lunchServeDoc(d.lserve);if(!h){toast('그날 메뉴가 없어요');return}exportDoc(h,`도시락_배식표_${d.lserve}`);return}
   if(d.lreco){$('#ldReco').innerHTML=dayRecoHtml(d.lreco);return}
   if(d.reco){$('#ldMenu').value=d.reco;$('#ldOffNote').value='';toast(`‘${d.reco}’ — 저장을 눌러 주세요`);return}
   if(d.aumonth){const [y,m]=d.aumonth.split('-').map(Number);const days=[];for(let i=1;i<=new Date(y,m,0).getDate();i++){const x=new Date(y,m-1,i);if(x.getDay()>0&&x.getDay()<6)days.push(ymd(x))}autoPreview(`${y}년 ${m}월`,days);return}
   if(d.auday){const c=LC();let a=orderDays(c).slice();const w=+d.auday;a=a.includes(w)?a.filter(x=>x!==w):[...a,w].sort();c.orderDays=a;save();render();scrollTo(0,y);return}
+  if(d.lmove){const from=d.lmove,to=$('#ldMoveTo').value,A=lday(from),B=lday(to);const keys=['menu','off','note','guests','absent','over','fixed','paid','auto','src'];
+    const pick=o=>Object.fromEntries(keys.map(k=>[k,o?o[k]:undefined]).filter(([,v])=>v!==undefined));const a=pick(A),b=pick(B);
+    const put=(ds,data,base)=>{const id='d-'+ds,i=S.lunch.findIndex(x=>x.id===id),cur=i<0?{id,date:ds}:S.lunch[i];const nd={id,date:ds,status:cur.status||'plan'};Object.assign(nd,data);if(!data.menu&&!data.off){nd.off=true;nd.note='요일 변경'}if(i<0)S.lunch.push(nd);else S.lunch[i]=nd};
+    put(to,a);put(from,B&&(B.menu||B.off)?b:{off:true,note:`요일 변경 → ${md(to)}`});save();closeModal();toast(`${md(from)} → ${md(to)} 로 옮겼어요 — 변동사항 문자로 알려 주세요`);return}
   if(d.lrecalc){const x=lday(d.lrecalc);if(x){delete x.fixed;save();lunchDayForm(d.lrecalc);toast('회원별 규칙으로 다시 계산했어요')}return}
   if(d.lsave){const ds=d.lsave,old=lday(ds)||{id:'d-'+ds,date:ds};const offNote=$('#ldOffNote').value.trim();
     const over={};document.querySelectorAll('.ldOver').forEach(x=>{if(x.value!=='')over[x.dataset.who]=x.value==='-'?'':x.value});
@@ -1307,6 +1378,15 @@ document.addEventListener('click',async e=>{
     case 'shAll':document.querySelectorAll('.shPick').forEach(x=>x.checked=true);break;
     case 'shNone':document.querySelectorAll('.shPick').forEach(x=>x.checked=false);break;
     case 'shGo':sheetApply();break;
+    case 'smsSheet':{const c=LC(),days=lunchPeriod();const empty=days.filter(ds=>{const d=lday(ds);return orderDays(c).includes(new Date(ds+'T00:00').getDay())&&!(d&&(d.menu||d.off))});
+      if(empty.length&&!window._smsArm){window._smsArm=1;setTimeout(()=>window._smsArm=0,4000);toast(`주문 요일인데 메뉴가 없는 날이 ${empty.length}일 있어요 — 그래도 보내려면 한 번 더 누르세요`);break}
+      if(!(await sendSheetImage(sheetGreeting())))break;
+      c.sent={from:days[0],to:days[days.length-1],at:new Date().toISOString(),by:myName(),days:Object.fromEntries(days.map(ds=>[ds,dayLine(ds)]))};
+      days.forEach(ds=>{const d=lday(ds);if(d&&d.menu&&!d.off&&(d.status||'plan')==='plan')d.status='ordered'});save();render();toast('식단표 문자를 열었어요 — 문자 앱에서 보내기를 눌러 주세요');break}
+    case 'smsSheetText':{const c=LC();sendSms(smsTarget(c),sheetGreeting()+'\n\n'+sheetSms());break}
+    case 'smsAddr':{const c=LC();if(!c.address){toast('배달 주소를 먼저 넣어 주세요');break}sendSms(smsTarget(c),`${c.address} 입니다! 도시락 개수는 ${String(c.deadline||'10:00').replace(/^0/,'').replace(':00','시')} 전후로 전화드릴게요!`);break}
+    case 'smsChanges':{const c=LC(),ch=sheetChanges();if(!ch.length){toast('바뀐 것이 없어요');break}if(!sendSms(smsTarget(c),changesSms(ch)))break;
+      ch.forEach(x=>{c.sent.days[x.ds]=x.to});c.sent.changedAt=new Date().toISOString();save();render();toast('변동사항 문자를 열었어요 — 보내기를 눌러 주세요');break}
     case 'auPeriod':{const days=lunchPeriod();autoPreview(`${md(days[0])} ~ ${md(days[days.length-1])}`,days);break}
     case 'auApply':{const P=autoPlan;if(!P)break;document.querySelectorAll('.auPick').forEach(x=>{P.list[+x.dataset.i].pick=x.value});let n=0;
       P.list.forEach(x=>{const id='d-'+x.date,i=S.lunch.findIndex(z=>z.id===id),old=i<0?{}:S.lunch[i];const nd={...old,id,date:x.date,menu:x.pick,off:false,note:'',status:old.status||'plan',auto:true,by:myName(),at:new Date().toISOString()};delete nd.fixed;if(i<0)S.lunch.push(nd);else S.lunch[i]=nd;n++});
@@ -1319,7 +1399,7 @@ document.addEventListener('click',async e=>{
       S.lunch.push(c);save();render();toast(`시작했어요 — 회원 ${c.members.length}명 · 규칙 ${R.rules.length}개. 명단에 빠진 회원을 더 넣어 주세요`);break}
     case 'lunchSheet':exportDoc(lunchSheetDoc(),`도시락_주문표_${lunchPeriod()[0]}`);break;
     case 'lunchCopyPrev':{const days=lunchPeriod(),n=days.length/5*7;let c=0;days.forEach(ds=>{if(lday(ds)&&(lday(ds).menu||lday(ds).off))return;const x=new Date(ds+'T00:00');x.setDate(x.getDate()-n);const p=lday(ymd(x));if(p&&(p.menu||p.off)){S.lunch.push({id:'d-'+ds,date:ds,menu:p.menu,off:p.off,note:p.off?p.note:'',guests:p.guests||0,status:'plan'});c++}});save();render();toast(c?`${c}일 메뉴를 가져왔어요 (이미 정한 날은 그대로)`:'가져올 메뉴가 없어요');break}
-    case 'lcStoresSave':{const c=LC();c.stores=$('#lcStores').value.split('\n').map(x=>x.split('|').map(y=>y.trim())).filter(a=>a[0]).map(([name,phone,note])=>({name,phone:phone||'',note:note||''}));const cur=c.stores.find(x=>x.name===c.store);if(cur){c.storePhone=cur.phone}save();render();toast('업체 목록을 저장했어요');break}
+    case 'lcStoresSave':{const c=LC();c.stores=$('#lcStores').value.split('\n').map(x=>x.split('|').map(y=>y.trim())).filter(a=>a[0]).map(([name,phone,mobile,mobileName,note])=>({name,phone:phone||'',mobile:mobile||'',mobileName:mobileName||'',note:note||''}));const cur=c.stores.find(x=>x.name===c.store);if(cur){c.storePhone=cur.phone}save();render();toast('업체 목록을 저장했어요');break}
     case 'lcMembersSave':{const c=LC();c.members=$('#lcMembers').value.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>({name:x.replace(/^-\s*/,''),active:!x.startsWith('-')}));save();render();toast('회원 명단을 저장했어요');break}
     case 'lcMenusSave':{const c=LC();c.menus=$('#lcMenus').value.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{const [n,p]=x.split('|').map(y=>(y||'').trim());return {name:n,price:+String(p||'').replace(/[^\d]/g,'')||0}});
       c.alias=$('#lcAlias').value.split('\n').map(x=>x.split('=').map(y=>y.trim())).filter(a=>a[0]&&a[1]);c.centerItems=$('#lcCenter').value.split(',').map(x=>x.trim()).filter(Boolean);save();render();toast('메뉴를 저장했어요');break}
@@ -1409,7 +1489,7 @@ const IS_WEB=!window.AdminAndroid,WEB_URL='https://maummd.github.io/purchase/';
 function webCard(){if(!IS_WEB||matchMedia('(display-mode: standalone)').matches)return '';
   return `<div class="card"><h2>📲 홈 화면에 추가</h2><p class="muted" style="font-size:12.5px">설치 없이 이 주소로 바로 써요. 홈 화면에 추가하면 앱처럼 아이콘이 생겨요.<br>안드로이드: 크롬 메뉴(⋮) → ‘홈 화면에 추가’ · 아이폰: 사파리 공유 → ‘홈 화면에 추가’</p>${_ip?'<button class="btn" style="margin-top:8px" data-act="pwaInstall">홈 화면에 추가</button>':''}</div>`}
 window.nuBack=function(){if($('#modal').innerHTML){closeModal();return true}const T=tabs();if(ORG&&view!==T[0][0]){view=T[0][0];render();scrollTo(0,0);return true}return false};
-window.__test={autoFill,rankDay,autoCtx,parsePrefs,shParsePages,shParseCell,importSheetFile,planDay,parseLunchRules,lunchSheetDoc,lunchServeDoc,S:()=>S,buildReminders,myQueue,monthDoc,handoverDoc,bizValid,sha};
+window.__test={sheetImage,changesSms,sheetChanges,autoFill,rankDay,autoCtx,parsePrefs,shParsePages,shParseCell,importSheetFile,planDay,parseLunchRules,lunchSheetDoc,lunchServeDoc,S:()=>S,buildReminders,myQueue,monthDoc,handoverDoc,bizValid,sha};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(payPending)onReturn();syncReminders()}});
 </script>
 </body></html>
