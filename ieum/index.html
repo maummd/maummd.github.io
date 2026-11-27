@@ -157,15 +157,26 @@ pre.out{background:#EAF8F5}
 footer{color:#6E858B}
 @media(max-width:600px){nav a{min-width:68px;padding:7px 8px;font-size:12.5px}.hero-sun{font-size:42px}}
 </style>
+
+<style>
+.hero.rehab{background:linear-gradient(135deg,#D9F7E8,#C8EEDF 50%,#BDE7F2);color:#164A3A}
+.hero.garden{background:linear-gradient(135deg,#CDEFFF,#BFE6F7 45%,#D7F3DF);color:#124257}
+.sendbox{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.sendbox button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 4px;border-radius:16px;border:0;font:700 14px "Noto Sans KR",sans-serif;cursor:pointer;color:#16323A}
+.sendbox span{font-size:24px}.sendbox .s1{background:#E3F8EE}.sendbox .s2{background:#FEE500}.sendbox .s3{background:#E3EEFF}.sendbox .s4{background:#F1F2EE}
+.sheetbg{position:fixed;inset:0;background:rgba(10,40,45,.45);z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.sheetbox{background:#fff;width:100%;max-width:640px;border-radius:22px 22px 0 0;padding:18px 18px 24px;max-height:90vh;overflow:auto}
+@media(min-width:700px){.sheetbg{align-items:center}.sheetbox{border-radius:22px}}
+</style>
 </head>
 <body>
 <header>
  <div class="top">
   <svg viewBox="0 0 92 52" aria-hidden="true"><ellipse cx="14" cy="40" rx="13" ry="6" fill="#e9d9b9"/><path d="M6 40c2-9 6-14 9-14s6 6 7 14z" fill="#7fb7a3"/><ellipse cx="80" cy="40" rx="12" ry="6" fill="#e9d9b9"/><path d="M73 40c2-8 5-12 7-12s5 5 6 12z" fill="#7fb7a3"/><path d="M18 34Q47 10 76 34" fill="none" stroke="#f5f0e7" stroke-width="3"/><path d="M18 34H76" stroke="#f5f0e7" stroke-width="2"/><g stroke="#f5f0e7" stroke-width="1.5"><path d="M30 34V23M40 34V18M50 34V18M60 34V23"/></g><path d="M0 47h92" stroke="#5fb3c4" stroke-width="2" stroke-dasharray="6 5"/></svg>
-  <div><h1>마음 이음</h1><p>자살위기 대응 · 보호자 교육 · 마음 연습 · 절차조력 안내 · 법령 기준일 2026. 11. 27.</p></div>
+  <div><h1>마음 이음</h1><p>위기 연결 · 마음지기 교실 · 마음 연습 · 마음재활 · 마음정원 · 절차조력 · 법령 기준일 2026. 11. 27.</p></div>
  </div>
  <nav aria-label="메뉴">
-  <a href="#now"><span>🆘</span>지금 위험해요</a><a href="#family"><span>🫶</span>보호자 교육</a><a href="#play"><span>🎮</span>마음 연습</a><a href="#rights"><span>⚖️</span>입원과 내 권리</a><a href="#assist"><span>🤝</span>절차조력</a><a href="#worker"><span>🧑‍⚕️</span>실무자</a><a href="#law"><span>📜</span>법 체계</a>
+  <a href="#now"><span>🆘</span>지금 위험해요</a><a href="#family"><span>🫶</span>마음지기 교실</a><a href="#play"><span>🎮</span>마음 연습</a><a href="#rehab"><span>🏡</span>마음재활</a><a href="#garden"><span>🌊</span>마음정원</a><a href="#rights"><span>⚖️</span>입원과 내 권리</a><a href="#assist"><span>🤝</span>절차조력</a><a href="#worker"><span>🧑‍⚕️</span>실무자</a><a href="#law"><span>📜</span>법 체계</a>
  </nav>
 </header>
 <main>
@@ -282,8 +293,8 @@ footer{color:#6E858B}
 </section>
 
 <section id="v-family" hidden>
- <h2>보호자 교육: 곁에 있는 사람이 할 수 있는 일</h2>
- <p class="lead">가족 · 친구 · 교사처럼 곁에 있는 사람을 위한 짧은 교육입니다. 한 장씩 읽고 확인 문제를 풀면 진도가 이 기기에 남습니다. 지금 위험한 상황이라면 이 글보다 <a href="#now">지금 위험해요</a>가 먼저입니다.</p>
+ <h2>마음지기 교실: 곁에 있는 사람이 할 수 있는 일</h2>
+ <p class="lead">마음지기는 곁에서 마음을 지켜 주는 사람이에요. 가족 · 친구 · 교사처럼 곁에 있는 사람을 위한 짧은 교육입니다. 한 장씩 읽고 확인 문제를 풀면 진도가 이 기기에 남습니다. 지금 위험한 상황이라면 이 글보다 <a href="#now">지금 위험해요</a>가 먼저입니다.</p>
  <div class="prog" aria-live="polite"><div class="prog-bar"><i id="famBar"></i></div><span id="famProg"></span></div>
  <div class="mods" id="famMods" role="group" aria-label="교육 단원"></div>
  <div class="card" id="famCard" aria-live="polite"></div>
@@ -303,6 +314,67 @@ footer{color:#6E858B}
  <div class="card" id="playCard" aria-live="polite"></div>
  <p class="note">게임은 치료를 대신하지 않습니다. 힘든 마음이 계속되면 109(자살예방상담) · 1577-0199(정신건강위기상담)나 담당 선생님과 함께 연습해 주세요.</p>
 </section>
+
+<section id="v-rehab" hidden>
+ <div class="hero rehab"><div><b>마음재활 · 용인가족치유센터</b><span>가족이 함께 회복하는 곳 · 가족상담연구소 재활정원 in MaumM</span></div><div class="hero-sun" aria-hidden="true">🏡</div></div>
+ <div class="grid2">
+  <div class="card"><h3>🌱 이런 분과 함께해요</h3><ul class="plain">
+   <li>위기를 지나 다시 일상을 세우려는 당사자와 가족</li>
+   <li>자살 · 자해 위기를 겪은 가족을 돌보다 지친 보호자</li>
+   <li>대화가 끊긴 가족, 마음을 다시 잇고 싶은 가족</li></ul></div>
+  <div class="card"><h3>🧩 프로그램</h3><ul class="plain">
+   <li><b>마음엠디 가족치료</b>: 인지행동치료(CBT) 기반, 매주 일요일 1년 과정 · 반기마다 함께 돌아보기</li>
+   <li><b>온라인 가족상담</b>: 멀리 있어도 화상으로</li>
+   <li><b>마음지기 교실</b>: 보호자 교육 (이 앱의 🫶 탭과 이어져요)</li>
+   <li><b>요리 · 전시 · 쉼 공간</b>: 함께 만들고 나누는 회복 활동 (준비 중)</li></ul></div>
+ </div>
+ <div class="card"><h3>📍 오시는 곳</h3>
+  <dl class="facts"><dt>위치</dt><dd>경기도 용인시 처인구 <span class="note">(자세한 주소는 예약이 확정되면 안내해요)</span></dd>
+   <dt>운영</dt><dd>가족상담연구소 재활정원 in MaumM · 비영리</dd>
+   <dt>누리집</dt><dd><a href="https://maumm.org" target="_blank" rel="noopener">maumm.org</a></dd></dl>
+ </div>
+ <div class="card"><h3>📝 상담 신청</h3>
+  <p class="note">신청 내용은 이 기기에서 문자 · 카카오톡 · 이메일로 바로 보내요. 앱이 따로 저장해 두지 않아요. 지금 위험한 상황이라면 신청보다 <a href="#now">지금 위험해요</a>가 먼저예요.</p>
+  <div class="grid2">
+   <div class="field"><label for="rq-name">이름(별칭 가능)</label><input type="text" id="rq-name"></div>
+   <div class="field"><label for="rq-tel">연락받을 번호</label><input type="text" id="rq-tel" inputmode="tel" placeholder="010-"></div>
+   <div class="field"><label for="rq-who">누가 오시나요</label><select id="rq-who"><option>당사자</option><option>가족 함께</option><option>보호자만</option><option>기관 의뢰</option></select></div>
+   <div class="field"><label for="rq-way">원하는 방식</label><select id="rq-way"><option>방문 상담</option><option>온라인(화상) 상담</option><option>마음엠디 가족치료 문의</option><option>마음지기 교실(보호자 교육) 문의</option></select></div>
+  </div>
+  <div class="field"><label for="rq-msg">하고 싶은 이야기 (짧게)</label><textarea id="rq-msg" placeholder="예: 퇴원한 아이와 가족이 함께 상담받고 싶어요"></textarea></div>
+  <div class="row"><button class="btn" type="button" data-send="rehab">📤 상담 신청 보내기</button></div>
+ </div>
+</section>
+
+<section id="v-garden" hidden>
+ <div class="hero garden"><div><b>마음정원 · 남해 쉼터</b><span>바다와 숲 사이에서 잠시 숨 고르기 🌊</span></div><div class="hero-sun" aria-hidden="true">🌿</div></div>
+ <div class="grid2">
+  <div class="card"><h3>🛖 쉼터 소개</h3><ul class="plain">
+   <li>위기를 지나온 당사자 · 가족, 소진된 보호자와 실무자가 며칠 쉬어 가는 곳</li>
+   <li>정해진 일정 없이 쉬기 · 걷기 · 바다 보기 · 마음 연습</li>
+   <li>원하면 상담 · 가족 프로그램과 함께 (사전 문의)</li></ul></div>
+  <div class="card"><h3>📍 주소 · 길찾기</h3>
+   <p style="font-size:17px;font-weight:700;margin:4px 0 10px">경상남도 남해군 삼동면 영지리</p>
+   <p class="note">남해읍에서 독일마을 쪽으로 가는 길 근처예요. 정확한 위치는 예약이 확정되면 안내해요.</p>
+   <div class="row"><a class="btn" href="https://map.naver.com/p/search/%EB%82%A8%ED%95%B4%EA%B5%B0%20%EC%82%BC%EB%8F%99%EB%A9%B4%20%EC%98%81%EC%A7%80%EB%A6%AC" target="_blank" rel="noopener">🗺️ 네이버 지도</a><a class="btn ghost" href="https://map.kakao.com/?q=%EB%82%A8%ED%95%B4%EA%B5%B0%20%EC%82%BC%EB%8F%99%EB%A9%B4%20%EC%98%81%EC%A7%80%EB%A6%AC" target="_blank" rel="noopener">카카오맵</a><button class="btn ghost" type="button" id="addrCopy">주소 복사</button></div>
+  </div>
+ </div>
+ <div class="card"><h3>📅 쉼터 예약 신청</h3>
+  <p class="note">날짜와 인원을 고르고 보내면 운영자가 확인해 연락드려요. 연락을 받아야 예약이 확정돼요.</p>
+  <div class="grid2">
+   <div class="field"><label for="gd-in">들어오는 날</label><input type="date" id="gd-in"></div>
+   <div class="field"><label for="gd-out">나가는 날</label><input type="date" id="gd-out"></div>
+   <div class="field"><label for="gd-n">인원</label><select id="gd-n"><option>1명</option><option>2명</option><option>3명</option><option>4명</option><option>5명 이상</option></select></div>
+   <div class="field"><label for="gd-why">머무는 목적</label><select id="gd-why"><option>쉼 · 회복</option><option>가족 함께 회복</option><option>보호자 · 실무자 소진 회복</option><option>상담 · 프로그램 함께</option></select></div>
+   <div class="field"><label for="gd-name">이름(별칭 가능)</label><input type="text" id="gd-name"></div>
+   <div class="field"><label for="gd-tel">연락받을 번호</label><input type="text" id="gd-tel" inputmode="tel" placeholder="010-"></div>
+  </div>
+  <div class="field"><label for="gd-msg">요청 사항</label><textarea id="gd-msg" placeholder="예: 조용한 방이 필요해요, 아이와 함께 가요"></textarea></div>
+  <p class="note" id="gdNights"></p>
+  <div class="row"><button class="btn" type="button" data-send="garden">📤 예약 신청 보내기</button></div>
+  <div class="hist" id="gdHist"></div>
+ </div>
+</section>
 </main>
 <footer>마음 이음은 연구 기반 시제품입니다 (maumm.org). 법률 자문이나 의료 판단을 대신하지 않으며, 법령은 2026년 11월 27일 국가법령정보센터 본문을 기준으로 정리했습니다. 위급하면 119·112, 상담은 109·1577-0199.</footer>
 
@@ -314,7 +386,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 async function copy(text,msg){try{await navigator.clipboard.writeText(text);msg.textContent='복사했습니다.'}catch(e){msg.textContent='복사가 막혀 있습니다. 글을 길게 눌러 복사해 주세요.'}}
 
 /* 라우팅 */
-const views=['now','family','play','rights','assist','worker','law'];
+const views=['now','family','play','rehab','garden','rights','assist','worker','law'];
 function route(){const h=location.hash.slice(1);const v=views.includes(h)?h:'now';views.forEach(x=>{$('#v-'+x).hidden=x!==v});document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.getAttribute('href')==='#'+v));}
 addEventListener('hashchange',()=>{route();scrollTo(0,0)});route();
 
@@ -470,7 +542,7 @@ $('#famCard').addEventListener('click',e=>{
  if(o){const m=MODS.find(x=>x.id===famCur),i=+o.dataset.qi,[,ans,why]=m.q[i],pick=o.dataset.a==='1',ok=pick===ans;
   o.parentElement.querySelectorAll('.opt').forEach(x=>x.classList.remove('right','wrong'));o.classList.add(ok?'right':'wrong');
   $('#fb'+i).innerHTML=(ok?'👍 정답! ':'💡 다시 볼까요? ')+esc(why);famAns[i]=ok;
-  if(m.q.every((_,k)=>famAns[k])){famDone[famCur]=1;store.set('famDone',famDone);famProg();document.querySelector(`.mod[data-m="${famCur}"]`)?.classList.add('done');gainXP(10,'보호자 교육 단원 완료')}
+  if(m.q.every((_,k)=>famAns[k])){famDone[famCur]=1;store.set('famDone',famDone);famProg();document.querySelector(`.mod[data-m="${famCur}"]`)?.classList.add('done');gainXP(10,'마음지기 교실 단원 완료')}
   return}
  const i=MODS.findIndex(x=>x.id===famCur);
  if(e.target.id==='famNext'&&i<MODS.length-1){famCur=MODS[i+1].id}else if(e.target.id==='famPrev'&&i>0){famCur=MODS[i-1].id}else return;
@@ -520,7 +592,7 @@ const COPE=[
  ['🗒️','안전계획 펼치기','미리 적어 둔 나의 안전계획을 열어 2번부터 차례로 해 봐요.'],
  ['🤸','몸 풀기','어깨를 귀까지 올렸다 툭 떨어뜨리기 10번, 팔 크게 돌리기 10번.'],
  ['🌤️','창밖 보기','창문을 열고 1분 동안 하늘과 바깥 풍경을 바라봐요.']];
-const BADGES=[['first','🌱 첫걸음','처음으로 게임 완료'],['detect','🕵️ 생각 탐정','생각의 덫 10개 찾기'],['reframe','🔄 다시 쓰기 달인','균형 잡힌 생각 5개 고르기'],['cope','🎴 대처 수집가','대처 카드 5장 해 보기'],['record','🌡️ 온도 낮추기','생각 기록 3번'],['family','🫶 든든한 보호자','보호자 교육 전 단원 완료'],['streak','🔥 5연속','5문제 연속 정답']];
+const BADGES=[['first','🌱 첫걸음','처음으로 게임 완료'],['detect','🕵️ 생각 탐정','생각의 덫 10개 찾기'],['reframe','🔄 다시 쓰기 달인','균형 잡힌 생각 5개 고르기'],['cope','🎴 대처 수집가','대처 카드 5장 해 보기'],['record','🌡️ 온도 낮추기','생각 기록 3번'],['family','🫶 든든한 마음지기','마음지기 교실 전 단원 완료'],['streak','🔥 5연속','5문제 연속 정답']];
 const P=store.get('play',{xp:0,streak:0,trap:0,reframe:0,cope:0,record:0,badges:{}});
 const save=()=>store.set('play',P);
 const lv=()=>Math.floor(P.xp/50)+1;
@@ -582,6 +654,49 @@ $('#playCard').addEventListener('click',e=>{const t=e.target.closest('button');i
   P.record++;gainXP(10);if(P.record>=3)badge('record');toastMsg(+$('#rB').value>+$('#rA').value?`감정 온도가 ${$('#rB').value-$('#rA').value}만큼 내려갔어요 👏`:'기록했어요. 꾸준히 하면 패턴이 보여요');drawRecord();return}
 });
 hud();
+}
+</script>
+
+<script>
+{
+/* 운영자 연락처: 정해지면 여기에 넣으면 문자 · 이메일이 바로 그 번호 · 주소로 가요. 비워 두면 받는 사람을 직접 고르게 돼요. */
+const CENTER={rehabTel:'',rehabMail:'',gardenTel:'',gardenMail:''};
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem('ieum.'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('ieum.'+k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ADDR='경상남도 남해군 삼동면 영지리';
+function note(t){let e=document.getElementById('ieToast');if(!e){e=document.createElement('div');e.id='ieToast';e.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0E7C7C;color:#fff;padding:12px 18px;border-radius:14px;z-index:70;font-weight:700;max-width:90vw;text-align:center';document.body.appendChild(e)}e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',2600)}
+async function copyT(t){try{await navigator.clipboard.writeText(t);return true}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}a.remove();return ok}}
+// 문자 · 카톡 · 이메일 · 복사 보내기 창
+function sendSheet(title,text,tel,mail){const bg=document.createElement('div');bg.className='sheetbg';
+ bg.innerHTML=`<div class="sheetbox" role="dialog" aria-label="${esc(title)}"><h3>📤 ${esc(title)}</h3><pre class="out">${esc(text)}</pre>
+  <div class="sendbox"><button class="s1" data-k="sms"><span>✉️</span>문자</button><button class="s2" data-k="kakao"><span>💬</span>카카오톡</button><button class="s3" data-k="email"><span>📧</span>이메일</button><button class="s4" data-k="copy"><span>📋</span>복사</button></div>
+  <div class="row" style="justify-content:flex-end"><button class="btn ghost" data-k="close">닫기</button></div></div>`;
+ document.body.appendChild(bg);bg.addEventListener('click',async e=>{const b=e.target.closest('[data-k]');if(e.target===bg||(b&&b.dataset.k==='close')){bg.remove();return}if(!b)return;const k=b.dataset.k,nat=window.IeumAndroid&&IeumAndroid.sendTo;bg.remove();
+  if(k==='copy'){note((await copyT(text))?'복사했어요 — 붙여 넣어 보내세요':'복사하지 못했어요');return}
+  if(nat){IeumAndroid.sendTo(k,'','',text,title,k==='email'?(mail||''):k==='sms'?String(tel||'').replace(/\D/g,''):'');return}
+  if(k==='sms'){const ios=/iPhone|iPad|Mac/i.test(navigator.userAgent);location.href=`sms:${String(tel||'').replace(/\D/g,'')}${ios?'&':'?'}body=${encodeURIComponent(text)}`;return}
+  if(k==='email'){location.href=`mailto:${encodeURIComponent(mail||'')}?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`;return}
+  if(navigator.share){try{await navigator.share({text});return}catch(err){if(err&&err.name==='AbortError')return}}
+  note((await copyT(text))?'복사했어요 — 카카오톡에 붙여 넣어 주세요':'복사하지 못했어요')})}
+const v=id=>($('#'+id).value||'').trim();
+// 남해 쉼터: 날짜 기본값 · 박수
+const d0=new Date();d0.setDate(d0.getDate()+7);const iso=d=>d.toISOString().slice(0,10);
+$('#gd-in').value=iso(d0);const d1=new Date(d0);d1.setDate(d1.getDate()+2);$('#gd-out').value=iso(d1);$('#gd-in').min=iso(new Date());
+const nights=()=>{const a=new Date(v('gd-in')),b=new Date(v('gd-out'));const n=Math.round((b-a)/864e5);$('#gdNights').textContent=n>0?`🛏️ ${n}박 ${n+1}일`:'나가는 날을 들어오는 날 뒤로 골라 주세요';return n};
+['gd-in','gd-out'].forEach(id=>$('#'+id).addEventListener('change',()=>{if(id==='gd-in'&&v('gd-out')<=v('gd-in')){const x=new Date(v('gd-in'));x.setDate(x.getDate()+1);$('#gd-out').value=iso(x)}nights()}));nights();
+const fmt=s=>{const d=new Date(s+'T00:00');return `${d.getMonth()+1}/${d.getDate()}(${'일월화수목금토'[d.getDay()]})`};
+const HIST=store.get('gardenReq',[]);
+const drawHist=()=>{$('#gdHist').innerHTML=HIST.length?'<p class="note" style="margin-top:12px">내가 보낸 신청 (이 기기에만 저장)</p>'+HIST.slice(-5).reverse().map(h=>`<div><span>${esc(h.when)}</span><span>${esc(h.n)} · ${esc(h.why)}</span></div>`).join(''):''};drawHist();
+$('#addrCopy').onclick=async()=>note((await copyT(ADDR))?'주소를 복사했어요':'복사하지 못했어요');
+document.addEventListener('click',e=>{const b=e.target.closest('[data-send]');if(!b)return;
+ if(b.dataset.send==='rehab'){if(!v('rq-tel')&&!v('rq-name')){note('이름이나 연락받을 번호를 넣어 주세요');return}
+  sendSheet('마음재활 상담 신청',`[마음재활 · 용인가족치유센터 상담 신청]\n· 이름: ${v('rq-name')||'-'}\n· 연락처: ${v('rq-tel')||'-'}\n· 오시는 분: ${v('rq-who')}\n· 원하는 방식: ${v('rq-way')}\n· 이야기: ${v('rq-msg')||'-'}\n(마음 이음 앱에서 보냄)`,CENTER.rehabTel,CENTER.rehabMail)}
+ if(b.dataset.send==='garden'){const n=nights();if(n<=0){note('날짜를 다시 골라 주세요');return}if(!v('gd-tel')&&!v('gd-name')){note('이름이나 연락받을 번호를 넣어 주세요');return}
+  const when=`${fmt(v('gd-in'))} ~ ${fmt(v('gd-out'))} ${n}박`;
+  sendSheet('마음정원 남해 쉼터 예약 신청',`[마음정원 · 남해 쉼터 예약 신청]\n· 날짜: ${when}\n· 인원: ${v('gd-n')}\n· 목적: ${v('gd-why')}\n· 이름: ${v('gd-name')||'-'}\n· 연락처: ${v('gd-tel')||'-'}\n· 요청: ${v('gd-msg')||'-'}\n· 쉼터: ${ADDR}\n(마음 이음 앱에서 보냄)`,CENTER.gardenTel,CENTER.gardenMail);
+  HIST.push({when,n:v('gd-n'),why:v('gd-why')});store.set('gardenReq',HIST.slice(-20));drawHist()}
+});
 }
 </script>
 </body>
