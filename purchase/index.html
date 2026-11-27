@@ -138,6 +138,8 @@ input:disabled{background:#F2F3F0;color:var(--sub)}
 .snd-pre{max-height:150px;overflow:auto;background:#F7F8F5;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13.5px;line-height:1.5;margin:6px 0 10px;white-space:normal}
 .snd{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.snd button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 2px;border-radius:14px;font-weight:700;font-size:13px;color:#1B2623}
 .snd button span{font-size:24px;line-height:1.1}.snd button small{font-size:10px;font-weight:500;color:#4E5B56}.snd .s1{background:#E3F8EE}.snd .s2{background:#FEE500}.snd .s3{background:#E3EEFF}.snd .s4{background:#FFF1E5}.snd .s5{background:#F1F2EE}
+.att-bar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.att-b{display:flex;align-items:center;gap:6px;padding:10px;border-radius:12px;font-weight:700;font-size:14px;text-align:left}
+.att-b span{font-size:20px}.att-b.a1{background:linear-gradient(135deg,#12A36B,#0E8C8C);color:#fff}.att-b.a2{background:#FFF1E5;color:#C4521C}.att-b.a3{background:#E3F8EE;color:#0E7A50}.att-b.a4{background:#F1F2EE;color:#4E5B56}
 </style></head><body>
 <div class="wrap" id="app"><div class="empty" style="padding-top:40vh">불러오는 중…</div></div>
 <nav id="nav" hidden></nav>
@@ -257,6 +259,7 @@ function onData(part){
   }
   if(!S.me||S.me.active===false){if('me' in part){ready=false;view='gone';render()}return}
   ready=true;
+  {const h=location.hash.match(/^#att\/(\d{4}-\d{2}-\d{2})$/);if(h&&LC()&&canLunch()){history.replaceState(null,'',location.pathname);view='lunch';render();setTimeout(()=>lunchDayForm(h[1]),50);return}}
   if(!$('#modal').innerHTML||part.me)render();else renderNav();
   syncReminders();
 }
@@ -599,7 +602,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v3.1 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v3.2 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -909,7 +912,7 @@ function vLunch(){
   ${lunchTab==='sheet'?`
   ${todayPl&&todayPl.d.status!=='received'?`<div class="card" style="border-color:var(--warn)"><h2>🍱 오늘 ${md(t)} <span class="bd ${LST[todayPl.d.status||'plan'][1]}">${LST[todayPl.d.status||'plan'][0]}</span></h2><div class="n" style="font-size:17px;font-weight:700">${esc(orderLine(todayPl))}</div>
    <p class="muted">총 ${todayPl.count}개 · ${won(todayPl.total)}${todayPl.center.length?' · 센터 준비: '+todayPl.center.map(([k,w])=>`${esc(k)} ${w.length}`).join(', '):''} · 변경은 ${esc(c.deadline)} 전에 연락</p>
-   <div class="row w" style="margin-top:8px"><button class="btn sm" data-lday="${t}">인원 · 메뉴 확인</button><button class="btn sm ghost" data-lmsg="${t}">주문 문자</button><button class="btn sm ghost" data-lserve="${t}">배식표</button></div></div>`:''}
+   <div class="row w" style="margin-top:8px"><button class="btn sm" data-lday="${t}">인원 · 메뉴 확인</button><button class="btn sm" data-latt="${t}" style="background:#12A36B">📷 출석부로 인원 맞추기</button><button class="btn sm ghost" data-lmsg="${t}">주문 문자</button><button class="btn sm ghost" data-lserve="${t}">배식표</button></div></div>`:''}
   <div class="lt-period"><button class="lt-nav" data-lnav="-1" aria-label="이전 기간">‹</button><div class="grow"><b>${md(first)} ~ ${md(last)}</b><span>${+c.weeks||3}주 · 주문 ${n}일 · ${won(cost)}</span></div><button class="lt-nav" data-lnav="1" aria-label="다음 기간">›</button></div>
   ${canLunch()?`<div class="lt-days"><span class="lt-dl">주문 요일 <small style="font-weight:500;color:#8A938E">누르면 켜고 꺼요</small></span>${[1,2,3,4,5,6,0].map(w=>`<button class="lt-day ${od.includes(w)?'on':''} ${w===6?'sat':w===0?'sun':''}" data-auday="${w}" aria-pressed="${od.includes(w)}">${DOWK[w]}</button>`).join('')}</div>`:''}
   ${sheetGrid(c,weeks,t)}
@@ -947,6 +950,39 @@ function lunchSettings(c){
    <table style="margin-top:6px"><tr><th>메뉴에 들어 있으면</th><th>사람</th><th>대체</th></tr>${R.rules.map(r=>`<tr><td>${esc(r.match.join(' · '))}</td><td>${esc(r.people.join(', '))}</td><td>${esc(r.sub)}${resolveItem(r.sub).store?'':' <span class="bd">센터</span>'}</td></tr>`).join('')}</table>
    ${R.pairs.map(p=>`<p class="muted">0.5+0.5: ${esc(p.join(' + '))} (같은 메뉴면 1개)</p>`).join('')}${R.notes.map(n=>`<p class="muted">${esc(n.match.join('·'))} → ${esc(n.note)}</p>`).join('')}</details></div>`;
 }
+// ---------- 출석부로 인원 맞추기: 사진 · PDF · 엑셀 · 워드 · 한글에서 회원 이름과 출석 표시를 찾아요 ----------
+document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('ldIn')){const r=$('#attRes');if(r)delete r.dataset.keep;attCount();e.target.closest('.row').style.background=''}});
+function attCount(){const all=[...document.querySelectorAll('.ldIn')],n=all.filter(x=>x.checked).length;const e=$('#attRes');if(e&&!e.dataset.keep)e.innerHTML=`<p class="muted" style="margin:6px 0">출석 ${n}명 · 결석 ${all.length-n}명 — <b>저장</b>을 누르면 수량이 다시 계산돼요</p>`}
+function attendPick(ds){const i=document.createElement('input');i.type='file';i.accept='image/*,.pdf,.xlsx,.docx,.hwpx,.csv';i.style.display='none';document.body.appendChild(i);
+  i.onchange=async()=>{const f=i.files[0];i.remove();if(!f)return;const box=$('#attRes');if(box)box.innerHTML='<p class="muted">출석부를 읽는 중… (사진은 30초쯤 걸려요)</p>';
+    try{const MR=await loadReader();const R=await MR.read(f,t=>{const b=$('#attRes');if(b)b.innerHTML=`<p class="muted">${esc(t)}</p>`});attendApply(ds,R,MR)}catch(e){if(box)box.innerHTML=`<div class="alert w">${esc(e.message||e)}</div>`}};i.click()}
+function attendApply(ds,R,MR){const c=LC(),mem=c.members.filter(p=>p.active!==false).map(p=>p.name);
+  const nz2=v=>String(v||'').replace(/[\s·.,()\[\]]/g,'');
+  const OK=/^(o|0|ㅇ|○|◯|●|v|✓|✔|출|출석|참|참석|사인|서명|y|1|\(\))$/i,NO=/^(x|×|✕|><|\)\(|결|결석|불참|미참|병결|외출|조퇴|휴|-)$/i;
+  const m=+ds.slice(5,7),dd=+ds.slice(8,10),dateRe=new RegExp(`^(${m}\\s*[./월-]\\s*)?0?${dd}\\s*(일)?(\\(.\\))?$`);
+  const found={};   // 이름 → 'in' | 'out' | 'seen'
+  const nameIn=cell=>{const t=nz2(cell);if(t.length<2)return null;return mem.find(n=>t===nz2(n))||mem.find(n=>t.includes(nz2(n))&&nz2(n).length>=2)||(R.ocr?mem.find(n=>MR.similar(n,t)>=0.66):null)};
+  let mode='list';
+  R.tables.forEach(T=>{const rows=T.rows;
+    // 날짜 칸(그날) · 출석 칸 찾기
+    let hr=-1,col=-1;for(let r=0;r<Math.min(6,rows.length)&&col<0;r++){rows[r].forEach((h,i)=>{if(col<0&&(dateRe.test(String(h).trim())||/^출석|^출결|^참석/.test(String(h).trim()))){hr=r;col=i}})}
+    rows.forEach((r,ri)=>{if(ri<=hr)return;let who=null;for(const cell of r){who=nameIn(cell);if(who)break}if(!who)return;
+      let v=col>=0?String(r[col]||'').trim():'';
+      if(col<0){const marks=r.map(x=>String(x).trim()).filter(x=>OK.test(x)||NO.test(x));if(marks.length===1)v=marks[0]}
+      if(v&&(OK.test(v)||NO.test(v))){mode='marks';found[who]=OK.test(v)?'in':'out'}
+      else if(col>=0&&!v){mode='marks';found[who]=found[who]||'out'}
+      else if(col>=0&&v){mode='marks';found[who]='in'}   // 서명 등 무엇이든 적혀 있으면 출석
+      else found[who]=found[who]||'seen'})});
+  // 표가 아니면 글 전체에서 이름 찾기 (출석한 사람 명단)
+  if(!Object.keys(found).length){const words=String(R.text||'').split(/[\s,·/]+/);words.forEach(w=>{const n=nameIn(w);if(n)found[n]='seen'})}
+  if(!Object.keys(found).length){$('#attRes').innerHTML=`<div class="alert w">출석부에서 회원 이름을 찾지 못했어요. ${R.ocr?'밝은 곳에서 이름 칸이 잘 보이게 다시 찍어 주세요.':'파일에 회원 이름이 있는지 확인해 주세요.'}</div>`;return}
+  let inN=0,outN=0;const miss=[];
+  document.querySelectorAll('.ldIn').forEach(x=>{const st=found[x.value];
+    if(st==='in'||st==='seen'){x.checked=true;inN++}else if(st==='out'){x.checked=false;outN++}
+    else{miss.push(x.value);if(mode==='list'){x.checked=false;outN++}}
+    x.closest('.row').style.background=st==='out'||(!st&&mode==='list')?'#FFF1F1':st?'#F0FBF5':'#FFF8E5'});
+  const e=$('#attRes');e.dataset.keep='1';
+  e.innerHTML=`<div class="alert ok" style="margin-top:8px">📋 출석부 반영: 출석 <b>${inN}</b>명 · 결석 <b>${outN}</b>명${miss.length?`<br>${mode==='list'?'출석부에 이름이 없어 결석으로 둔 분':'출석부에서 못 찾아 그대로 둔 분'}: ${esc(miss.join(', '))}`:''}<br>노란 줄은 직접 확인해 주세요. 맞으면 아래 <b>저장</b>을 눌러요.</div>`}
 function lunchDayForm(ds){
   const c=LC(),d=lday(ds)||{id:'d-'+ds,date:ds},pl=planDay(ds),edit=canLunch(),dis=edit?'':'disabled';
   const opts=v=>`<option value="">(메뉴 고르기)</option>${c.menus.map(m=>`<option ${m.name===v?'selected':''}>${esc(m.name)}</option>`).join('')}${v&&!c.menus.some(m=>m.name===v)?`<option selected>${esc(v)}</option>`:''}`;
@@ -961,6 +997,7 @@ function lunchDayForm(ds){
    ${pl&&pl.notes.length?`<div class="alert w">⚠️ ${esc(pl.notes.join(' / '))}</div>`:''}
    ${edit?`<button class="btn sm ghost" style="margin-top:8px" data-lreco="${ds}">✨ 추천 메뉴 보기</button><div id="ldReco"></div>`:''}
    <h3>회원별 (출석 · 대체 메뉴)</h3><p class="muted">체크를 끄면 결석. 오른쪽에서 그날만 메뉴를 바꿀 수 있어요.</p>
+   ${edit?`<div class="att-bar"><button class="att-b a1" data-latt="${ds}"><span>📷</span>출석부 찍기 · 올리기</button><button class="att-b a2" data-attlink="${ds}"><span>🔗</span>출석 체크 링크 보내기</button><button class="att-b a3" data-attall="1"><span>✅</span>모두 출석</button><button class="att-b a4" data-attall="0"><span>⬜</span>모두 결석</button></div><div id="attRes"></div>`:''}
    ${c.members.filter(p=>p.active!==false).map(p=>{const a=pl&&pl.assign.find(x=>x.who===p.name);return `<div class="row" style="padding:6px 0;border-top:1px solid var(--line)"><label class="row grow" style="gap:8px"><input type="checkbox" class="ldIn" value="${esc(p.name)}" ${absent.has(p.name)?'':'checked'} style="width:20px;height:20px" ${dis}><span><b>${esc(p.name)}</b>${a&&a.why?`<span class="muted" style="display:block;font-size:13px">${esc(a.name)} · ${esc(a.why)}</span>`:a?`<span class="muted" style="display:block;font-size:13px">${esc(a.name)}</span>`:''}</span></label><select class="ldOver" data-who="${esc(p.name)}" style="width:44%;font-size:14px;padding:6px" ${dis}>${itemOpts(over[p.name]===undefined?'':(over[p.name]||'-'))}</select></div>`}).join('')}
    <label class="f">메모</label><input id="ldNote" value="${esc(d.off?'':(d.note||''))}" ${dis}>
    ${edit&&d.menu&&!d.off?`<label class="f">요일 바꾸기 (이 주문을 다른 날로 옮기기)</label><div class="row"><select id="ldMoveTo" class="grow">${(()=>{const o=[];for(let i=-7;i<=14;i++){const x=ymd(addDays(new Date(ds+'T00:00'),i)),w=new Date(x+'T00:00').getDay();if(i&&w>0&&w<6)o.push(`<option value="${x}">${md(x)}${lday(x)&&lday(x).menu&&!lday(x).off?' — '+esc(lday(x).menu)+' (서로 바꾸기)':''}</option>`)}return o.join('')})()}</select><button class="btn sm ghost" data-lmove="${ds}">옮기기</button></div>`:''}
@@ -1367,6 +1404,9 @@ document.addEventListener('click',async e=>{
   if(d.lstore){const c=LC();const x=lStores(c).find(y=>y.name===d.lstore);if(!c.stores)c.stores=lStores(c);c.store=x.name;c.storePhone=x.phone||'';save();render();toast(`${x.name}(으)로 주문해요 — 주문표에도 반영돼요`);return}
   if(d.lnav){const x=new Date(lunchPeriod()[0]+'T00:00');x.setDate(x.getDate()+(+d.lnav)*7*(+(LC()||{}).weeks||3));lunchStart=ymd(x);render();return}
   if(d.lday){lunchDayForm(d.lday);return}
+  if(d.latt){if(!$('.ldIn'))lunchDayForm(d.latt);attendPick(d.latt);return}
+  if(d.attall!==undefined){const e=$('#attRes');if(e)delete e.dataset.keep;document.querySelectorAll('.ldIn').forEach(x=>x.checked=d.attall==='1');attCount();return}
+  if(d.attlink){const ds=d.attlink,c=LC();sendMenu({title:'출석 체크 링크 보내기',subject:`${md(ds)} 도시락 출석 체크`,text:`[${c.orderName||orgName()}] ${md(ds)} 도시락 출석 체크\n아래 링크를 열어 ‘물품 구매 관리’ 앱에 로그인하면 그날 출석 화면이 바로 열려요. 결석한 분 체크를 끄고 저장해 주세요 (마감 ${esc(c.deadline||'10:00')}).`,link:`${WEB_URL}#att/${ds}`});return}
   if(d.snd){doSend(d.snd);return}
   if(d.ltab){lunchTab=d.ltab;render();scrollTo(0,0);return}
   if(d.lmob){const c=LC(),y=scrollY;smsNum(c,d.lmob,true);scrollTo(0,y);return}
