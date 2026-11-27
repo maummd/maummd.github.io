@@ -256,52 +256,47 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
 
 <section id="v-rights" hidden>
  <h2>입원과 내 권리</h2>
- <p class="lead" style="margin-bottom:8px">마음지기는 곁에서 마음과 권리를 지키는 사람. 법과 절차를 차례로 살펴요.</p>
- <h3 style="border:0;text-align:center">지금 어떤 상황인가요?</h3>
- <p class="lead">경찰 보호, 응급실, 정신과 입원은 각각 근거 법률과 기간과 권리가 다릅니다. 해당하는 상황을 고르면 기간, 할 수 있는 일, 절차조력인에게 요청할 것을 보여 줍니다.</p>
+ <p class="lead">지금 상황을 고르면 기간과 권리를 보여 줘요.</p>
  <div class="chips" id="sitChips" role="group" aria-label="상황 선택"></div>
  <div class="card" id="sitCard" aria-live="polite"></div>
- <div class="card">
-  <h3>어느 상황에서나 기억할 권리</h3>
+ <details class="card fold"><summary>어느 상황에서나 기억할 권리</summary>
   <ul class="plain">
    <li><b>절차조력서비스 안내를 받을 권리.</b> 정신건강증진시설의 장은 입원하는 모든 사람에게 절차조력서비스를 받을 수 있다는 것과 이용 방법을 알려야 합니다(정신건강복지법 제38조의2 제3항).</li>
    <li><b>퇴원 사실 통보에 대한 동의 또는 거부.</b> 퇴원할 때 정신건강복지센터에 알리려면 원칙적으로 본인 동의가 필요하고, 거부하면 정신건강심사위원회 심사를 거친 경우가 아니면 알릴 수 없습니다(같은 법 제52조).</li>
    <li><b>정보 삭제·파기 요구.</b> 경찰·소방이 자살예방센터 등에 넘긴 내 정보는 상담 등의 지원을 받을 때 삭제와 파기를 요구할 수 있다는 안내를 받아야 하고, 요구하면 지체 없이 파기됩니다(자살예방법 제12조의2).</li>
    <li><b>통신과 면회.</b> 입원 중에도 통신과 면회의 자유는 원칙적으로 제한되지 않습니다(정신건강복지법 제74조).</li>
   </ul>
- </div>
+ </details>
 </section>
 
 <section id="v-assist" hidden>
- <h2>절차조력: 단계마다 내 뜻이 전달되도록</h2>
- <p class="lead">절차조력인은 입원과 퇴원 과정에서 당사자의 동의를 받아 서류 작성과 의견 전달, 심사 참여, 심사·구제 청구, 통신과 면회, 자료 열람을 돕는 사람입니다(정신건강복지법 제38조의2 제2항). 다섯 단계 가운데 지금 단계를 누르세요. 체크한 항목은 이 기기에 남습니다.</p>
+ <h2>절차조력</h2>
+ <p class="lead">지금 단계를 누르고, 할 일을 체크해요.</p>
  <div class="bridge" id="bridge" role="group" aria-label="단계"></div>
  <div class="card" id="stageCard"></div>
- <div class="card">
-  <h3>내 뜻 메모</h3>
+ <details class="card fold"><summary>내 뜻 메모</summary>
   <p class="note">위기 때 말하기 어려운 것을 미리 적어 절차조력인이나 의료진에게 보여 주는 메모입니다. <span class="tag draft">연구 시안</span>법적 효력이 있는 ‘정신건강 사전선택서’는 아직 현행법에 없고, 연구에서 제안하는 제도(제41조의2 신설안)입니다.</p>
   <div class="grid2" id="willFields"></div>
   <div class="row"><button class="btn" id="willMake" type="button">메모 만들기</button><button class="btn ghost" id="willCopy" type="button">복사</button><span class="note" id="willMsg" role="status"></span></div>
   <pre class="out" id="willOut" hidden></pre>
- </div>
+ </details>
 </section>
 
 <section id="v-worker" hidden>
- <h2>현장 실무자 안내</h2>
- <p class="lead">경찰, 소방, 정신건강복지센터와 자살예방센터 실무자를 위한 요건과 기록 체크입니다. 요건을 지키고 기록을 남긴 개입이 당사자의 권리와 실무자 자신을 함께 지킵니다.</p>
- <div class="grid2" id="workerCards"></div>
- <div class="card">
-  <h3>개입 기록 메모</h3>
+ <h2>실무자</h2>
+ <p class="lead">현장에서 지킬 요건과 기록.</p>
+ <div id="workerCards"></div>
+ <details class="card fold"><summary>개입 기록 메모</summary>
   <p class="note">판단 근거와 고지 내용을 그 자리에서 남기기 위한 양식입니다. 기관의 공식 서식을 대신하지 않습니다.</p>
   <div class="grid2" id="logFields"></div>
   <div class="row"><button class="btn" id="logMake" type="button">기록 만들기</button><button class="btn ghost" id="logCopy" type="button">복사</button><span class="note" id="logMsg" role="status"></span></div>
   <pre class="out" id="logOut" hidden></pre>
- </div>
+ </details>
 </section>
 
 <section id="v-law" hidden>
- <h2>근거는 하나, 다른 법률은 잇기만</h2>
- <p class="lead">자살위기 개입 경로는 네 법률에 걸쳐 있습니다. 연구는 절차조력인의 근거를 정신건강복지법 제38조의2 하나에 두고, 다른 법률은 그 조문을 인용하거나 인계로 연결하는 구조를 제안합니다.</p>
+ <h2>법 체계</h2>
+ <p class="lead">네 법률이 한 조문(제38조의2)으로 이어지는 구조.</p>
  <div class="map">
   <div class="n pol"><h3>경찰관 직무집행법</h3><p>제4조 보호조치 · 경찰관서 보호 24시간 이내 · 연고자 통지 또는 보건의료기관 인계</p></div>
   <div class="n sui"><h3>자살예방법</h3><p>제12조의2 시도자 정보 제공과 사후관리 · 삭제·파기 요구권 · 제24조의3 구조 행위 면책(2027. 4. 21. 시행)</p></div>
@@ -310,28 +305,26 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
   <div class="n aft"><h3>퇴원 후 사후관리</h3><p>제52조 퇴원 사실 통보(본인 동의) · 자살예방센터·정신건강복지센터 담당자와 협력</p></div>
   <div class="n pi"><h3>개인정보 보호법(일반법)</h3><p>제6조 다른 법률의 특별 규정 우선, 단 목적·원칙에 맞게 · 제18조 제2항 · 제23조 민감정보</p></div>
  </div>
- <div class="card">
-  <h3>현행과 연구 시안</h3>
+ <details class="card fold"><summary>현행과 연구 시안</summary>
   <table class="stack">
    <thead><tr><th>쟁점</th><th>현행</th><th>연구 시안</th></tr></thead>
    <tbody id="draftRows"></tbody>
   </table>
   <p class="note">시안은 박사학위 예심 원고(제6장 6절)와 자살예방법 개정방안 연구의 제안이며 시행 중인 법이 아닙니다.</p>
- </div>
- <div class="card">
-  <h3>원문 확인</h3>
+ </details>
+ <details class="card fold"><summary>원문 확인</summary>
   <ul class="plain">
    <li><a href="https://www.law.go.kr/법령/정신건강증진및정신질환자복지서비스지원에관한법률">정신건강복지법</a> (법률 제21525호, 2026. 10. 8. 시행)</li>
    <li><a href="https://www.law.go.kr/법령/자살예방및생명존중문화조성을위한법률">자살예방법</a> (법률 제21113호, 2026. 11. 12. 시행)</li>
    <li><a href="https://www.law.go.kr/법령/경찰관직무집행법">경찰관 직무집행법</a> (법률 제21304호, 2026. 7. 7. 시행)</li>
    <li><a href="https://www.law.go.kr/법령/개인정보보호법">개인정보 보호법</a> (법률 제21445호, 2026. 9. 11. 시행)</li>
   </ul>
- </div>
+ </details>
 </section>
 
 <section id="v-family" hidden>
  <h2>보호자 교실</h2>
- <p class="lead">곁에 있는 사람이 할 수 있는 일. 가족 · 친구 · 교사처럼 곁에 있는 사람을 위한 짧은 교육입니다. 한 장씩 읽고 확인 문제를 풀면 진도가 이 기기에 남습니다. 지금 위험한 상황이라면 이 글보다 <a href="#now">지금 위험해요</a>가 먼저입니다.</p>
+ <p class="lead">곁에 있는 사람이 할 수 있는 일, 일곱 장.</p>
  <div class="prog" aria-live="polite"><div class="prog-bar"><i id="famBar"></i></div><span id="famProg"></span></div>
  <div class="mods" id="famMods" role="group" aria-label="교육 단원"></div>
  <div class="card" id="famCard" aria-live="polite"></div>
@@ -339,7 +332,7 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
 
 <section id="v-play" hidden>
  <h2>마음 연습</h2>
- <p class="lead">인지행동치료(CBT)를 짧은 게임으로 익혀요. 생각 · 감정 · 행동의 연결을 연습합니다. 정답을 맞히는 것보다 ‘이렇게도 볼 수 있구나’를 경험하는 것이 목적이에요. 기록과 점수는 이 기기에만 저장됩니다.</p>
+ <p class="lead">생각 · 감정 · 행동을 짧은 게임으로 연습해요.</p>
  <div class="hud"><div><b id="xpLv">1</b><span>레벨</span></div><div class="grow"><div class="prog-bar"><i id="xpBar"></i></div><span class="note" id="xpTxt"></span></div><div><b id="streak">0</b><span>연속 정답</span></div></div>
  <div class="badges" id="badges"></div>
  <div class="games">
@@ -349,44 +342,44 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
   <button class="game" type="button" data-game="record"><span>🌡️</span><b>생각 기록</b><small>감정 온도 낮추기 연습</small></button>
  </div>
  <div class="card" id="playCard" aria-live="polite"></div>
- <p class="note">게임은 치료를 대신하지 않습니다. 힘든 마음이 계속되면 109(자살예방상담) · 1577-0199(정신건강위기상담)나 담당 선생님과 함께 연습해 주세요.</p>
+ <p class="note">게임은 치료를 대신하지 않아요. 힘들면 109 · 1577-0199.</p>
 </section>
 
 <section id="v-rehab" hidden>
- <h2>센터 프로그램</h2><p class="lead">용인가족치유센터 · 가족상담연구소 재활정원 in MaumM</p>
+ <h2>센터 프로그램</h2><p class="lead">용인가족치유센터 · 재활정원 in MaumM</p>
  <div class="grid2">
-  <div class="card"><h3>이런 분과 함께해요</h3><ul class="plain">
+  <details class="card fold"><summary>이런 분과 함께해요</summary><ul class="plain">
    <li>위기를 지나 다시 일상을 세우려는 당사자와 가족</li>
    <li>자살 · 자해 위기를 겪은 가족을 돌보다 지친 보호자</li>
-   <li>대화가 끊긴 가족, 마음을 다시 잇고 싶은 가족</li></ul></div>
+   <li>대화가 끊긴 가족, 마음을 다시 잇고 싶은 가족</li></ul></details>
   <div class="card"><h3>프로그램</h3><ul class="plain">
-   <li><b>마음엠디 가족치료</b>: 인지행동치료(CBT) 기반, 매주 일요일 1년 과정 · 반기마다 함께 돌아보기</li>
-   <li><b>온라인 가족상담</b>: 멀리 있어도 화상으로</li>
-   <li><b>보호자 교실</b>: 곁에 있는 가족을 위한 교육 (이 탭의 ‘보호자 교실’)</li>
-   <li><b>요리 · 전시 · 쉼 공간</b>: 함께 만들고 나누는 회복 활동 (준비 중)</li></ul></div>
+   <li><b>마음엠디 가족치료</b> · CBT · 매주 일요일 1년</li>
+   <li><b>온라인 가족상담</b> · 화상</li>
+   <li><b>보호자 교실</b> · 가족 교육</li>
+   <li><b>요리 · 전시 · 쉼 공간</b> · 준비 중</li></ul></div>
  </div>
- <div class="card"><h3>오시는 곳</h3>
+ <details class="card fold"><summary>오시는 곳</summary>
   <dl class="facts"><dt>위치</dt><dd>경기도 용인시 처인구 <span class="note">(자세한 주소는 예약이 확정되면 안내해요 · 상담 예약은 <a href="#rest">마음쉼터</a>에서)</span></dd>
    <dt>운영</dt><dd>가족상담연구소 재활정원 in MaumM · 비영리</dd>
    <dt>누리집</dt><dd><a href="https://maumm.org" target="_blank" rel="noopener">maumm.org</a></dd></dl>
- </div>
+ </details>
 </section>
 
 <section id="v-garden" hidden>
- <h2>마음쉼터</h2><p class="lead">남해 쉼터에서 쉬어 가거나, 용인 센터에서 상담을 예약해요</p>
+ <h2>마음쉼터</h2><p class="lead">남해에서 쉬어 가고, 용인에서 상담해요.</p>
  <div class="grid2">
-  <div class="card"><h3>남해 쉼터 · 마음정원</h3><ul class="plain">
+  <details class="card fold"><summary>남해 쉼터 · 마음정원</summary><ul class="plain">
    <li>위기를 지나온 당사자 · 가족, 소진된 보호자와 실무자가 며칠 쉬어 가는 곳</li>
    <li>정해진 일정 없이 쉬기 · 걷기 · 바다 보기 · 마음 연습</li>
-   <li>원하면 상담 · 가족 프로그램과 함께 (사전 문의)</li></ul></div>
+   <li>원하면 상담 · 가족 프로그램과 함께 (사전 문의)</li></ul></details>
   <div class="card"><h3>주소 · 길찾기</h3>
    <p style="font-size:17px;font-weight:700;margin:4px 0 10px">경상남도 남해군 삼동면 영지리</p>
    <p class="note">남해읍에서 독일마을 쪽으로 가는 길 근처예요. 정확한 위치는 예약이 확정되면 안내해요.</p>
    <div class="row"><a class="btn" href="https://map.naver.com/p/search/%EB%82%A8%ED%95%B4%EA%B5%B0%20%EC%82%BC%EB%8F%99%EB%A9%B4%20%EC%98%81%EC%A7%80%EB%A6%AC" target="_blank" rel="noopener">네이버 지도</a><a class="btn ghost" href="https://map.kakao.com/?q=%EB%82%A8%ED%95%B4%EA%B5%B0%20%EC%82%BC%EB%8F%99%EB%A9%B4%20%EC%98%81%EC%A7%80%EB%A6%AC" target="_blank" rel="noopener">카카오맵</a><button class="btn ghost" type="button" id="addrCopy">주소 복사</button></div>
   </div>
  </div>
- <div class="card"><h3>용인가족치유센터 상담 예약</h3>
-  <p class="note">신청 내용은 이 기기에서 문자 · 카카오톡 · 이메일로 바로 보내요. 앱이 따로 저장해 두지 않아요. 지금 위험한 상황이라면 신청보다 <a href="#now">지금 위험해요</a>가 먼저예요.</p>
+ <details class="card fold"><summary>용인가족치유센터 상담 예약</summary>
+  <p class="note">문자 · 카톡 · 이메일로 바로 보내요.</p>
   <div class="grid2">
    <div class="field"><label for="rq-name">이름(별칭 가능)</label><input type="text" id="rq-name"></div>
    <div class="field"><label for="rq-tel">연락받을 번호</label><input type="text" id="rq-tel" inputmode="tel" placeholder="010-"></div>
@@ -395,9 +388,9 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
   </div>
   <div class="field"><label for="rq-msg">하고 싶은 이야기 (짧게)</label><textarea id="rq-msg" placeholder="예: 퇴원한 아이와 가족이 함께 상담받고 싶어요"></textarea></div>
   <div class="row"><button class="btn" type="button" data-send="rehab">상담 신청 보내기</button></div>
- </div>
- <div class="card"><h3>남해 쉼터 예약 신청</h3>
-  <p class="note">날짜와 인원을 고르고 보내면 운영자가 확인해 연락드려요. 연락을 받아야 예약이 확정돼요.</p>
+ </details>
+ <details class="card fold" open><summary>남해 쉼터 예약 신청</summary>
+  <p class="note">보내면 운영자가 연락드려요. 연락을 받아야 확정돼요.</p>
   <div class="grid2">
    <div class="field"><label for="gd-in">들어오는 날</label><input type="date" id="gd-in"></div>
    <div class="field"><label for="gd-out">나가는 날</label><input type="date" id="gd-out"></div>
@@ -410,10 +403,10 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
   <p class="note" id="gdNights"></p>
   <div class="row"><button class="btn" type="button" data-send="garden">예약 신청 보내기</button></div>
   <div class="hist" id="gdHist"></div>
- </div>
+ </details>
 </section>
 </main>
-<footer>마음 이음은 연구 기반 시제품입니다 (maumm.org). 법률 자문이나 의료 판단을 대신하지 않으며, 법령은 2026년 11월 27일 국가법령정보센터 본문을 기준으로 정리했습니다. 위급하면 119·112, 상담은 109·1577-0199.</footer>
+<footer>마음 이음 · maumm.org<br>연구 기반 시제품이에요. 법률 · 의료 판단을 대신하지 않아요. 법령 기준 2026. 11. 27.</footer>
 
 <script>
 {
@@ -490,7 +483,7 @@ const wc=[
  {h:'응급입원 의뢰',tag:'현행',b:['정신질환자로 추정되고 자신의 건강·안전이나 타인에게 해를 끼칠 위험이 큰 사람','상황이 매우 급박하여 자의·동의·보호·행정입원을 시킬 시간적 여유가 없을 것','의사와 경찰관의 동의, 동의한 경찰관 또는 구급대원이 호송'],l:'정신건강복지법 제50조 제1항·제2항'},
  {h:'시도자 정보 제공',tag:'현행',b:['경찰관서·해양경찰관서·소방관서의 장은 자살시도자등의 정보를 자살예방센터, 정신건강복지센터 등에 제공해야 함','현행 제공 항목: 성명, 생년월일, 주소, 연락처. 2027. 4. 21.부터 국적, 신고접수 시각, 발생 장소, 시도 방식, 보호자 유무가 더해지고 응급의료기관도 제공 의무를 짐','받은 기관은 당사자에게 삭제·파기 요구권을 안내해야 함'],l:'자살예방법 제12조의2'},
  {h:'면책의 범위',tag:'확인',b:['경찰관 직무집행법 제11조의5의 형의 감면은 살인·상해·폭행·강간·강도, 가정폭력·아동학대 범죄 대응에 한정되어 자살시도자 구호는 대상이 아님','자살예방법 제24조의3: 생명이 위급한 자살시도자 구조 등으로 생긴 손해와 사상에 고의·중과실이 없으면 민사·형사 책임 감경 또는 면제(2027. 4. 21. 시행)','요건을 갖춘 판단과 기록이 면책 판단의 바탕이 됨'],l:'경찰관 직무집행법 제11조의5, 자살예방법 제24조의3'}];
-$('#workerCards').innerHTML=wc.map(c=>`<div class="card"><h3><span class="tag">${c.tag}</span>${c.h}</h3><ul class="plain">${c.b.map(x=>`<li>${x}</li>`).join('')}</ul><p class="law">근거: ${c.l}</p></div>`).join('');
+$('#workerCards').innerHTML=wc.map(c=>`<details class="card fold"><summary>${c.h}</summary><div><span class="tag">${c.tag}</span><ul class="plain">${c.b.map(x=>`<li>${x}</li>`).join('')}</ul><p class="law">근거: ${c.l}</p></div></details>`).join('');
 const logQ=[['when','일시와 장소'],['who','대상자(식별 최소화)'],['why','위험 판단 근거(관찰한 사실)'],['act','취한 조치(보호조치·응급입원 의뢰·연계)'],['told','당사자에게 알린 내용(근거, 기간, 절차조력 안내)'],['hand','인계 기관과 담당자, 연고자 통지 여부']];
 $('#logFields').innerHTML=logQ.map(([k,l])=>`<div class="field"><label for="l-${k}">${l}</label><textarea id="l-${k}"></textarea></div>`).join('');
 const logText=()=>'[개입 기록]\n'+logQ.map(([k,l])=>`· ${l}: ${$('#l-'+k).value.trim()||'-'}`).join('\n');
