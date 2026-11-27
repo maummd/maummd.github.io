@@ -9,7 +9,7 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#14A3A3">
+<meta name="theme-color" content="#FFFFFF">
 <title>마음 이음 — 위기대응 · 절차조력 안내</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
@@ -168,6 +168,63 @@ footer{color:#6E858B}
 .sheetbox{background:#fff;width:100%;max-width:640px;border-radius:22px 22px 0 0;padding:18px 18px 24px;max-height:90vh;overflow:auto}
 @media(min-width:700px){.sheetbg{align-items:center}.sheetbox{border-radius:22px}}
 </style>
+<style>
+/* ---------- 웹툰 앱 느낌: 흰 바탕 · 초록 강조 · 굵은 글씨 · 썸네일 목록 · 말풍선 ---------- */
+:root{--bg:#fff;--panel:#fff;--ink:#111;--mut:#6b6b6b;--sea:#00C46A;--sea2:#E9FBF1;--line:#ECECEC;--ok:#00B35F;--hot:#FF4B3E}
+body{background:#fff;font-family:"Noto Sans KR",system-ui,sans-serif;letter-spacing:-.2px}
+header{background:#fff;color:#111;box-shadow:none;border-bottom:1px solid #EFEFEF;padding:14px max(5vw,16px) 0;position:sticky;top:0;z-index:20}
+header h1{color:#111;font-weight:900;font-size:26px;letter-spacing:-1px}header h1::after{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--sea);margin-left:4px;vertical-align:4px}
+header p{color:#8a8a8a;font-size:12.5px}header svg{display:none}
+nav{gap:0;margin-top:8px;padding:0}
+nav a{flex-direction:row;gap:4px;background:none;color:#8a8a8a;border-radius:0;padding:10px 12px 12px;min-width:0;font-size:15px;font-weight:700;border-bottom:3px solid transparent}
+nav a span{font-size:15px}
+nav a[aria-current]{background:none;color:#111;box-shadow:none;border-bottom-color:var(--sea)}
+main{padding-top:18px}
+h2{color:#111;font-weight:900;font-size:22px;letter-spacing:-.6px}h3{font-weight:800;letter-spacing:-.4px}
+.lead{color:#6b6b6b}
+.card{border:1px solid #EFEFEF;border-radius:14px;box-shadow:none}
+.toon{display:flex;align-items:flex-end;gap:10px;margin:4px 0 14px}
+.toon-char{flex:none;display:grid;place-items:center;width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#E9FBF1,#D1F7E2);border:3px solid #111;position:relative}
+.toon-char span{font-size:40px;animation:bob 2.6s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-4px)}}
+.toon-char i{position:absolute;bottom:-12px;background:#111;color:#fff;font:700 11px "Noto Sans KR";font-style:normal;padding:2px 8px;border-radius:99px}
+.bubble{position:relative;flex:1;background:#fff;border:3px solid #111;border-radius:22px;padding:14px 16px;box-shadow:4px 4px 0 #111}
+.bubble::before{content:"";position:absolute;left:-14px;bottom:18px;border:10px solid transparent;border-right:14px solid #111}
+.bubble::after{content:"";position:absolute;left:-8px;bottom:20px;border:8px solid transparent;border-right:10px solid #fff}
+.bubble b{display:block;font:900 clamp(20px,4.6vw,26px)/1.25 "Noto Sans KR",sans-serif;letter-spacing:-.8px}.bubble span{color:#444;font-size:15px}
+.hero{border:3px solid #111;border-radius:18px;box-shadow:4px 4px 0 #111}
+.call{border:2px solid #111;border-radius:16px;box-shadow:3px 3px 0 #111;background:#fff}
+.call b{color:#111;font-weight:900}
+.call.hot{background:var(--hot);border-color:#111;box-shadow:3px 3px 0 #111}.call.hot b{color:#fff}
+.calls .call:nth-child(3){background:#E9FBF1}.calls .call:nth-child(4){background:#F2EEFF}.calls .call:nth-child(4) b{color:#111}
+.btn{background:var(--sea);color:#fff;border-radius:10px;box-shadow:none;font-weight:800}
+.btn.ghost{background:#fff;color:#111;border:1.5px solid #DADADA}
+.chip{border:1.5px solid #E3E3E3;box-shadow:none;background:#fff;font-weight:700}.chip[aria-pressed=true]{background:#111;color:#fff;border-color:#111}
+.mods{grid-template-columns:1fr;gap:0;border-top:1px solid #EFEFEF}
+.mod.ep{flex-direction:row;align-items:center;gap:12px;min-height:0;padding:12px 4px;border:0;border-bottom:1px solid #EFEFEF;border-radius:0;box-shadow:none;background:#fff}
+.mod.ep[aria-pressed=true]{background:#F6FFF9;border:0;border-bottom:1px solid #EFEFEF}
+.thumb{flex:none;display:grid;place-items:center;width:84px;height:62px;border-radius:8px;font-size:30px}
+.t0{background:#FFE7C7}.t1{background:#D9F2FF}.t2{background:#E8E1FF}.t3{background:#FFD9DE}.t4{background:#D6F7E5}.t5{background:#FFF3B8}.t6{background:#F0E6DA}
+.ept{display:flex;flex-direction:column;align-items:flex-start;gap:1px}.ept em{font-style:normal;font-size:12.5px;color:var(--sea);font-weight:800}.ept b{font-size:16px;font-weight:800;color:#111}.ept small{color:#8a8a8a;font-size:12.5px}
+.mod.ep.done .ept small{color:var(--ok);font-weight:800}
+.hud{border:1px solid #EFEFEF;background:#fff;border-radius:14px;box-shadow:none}.hud b{color:var(--sea)}
+.prog-bar{background:#F0F0F0}.prog-bar i{background:var(--sea)}
+.badge{background:#E9FBF1;color:#00964F}.badge.off{background:#F4F4F4;color:#aaa}
+.games{grid-template-columns:repeat(2,1fr);gap:12px}
+.game{display:block;min-height:0;padding:0;border-radius:12px;overflow:hidden;color:#111;background:#fff !important;border:1px solid #EFEFEF;box-shadow:none;text-align:left}
+.game span{display:grid;place-items:center;height:104px;font-size:46px}
+.game[data-game=trap] span{background:#D9F2FF}.game[data-game=reframe] span{background:#E8E1FF}.game[data-game=cope] span{background:#FFE7C7}.game[data-game=record] span{background:#D6F7E5}
+.game b{display:block;padding:8px 10px 0;font-size:16px;font-weight:800}.game small{display:block;padding:0 10px 10px;color:#8a8a8a;font-size:12.5px}
+.game[aria-pressed=true]{outline:3px solid var(--sea);outline-offset:0}
+.scene{background:#fff;border:3px solid #111;border-radius:18px;box-shadow:3px 3px 0 #111}
+.opt{border:1.5px solid #E3E3E3;border-radius:10px}
+.cardflip{border:3px solid #111;box-shadow:4px 4px 0 #111;background:#FFF6D6}
+.pier i{border-color:#111;color:#111}.pier[aria-pressed=true] i{background:var(--sea);color:#fff;border-color:#111}.bridge::before{background:#111;opacity:.15;height:4px}
+input[type=text],textarea,select{background:#fff;border:1.5px solid #E3E3E3;border-radius:10px}textarea:focus,input:focus{border-color:var(--sea)}
+.map .n{border:1.5px solid #E3E3E3;box-shadow:none}.map .core{background:#E9FBF1;border:2px solid var(--sea)}
+.hero.rehab,.hero.garden{color:#111}.hero b{font-weight:900;letter-spacing:-.6px}
+.sendbox button{border:1.5px solid #111}
+@media(max-width:600px){nav a{padding:10px 9px 12px;font-size:14px}.toon-char{width:64px;height:64px}.toon-char span{font-size:34px}}
+</style>
 </head>
 <body>
 <header>
@@ -182,7 +239,7 @@ footer{color:#6E858B}
 <main>
 
 <section id="v-now">
- <div class="hero"><div><b>혼자 견디지 않아도 돼요</b><span>지금 이 순간도 지나가요. 같이 살아요 🌱</span></div><div class="hero-sun" aria-hidden="true">☀️</div></div>
+ <div class="toon"><div class="toon-char" aria-hidden="true"><span>🌱</span><i>이음이</i></div><div class="bubble"><b>혼자 견디지 않아도 돼요.</b><span>지금 이 순간도 지나가요. 내가 곁에 있을게요.</span></div></div>
  <h2 class="sr">혼자 견디지 않아도 됩니다</h2>
  <p class="lead">지금 스스로를 해칠 것 같거나 이미 위험한 행동을 했다면 바로 연결하세요. 번호를 눌러도 연결되지 않으면 휴대전화에서 직접 걸어 주세요.</p>
  <div class="calls">
@@ -529,7 +586,7 @@ const MODS=[
 const famDone=store.get('famDone',{});let famCur=store.get('famCur','signs');
 function famProg(){const n=MODS.filter(m=>famDone[m.id]).length;$('#famBar').style.width=Math.round(n/MODS.length*100)+'%';$('#famProg').textContent=`${n} / ${MODS.length}단원 완료`}
 function drawFam(){
- $('#famMods').innerHTML=MODS.map(m=>`<button class="mod ${famDone[m.id]?'done':''}" type="button" data-m="${m.id}" aria-pressed="${m.id===famCur}"><span>${m.ic}</span>${m.t}<small>${famDone[m.id]?'✓ 완료':m.sub}</small></button>`).join('');
+ $('#famMods').innerHTML=MODS.map((m,i)=>`<button class="mod ep ${famDone[m.id]?'done':''}" type="button" data-m="${m.id}" aria-pressed="${m.id===famCur}"><span class="thumb t${i%7}">${m.ic}</span><span class="ept"><em>${i+1}화</em><b>${m.t}</b><small>${famDone[m.id]?'✓ 다 봤어요':m.sub}</small></span></button>`).join('');
  const m=MODS.find(x=>x.id===famCur);
  $('#famCard').innerHTML=`<h3>${m.ic} ${m.t}</h3>${m.body}<div class="quiz"><b>✔ 확인 문제</b> <span class="note">O · X를 골라 보세요</span>${m.q.map(([q],i)=>`<div class="q">${i+1}. ${esc(q)}</div><div class="opts"><button class="opt" type="button" data-qi="${i}" data-a="1">⭕ 맞아요</button><button class="opt" type="button" data-qi="${i}" data-a="0">❌ 아니에요</button></div><div class="fb" id="fb${i}"></div>`).join('')}</div>
  <div class="row"><button class="btn ghost" type="button" id="famPrev">← 이전</button><button class="btn" type="button" id="famNext">다음 단원 →</button></div>`;
