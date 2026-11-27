@@ -577,7 +577,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.9.1 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.9.2 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -797,7 +797,17 @@ const mapHref=n=>`https://map.naver.com/p/search/${encodeURIComponent(n)}`;
 const IS_IOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
 const smsHref=(num,body)=>`sms:${String(num||'').replace(/[^\d+]/g,'')}${body?(IS_IOS?'&':'?')+'body='+encodeURIComponent(body):''}`;
 const curStore=c=>{const st=lStores(c);return st.find(x=>x.name===c.store)||st[0]||{}};
-const smsTarget=c=>{const x=curStore(c);return x.mobile||x.phone||''};
+// 문자는 휴대폰(010…)으로만 보내요 — 가게 유선 전화(02…)로는 문자가 가지 않아요
+const isMobile=n=>/^01[016789]/.test(String(n||'').replace(/\D/g,''));
+const smsTarget=c=>{const x=curStore(c);return isMobile(x.mobile)?x.mobile:isMobile(x.phone)?x.phone:''};
+// 휴대폰 번호가 없으면 물어보고 서버에 저장 (코드에는 넣지 않아요)
+function smsNum(c,name,force){let n=force?'':smsTarget(c);if(n)return n;
+  const x=name?(lStores(c).find(y=>y.name===name)||curStore(c)):curStore(c),v=prompt(`${x.name||'업체'} 문자 받을 휴대폰 번호를 넣어 주세요 (사장님 · 사모님 등)\n가게 전화(${x.phone||'-'})로는 문자가 가지 않아요.`,'');
+  if(!v)return '';if(!isMobile(v)){toast('010으로 시작하는 휴대폰 번호를 넣어 주세요');return ''}
+  const nm=prompt('받는 분 (예: 사모님)',x.mobileName||'사모님')||'';
+  const st=lStores(c),k=st.findIndex(y=>y.name===x.name);const m=v.replace(/\D/g,'').replace(/^(\d{3})(\d{3,4})(\d{4})$/,'$1-$2-$3');
+  if(k>=0){st[k]={...st[k],mobile:m,mobileName:nm};c.stores=st}else c.stores=[{...x,mobile:m,mobileName:nm},...st];
+  save();render();toast(`문자 받는 번호: ${nm} ${m}`);return m}
 function sendSms(num,body){if(!num){toast('문자 받을 번호를 업체 목록에 넣어 주세요');return false}const u=smsHref(num,body);
   if(window.AdminAndroid&&AdminAndroid.openUrl){AdminAndroid.openUrl(u);return true}
   const a=document.createElement('a');a.href=u;document.body.appendChild(a);a.click();a.remove();copy(body,'문자 내용을 복사해 두었어요');return true}
@@ -805,8 +815,8 @@ function lunchStoreCard(c){
   const st=lStores(c);
   return `<div class="card"><h2>📞 도시락 업체 · 메뉴</h2>
    ${st.map(x=>`<div class="ord"><div><b>${esc(x.name)}</b>${x.name===c.store?' <span class="bd ok">주문하는 곳</span>':''}<div class="muted">${x.phone?'가게 '+esc(x.phone):'가게 전화 없음'}${x.mobile?` · ${esc(x.mobileName||'휴대폰')} ${esc(x.mobile)}`:''}${x.note?' · '+esc(x.note):''}</div></div>
-     <div class="row w" style="margin-top:6px">${x.phone?`<a class="btn sm" href="${telHref(x.phone)}" data-ext="1" style="text-decoration:none">📞 가게</a>`:''}${x.mobile?`<a class="btn sm" href="${telHref(x.mobile)}" data-ext="1" style="text-decoration:none">📱 ${esc(x.mobileName||'휴대폰')}</a><a class="btn sm ghost" href="${smsHref(x.mobile)}" data-ext="1" style="text-decoration:none">✉️ 문자</a>`:x.phone?`<a class="btn sm ghost" href="${smsHref(x.phone)}" data-ext="1" style="text-decoration:none">✉️ 문자</a>`:''}<a class="btn sm ghost" href="${mapHref(x.name.replace(/[()]/g,' '))}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none">🗺 지도</a>${canLunch()&&x.name!==c.store?`<button class="btn sm ghost" data-lstore="${esc(x.name)}">여기로 주문</button>`:''}</div></div>`).join('')}
-   ${canLunch()&&!curStore(c).mobile?'<p class="muted" style="margin-top:8px">💡 사장님 · 사모님 휴대폰을 아래 ‘업체 목록’에 넣으면 식단표 · 변동사항 문자를 바로 보낼 수 있어요.</p>':''}
+     <div class="row w" style="margin-top:6px">${x.phone?`<a class="btn sm" href="${telHref(x.phone)}" data-ext="1" style="text-decoration:none">📞 가게</a>`:''}${x.mobile?`<a class="btn sm" href="${telHref(x.mobile)}" data-ext="1" style="text-decoration:none">📱 ${esc(x.mobileName||'휴대폰')}</a><a class="btn sm ghost" href="${smsHref(x.mobile)}" data-ext="1" style="text-decoration:none">✉️ 문자</a>`:canLunch()?`<button class="btn sm ghost" data-lmob="${esc(x.name)}">📱 문자 받을 휴대폰 넣기</button>`:''}<a class="btn sm ghost" href="${mapHref(x.name.replace(/[()]/g,' '))}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none">🗺 지도</a>${canLunch()&&x.name!==c.store?`<button class="btn sm ghost" data-lstore="${esc(x.name)}">여기로 주문</button>`:''}</div></div>`).join('')}
+   ${canLunch()&&!smsTarget(c)?'<p class="muted" style="margin-top:8px;color:#B03A3A">💡 문자는 휴대폰으로만 가요. 사장님 · 사모님 휴대폰을 넣어 주세요 (가게 유선 전화로는 문자가 안 가요).</p>':''}
    <div class="row w" style="margin-top:10px"><a class="btn grow" href="${HSD.menu}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none;text-align:center">🍱 한솥 메뉴 보기</a><a class="btn ghost grow" href="${HSD.store}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none;text-align:center">매장 찾기</a></div>
    <p class="muted" style="margin-top:8px">단체주문 <a href="${telHref(HSD.group)}" data-ext="1">${HSD.group}</a> (2~3일 전 예약) · 한솥 고객상담실 <a href="${telHref(HSD.cs)}" data-ext="1">${HSD.cs}</a></p></div>`;
 }
@@ -959,7 +969,7 @@ function sheetImage(){const c=LC(),days=lunchPeriod(),sd=s=>`${+s.slice(5,7)}/${
     y+=64+h+24});
   return cv.toDataURL('image/png');
 }
-async function sendSheetImage(text){const c=LC(),url=sheetImage(),name=`식단표_${lunchPeriod()[0]}`,num=smsTarget(c);
+async function sendSheetImage(text){const c=LC(),url=sheetImage(),name=`식단표_${lunchPeriod()[0]}`,num=smsNum(c);if(!num)return;
   if(window.AdminAndroid&&AdminAndroid.shareImage){AdminAndroid.shareImage(name,url.split(',')[1],text,num.replace(/[^\d]/g,''));return true}
   try{const blob=await (await fetch(url)).blob(),file=new File([blob],name+'.png',{type:'image/png'});
     if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true}}catch(e){if(e&&e.name==='AbortError')return false}
@@ -1080,7 +1090,7 @@ function ruleCard(c){const ch=c.sent?sheetChanges():[],od=orderDays(c),days=lunc
   return `<div class="card" style="border-color:var(--warn)"><h2>📩 주문 규칙 · 문자</h2>
    <ol class="steps" style="margin:0 0 8px"><li><b>3주씩</b> 도시락 식단표를 업체에 문자로 보내요.</li><li><b>요일 · 메뉴 · 수량</b>이 바뀌면 변동사항을 문자로 보내요.</li><li>당일 추가 · 변경은 <b>오전 ${esc(String(c.deadline||'10:00'))} 전</b>에 연락해요.</li></ol>
    <label class="f">주문 요일 (누르면 켜고 꺼요 · 토 · 일도 돼요)</label><div class="row w">${[1,2,3,4,5,6,0].map(w=>`<button class="chip ${od.includes(w)?'on':''}" data-auday="${w}">${DOWK[w]}</button>`).join('')}</div>
-   <p class="muted" style="margin-top:6px;font-size:13px">받는 사람: ${esc(curStore(c).mobileName||curStore(c).name||'')} ${esc(smsTarget(c)||'(번호 없음)')}${c.sent?` · 마지막 식단표 ${md(c.sent.from)}~${md(c.sent.to)} (${esc((c.sent.at||'').slice(5,10).replace('-','/'))} 보냄)`:''}</p>
+   <p class="muted" style="margin-top:6px;font-size:13px">받는 사람: ${esc(curStore(c).mobileName||curStore(c).name||'')} ${smsTarget(c)?esc(smsTarget(c)):'<b style="color:#B03A3A">휴대폰 번호 없음 — 문자 보낼 때 물어봐요</b>'}${c.sent?` · 마지막 식단표 ${md(c.sent.from)}~${md(c.sent.to)} (${esc((c.sent.at||'').slice(5,10).replace('-','/'))} 보냄)`:''}</p>
    <label class="f">식단표 보낼 때 인사말</label><input data-lc="sheetMsg" value="${esc(sheetGreeting())}">
    <div class="row w" style="margin-top:10px"><button class="btn grow" data-act="smsSheet">📩 ${md(days[0])}~ 3주 식단표 보내기 (사진)</button><button class="btn ghost" data-act="smsSheetText">글자로</button><button class="btn ${ch.length?'':'ghost'} grow" data-act="smsChanges" ${ch.length?'':'disabled'}>🔁 변동사항 문자${ch.length?` (${ch.length})`:''}</button></div>
    <label class="f">배달 주소 (업체가 물어볼 때 보내기)</label><div class="row"><input class="grow" data-lc="address" value="${esc(c.address||'')}" placeholder="예: ○○시 ○○구 ○○로 00 0층"><button class="btn sm ghost" data-act="smsAddr">보내기</button></div>
@@ -1302,7 +1312,8 @@ document.addEventListener('click',async e=>{
   if(d.lstore){const c=LC();const x=lStores(c).find(y=>y.name===d.lstore);if(!c.stores)c.stores=lStores(c);c.store=x.name;c.storePhone=x.phone||'';save();render();toast(`${x.name}(으)로 주문해요 — 주문표에도 반영돼요`);return}
   if(d.lnav){const x=new Date(lunchPeriod()[0]+'T00:00');x.setDate(x.getDate()+(+d.lnav)*7*(+(LC()||{}).weeks||3));lunchStart=ymd(x);render();return}
   if(d.lday){lunchDayForm(d.lday);return}
-  if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}const c=LC();if(smsTarget(c))sendSms(smsTarget(c),m);else share(m);return}
+  if(d.lmob){const c=LC(),y=scrollY;smsNum(c,d.lmob,true);scrollTo(0,y);return}
+  if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}const c=LC(),n=smsNum(c);if(n)sendSms(n,m);return}
   if(d.lserve){const h=lunchServeDoc(d.lserve);if(!h){toast('그날 메뉴가 없어요');return}exportDoc(h,`도시락_배식표_${d.lserve}`);return}
   if(d.lreco){$('#ldReco').innerHTML=dayRecoHtml(d.lreco);return}
   if(d.reco){$('#ldMenu').value=d.reco;$('#ldOffNote').value='';toast(`‘${d.reco}’ — 저장을 눌러 주세요`);return}
@@ -1395,9 +1406,9 @@ document.addEventListener('click',async e=>{
       if(!(await sendSheetImage(sheetGreeting())))break;
       c.sent={from:days[0],to:days[days.length-1],at:new Date().toISOString(),by:myName(),days:Object.fromEntries(days.map(ds=>[ds,dayLine(ds)]))};
       days.forEach(ds=>{const d=lday(ds);if(d&&d.menu&&!d.off&&(d.status||'plan')==='plan')d.status='ordered'});save();render();toast('식단표 문자를 열었어요 — 문자 앱에서 보내기를 눌러 주세요');break}
-    case 'smsSheetText':{const c=LC();sendSms(smsTarget(c),sheetGreeting()+'\n\n'+sheetSms());break}
-    case 'smsAddr':{const c=LC();if(!c.address){toast('배달 주소를 먼저 넣어 주세요');break}sendSms(smsTarget(c),`${c.address} 입니다! 도시락 개수는 ${String(c.deadline||'10:00').replace(/^0/,'').replace(':00','시')} 전후로 전화드릴게요!`);break}
-    case 'smsChanges':{const c=LC(),ch=sheetChanges();if(!ch.length){toast('바뀐 것이 없어요');break}if(!sendSms(smsTarget(c),changesSms(ch)))break;
+    case 'smsSheetText':{const c=LC();{const n=smsNum(c);if(n)sendSms(n,sheetGreeting()+'\n\n'+sheetSms())}break}
+    case 'smsAddr':{const c=LC();if(!c.address){toast('배달 주소를 먼저 넣어 주세요');break}{const n=smsNum(c);if(n)sendSms(n,`${c.address} 입니다! 도시락 개수는 ${String(c.deadline||'10:00').replace(/^0/,'').replace(':00','시')} 전후로 전화드릴게요!`)}break}
+    case 'smsChanges':{const c=LC(),ch=sheetChanges();if(!ch.length){toast('바뀐 것이 없어요');break}{const n=smsNum(c);if(!n||!sendSms(n,changesSms(ch)))break}
       ch.forEach(x=>{c.sent.days[x.ds]=x.to});c.sent.changedAt=new Date().toISOString();save();render();toast('변동사항 문자를 열었어요 — 보내기를 눌러 주세요');break}
     case 'auPeriod':{const days=lunchPeriod();autoPreview(`${md(days[0])} ~ ${md(days[days.length-1])}`,days);break}
     case 'auApply':{const P=autoPlan;if(!P)break;document.querySelectorAll('.auPick').forEach(x=>{P.list[+x.dataset.i].pick=x.value});let n=0;
