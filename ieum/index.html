@@ -207,10 +207,24 @@ nav{justify-content:center}
  
  <p class="lead">지금 스스로를 해칠 것 같거나 이미 위험한 행동을 했다면 바로 연결하세요. 번호를 눌러도 연결되지 않으면 휴대전화에서 직접 걸어 주세요.</p>
  <div class="calls">
-  <a class="call hot" href="tel:119"><b>119</b><span>다쳤거나 약·물질을 먹었을 때, 생명이 급할 때</span></a>
-  <a class="call hot" href="tel:112"><b>112</b><span>지금 위험한 장소에 있거나 누군가 위험할 때</span></a>
+  <a class="call hot" href="tel:119" data-confirm="119"><b>119</b><span>다쳤거나 약·물질을 먹었을 때, 생명이 급할 때</span></a>
+  <a class="call hot" href="tel:112" data-confirm="112"><b>112</b><span>지금 위험한 장소에 있거나 누군가 위험할 때</span></a>
   <a class="call" href="tel:109"><b>109</b><span>자살예방상담전화 · 24시간 · 카카오톡 채널 ‘마들랜’</span></a>
   <a class="call" href="tel:15770199"><b>1577-0199</b><span>정신건강위기상담전화 · 24시간 · 지역 정신건강복지센터 연결</span></a>
+ </div>
+
+ <div class="card" id="region">
+  <h3>지역으로 연결하기</h3>
+  <p class="note">누구에게, 어디서, 어떤 일이 있는지 고르면 그 지역에서 연락할 곳을 골라 드려요. 입력한 내용은 이 화면에서만 쓰고 저장하거나 보내지 않아요.</p>
+  <div class="grid2">
+   <div class="field"><label for="rg-age">대상자</label><select id="rg-age"><option value="adult">성인</option><option value="youth">아동 · 청소년 (24세 이하)</option><option value="old">어르신 (65세 이상)</option></select></div>
+   <div class="field"><label for="rg-sido">시 · 도</label><select id="rg-sido"><option>서울특별시</option><option>부산광역시</option><option>대구광역시</option><option>인천광역시</option><option>광주광역시</option><option>대전광역시</option><option>울산광역시</option><option>세종특별자치시</option><option selected>경기도</option><option>강원특별자치도</option><option>충청북도</option><option>충청남도</option><option>전북특별자치도</option><option>전라남도</option><option>경상북도</option><option>경상남도</option><option>제주특별자치도</option></select></div>
+   <div class="field"><label for="rg-gu">시 · 군 · 구</label><input type="text" id="rg-gu" placeholder="예: 용인시 처인구, 남해군"></div>
+   <div class="field"><label for="rg-sit">지금 상황</label><select id="rg-sit"><option value="hurt">다쳤거나 약 · 물질을 먹음</option><option value="plan">죽고 싶다는 말 · 계획이 있음</option><option value="harm">자해를 했거나 하려 함</option><option value="psy">혼란 · 환각 등 정신과 응급</option><option value="care">당장 위험은 없지만 도움이 필요함</option></select></div>
+  </div>
+  <div class="field"><label for="rg-note">상황 메모 (선택 · 이름 대신 관계로)</label><textarea id="rg-note" placeholder="예: 고등학생 딸, 어젯밤부터 연락 끊김, 손목에 상처"></textarea></div>
+  <div class="row"><button class="btn" type="button" id="rgGo">연락할 곳 보기</button></div>
+  <div id="rgOut" aria-live="polite"></div>
  </div>
  <div class="grid2">
   <div class="card">
@@ -726,6 +740,47 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-send]');if
   sendSheet('마음정원 남해 쉼터 예약 신청',`[마음정원 · 남해 쉼터 예약 신청]\n· 날짜: ${when}\n· 인원: ${v('gd-n')}\n· 목적: ${v('gd-why')}\n· 이름: ${v('gd-name')||'-'}\n· 연락처: ${v('gd-tel')||'-'}\n· 요청: ${v('gd-msg')||'-'}\n· 쉼터: ${ADDR}\n(마음 이음 앱에서 보냄)`,CENTER.gardenTel,CENTER.gardenMail);
   HIST.push({when,n:v('gd-n'),why:v('gd-why')});store.set('gardenReq',HIST.slice(-20));drawHist()}
 });
+}
+</script>
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const map=q=>`https://map.naver.com/p/search/${encodeURIComponent(q)}`;
+/* 119 · 112: 한 번 확인 (위기 때는 바로 걸기) */
+document.addEventListener('click',e=>{const a=e.target.closest('a[data-confirm]');if(!a||a.dataset.ok)return;e.preventDefault();const n=a.dataset.confirm;
+ const bg=document.createElement('div');bg.className='sheetbg';
+ bg.innerHTML=`<div class="sheetbox" role="dialog" aria-label="${n} 확인"><h3>지금 생명이 위험한가요?</h3><p>${n==='119'?'다쳤거나 약 · 물질을 먹었거나 숨쉬기 어렵다면':'위험한 장소에 있거나 누군가 해칠 위험이 있다면'} 바로 거세요.</p>
+  <div class="row"><a class="btn" href="tel:${n}" data-ok="1" style="flex:1;text-align:center;font-size:20px;padding:14px">네, ${n}에 전화</a></div>
+  <div class="row"><button class="btn ghost" type="button" data-x="talk" style="flex:1">아니요, 상담이 필요해요 (109)</button></div>
+  <div class="row"><button class="btn ghost" type="button" data-x="region" style="flex:1">지역 센터 · 병원 찾기</button><button class="btn ghost" type="button" data-x="close">닫기</button></div></div>`;
+ document.body.appendChild(bg);
+ bg.addEventListener('click',ev=>{const b=ev.target.closest('[data-x],[data-ok]');if(ev.target===bg){bg.remove();return}if(!b)return;
+  if(b.dataset.ok){setTimeout(()=>bg.remove(),300);return}
+  bg.remove();if(b.dataset.x==='talk')location.href='tel:109';if(b.dataset.x==='region')$('#region').scrollIntoView({behavior:'smooth'})})});
+/* 지역으로 연결 */
+$('#rgGo').onclick=()=>{
+ const age=$('#rg-age').value,sido=$('#rg-sido').value,gu=$('#rg-gu').value.trim(),sit=$('#rg-sit').value,note=$('#rg-note').value.trim();
+ const area=(gu?`${sido} ${gu}`:sido).replace(/특별자치도|특별자치시|특별시|광역시/,m=>m);const short=gu||sido;
+ const L=[];
+ if(sit==='hurt')L.push(['지금 119','몸이 다쳤거나 약 · 물질을 먹었다면 무엇보다 먼저','tel:119','hot']);
+ if(sit==='harm')L.push(['상처가 깊거나 피가 멈추지 않으면 119','몸의 안전이 먼저예요','tel:119','hot']);
+ if(sit==='plan'||sit==='harm')L.push(['혼자 두지 말고 곁에','위험한 물건을 치우고 함께 있어 주세요. 행동이 임박했다면 119 · 112','',''],['109 자살예방상담','24시간 · 위기 상황이면 상담사가 출동 연계를 도와요','tel:109','']);
+ if(sit==='psy')L.push(['1577-0199 정신건강위기상담','24시간 · 거는 곳의 지역 정신건강복지센터로 이어져 위기 개입을 도와요','tel:15770199',''],[`${short} 정신응급 병원 찾기`,'정신건강의학과 응급진료가 되는 병원 · 권역정신응급의료센터',map(`${area} 정신건강의학과 응급실`),'']);
+ L.push([`${short} 정신건강복지센터`,'사례관리 · 위기 개입 · 병원 연계 (평일 낮 직접 연결, 밤 · 주말은 1577-0199)',map(`${area} 정신건강복지센터`),'']);
+ L.push([`${short} 자살예방센터`,'시도 · 시군구 자살예방센터 (지역에 따라 정신건강복지센터와 함께 운영)',map(`${area} 자살예방센터`),'']);
+ if(age==='youth')L.push(['1388 청소년상담','24시간 · 문자 #1388 · 지역 청소년상담복지센터 연결','tel:1388',''],[`${short} 청소년상담복지센터`,'학교 밖 · 학교 안(Wee센터) 상담',map(`${area} 청소년상담복지센터`),'']);
+ if(age==='old')L.push([`${short} 노인보호전문기관 · 노인복지관`,'혼자 사시는 어르신 안부 확인 · 돌봄 연계',map(`${area} 노인복지관`),'']);
+ L.push(['가까운 응급실 (응급의료포털)','응급실 찾기 · 문 연 병원 · 약국 (중앙응급의료센터)','https://www.e-gen.or.kr/',''],[`${short} 정신건강의학과`,'외래 진료 · 입원 상담',map(`${area} 정신건강의학과`),'']);
+ if(sit==='care')L.unshift(['1577-0199 정신건강위기상담','지역 정신건강복지센터로 연결 · 24시간','tel:15770199','']);
+ const SIT={hurt:'다쳤거나 약 · 물질을 먹음',plan:'죽고 싶다는 말 · 계획이 있음',harm:'자해를 했거나 하려 함',psy:'혼란 · 환각 등 정신과 응급',care:'당장 위험은 없지만 도움이 필요함'};
+ const AGE={adult:'성인',youth:'아동 · 청소년',old:'어르신'};
+ const memo=`[의뢰 메모]\n· 지역: ${area}\n· 대상자: ${AGE[age]}\n· 상황: ${SIT[sit]}${note?`\n· 메모: ${note}`:''}\n· 연락드리는 사람 · 번호: \n· 원하는 도움: 위기 평가 · 방문 · 병원 연계`;
+ $('#rgOut').innerHTML=`<ol class="steps" style="margin-top:14px">${L.map(([t,d,h,c])=>`<li>${h?`<a href="${h}" ${h.startsWith('http')?'target="_blank" rel="noopener"':''} style="font-weight:700;${c?'color:var(--hot)':''}">${esc(t)}</a>`:`<b>${esc(t)}</b>`}<br><span class="note">${esc(d)}</span></li>`).join('')}</ol>
+  <p class="note">지도는 ‘${esc(area)}’로 검색해요. 센터 번호는 검색 결과의 공식 번호로 거세요.</p>
+  <pre class="out">${esc(memo)}</pre><div class="row"><button class="btn ghost" type="button" id="rgCopy">의뢰 메모 복사</button></div>`;
+ $('#rgCopy').onclick=async()=>{try{await navigator.clipboard.writeText(memo);$('#rgCopy').textContent='복사했어요'}catch(e){$('#rgCopy').textContent='길게 눌러 복사해 주세요'}};
+ $('#rgOut').scrollIntoView({behavior:'smooth',block:'start'})};
 }
 </script>
 </body>
