@@ -569,7 +569,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.3 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.4 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -780,6 +780,18 @@ function parseLunchRules(text){
   return {rules,pairs,notes,mentioned:[...mentioned]};
 }
 const LC=()=>S.lunch.find(x=>x.id==='config')||null;
+const HSD={menu:'https://www.hsd.co.kr/menu/menu_list',store:'https://www.hsd.co.kr/store/store_find',group:'1644-3288',cs:'02-585-1114'};
+const lStores=c=>c.stores&&c.stores.length?c.stores:[{name:c.store,phone:c.storePhone},{name:'한솥도시락(구의점)',phone:''}];
+const telHref=p=>'tel:'+String(p||'').replace(/[^\d+]/g,'');
+const mapHref=n=>`https://map.naver.com/p/search/${encodeURIComponent(n)}`;
+function lunchStoreCard(c){
+  const st=lStores(c),cur=st.find(x=>x.name===c.store)||st[0];
+  return `<div class="card"><h2>📞 도시락 업체 · 메뉴</h2>
+   ${st.map(x=>`<div class="ord"><div class="row" style="justify-content:space-between"><div><b>${esc(x.name)}</b>${x.name===c.store?' <span class="bd ok">주문하는 곳</span>':''}<div class="muted">${x.phone?esc(x.phone):'전화번호를 아직 넣지 않았어요'}${x.note?' · '+esc(x.note):''}</div></div></div>
+     <div class="row w" style="margin-top:6px">${x.phone?`<a class="btn sm" href="${telHref(x.phone)}" data-ext="1" style="text-decoration:none">📞 전화</a><a class="btn sm ghost" href="sms:${String(x.phone).replace(/[^\d]/g,'')}" data-ext="1" style="text-decoration:none">✉️ 문자</a>`:''}<a class="btn sm ghost" href="${mapHref(x.name.replace(/[()]/g,' '))}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none">🗺 지도${x.phone?'':' · 번호 찾기'}</a>${canLunch()&&x.name!==c.store?`<button class="btn sm ghost" data-lstore="${esc(x.name)}">여기로 주문</button>`:''}</div></div>`).join('')}
+   <div class="row w" style="margin-top:10px"><a class="btn grow" href="${HSD.menu}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none;text-align:center">🍱 한솥 메뉴 보기</a><a class="btn ghost grow" href="${HSD.store}" target="_blank" rel="noopener" data-ext="1" style="text-decoration:none;text-align:center">매장 찾기</a></div>
+   <p class="muted" style="margin-top:8px">단체주문 <a href="${telHref(HSD.group)}" data-ext="1">${HSD.group}</a> (2~3일 전 예약) · 한솥 고객상담실 <a href="${telHref(HSD.cs)}" data-ext="1">${HSD.cs}</a></p></div>`;
+}
 const LR=()=>{const c=LC();if(!c)return {rules:[],pairs:[],notes:[]};if(!LR._c||LR._t!==c.rulesText){LR._c=parseLunchRules(c.rulesText);LR._t=c.rulesText}return LR._c};
 const lday=ds=>S.lunch.find(x=>x.id==='d-'+ds);
 const ruleHit=(match,menu)=>{const m=nz(menu);return match.some(k=>k&&m.includes(nz(k)))};
@@ -828,6 +840,7 @@ function vLunch(){
   const cost=days.reduce((s,ds)=>s+lunchCost(ds),0),n=days.filter(ds=>planDay(ds)).length;
   const weeks=[];for(let i=0;i<days.length;i+=5)weeks.push(days.slice(i,i+5));
   return hdr('도시락',`${esc(c.store)} · ${esc(c.deliver)} · ${esc(c.pay)}`)+`
+  ${lunchStoreCard(c)}
   ${todayPl&&todayPl.d.status!=='received'?`<div class="card" style="border-color:var(--warn)"><h2>🍱 오늘 ${md(t)} <span class="bd ${LST[todayPl.d.status||'plan'][1]}">${LST[todayPl.d.status||'plan'][0]}</span></h2><div class="n" style="font-size:17px;font-weight:700">${esc(orderLine(todayPl))}</div>
    <p class="muted">총 ${todayPl.count}개 · ${won(todayPl.total)}${todayPl.center.length?' · 센터 준비: '+todayPl.center.map(([k,w])=>`${esc(k)} ${w.length}`).join(', '):''} · 변경은 ${esc(c.deadline)} 전에 연락</p>
    <div class="row w" style="margin-top:8px"><button class="btn sm" data-lday="${t}">인원 · 메뉴 확인</button><button class="btn sm ghost" data-lmsg="${t}">주문 문자</button><button class="btn sm ghost" data-lserve="${t}">배식표</button></div></div>`:''}
@@ -847,6 +860,7 @@ function lunchSettings(c){
    <div class="two"><div><label class="f">업체 전화</label><input data-lc="storePhone" value="${esc(c.storePhone)}"></div><div><label class="f">센터 전화</label><input data-lc="centerPhone" value="${esc(c.centerPhone)}"></div></div>
    <div class="two"><div><label class="f">배달</label><input data-lc="deliver" value="${esc(c.deliver)}"></div><div><label class="f">결제</label><input data-lc="pay" value="${esc(c.pay)}"></div></div>
    <div class="two"><div><label class="f">기본 개수</label><input type="number" data-lc="base" value="${c.base}"></div><div><label class="f">변경 연락 마감</label><input type="time" data-lc="deadline" value="${esc(c.deadline)}"></div></div>
+   <label class="f">업체 목록 (한 줄에 하나: <b>업체 이름 | 전화 | 메모</b>)</label><textarea id="lcStores" style="min-height:90px">${esc(lStores(c).map(x=>[x.name,x.phone||'',x.note||''].join(' | ').replace(/ \| $/,'')).join('\n'))}</textarea><button class="btn sm" style="margin-top:6px" data-act="lcStoresSave">업체 목록 저장</button>
    <label class="f">주문표 기간 (주)</label><select data-lc="weeks">${[1,2,3,4].map(w=>`<option ${+c.weeks===w?'selected':''}>${w}</option>`).join('')}</select></div>
   <div class="card"><h2>👥 회원 명단 <span class="muted">${c.members.filter(p=>p.active!==false).length}명</span></h2><p class="muted">한 줄에 한 명. 앞에 <b>-</b>를 붙이면 ‘쉬는 중’(주문에서 빠짐).</p>
    <textarea id="lcMembers" style="min-height:180px">${esc(c.members.map(p=>(p.active===false?'-':'')+p.name).join('\n'))}</textarea><button class="btn sm" style="margin-top:8px" data-act="lcMembersSave">명단 저장</button></div>
@@ -981,6 +995,7 @@ const errMsg=e=>{const c=(e&&e.code)||'';return ({'auth/invalid-credential':'이
 
 document.addEventListener('click',async e=>{
   if(e.target.closest('a[data-closeafter]')){setTimeout(closeModal,300);return}
+  {const a=e.target.closest('a[data-ext]');if(a){if(window.AdminAndroid&&AdminAndroid.openUrl){e.preventDefault();AdminAndroid.openUrl(a.getAttribute('href'))}return}}
   const bg=e.target.closest('[data-bg]');if(bg&&e.target===bg){closeModal();return}
   const t=e.target.closest('button');if(!t)return;const d=t.dataset;const y=scrollY;
   const re=()=>{save();render();scrollTo(0,y)};
@@ -992,6 +1007,7 @@ document.addEventListener('click',async e=>{
   if(d.site){siteF=d.site;render();return}
   if(d.rt){const r=ROUTINE().find(x=>x.id===d.rt);toggleCheck(r.id,r.cycle);re();return}
   if(d.it){const i=ITEMS().find(x=>x.id===d.it);toggleCheck(i.id,i.cycle);re();return}
+  if(d.lstore){const c=LC();const x=lStores(c).find(y=>y.name===d.lstore);if(!c.stores)c.stores=lStores(c);c.store=x.name;c.storePhone=x.phone||'';save();render();toast(`${x.name}(으)로 주문해요 — 주문표에도 반영돼요`);return}
   if(d.lnav){const x=new Date(lunchPeriod()[0]+'T00:00');x.setDate(x.getDate()+(+d.lnav)*7*(+(LC()||{}).weeks||3));lunchStart=ymd(x);render();return}
   if(d.lday){lunchDayForm(d.lday);return}
   if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}share(m);return}
@@ -1076,6 +1092,7 @@ document.addEventListener('click',async e=>{
       S.lunch.push(c);save();render();toast(`시작했어요 — 회원 ${c.members.length}명 · 규칙 ${R.rules.length}개. 명단에 빠진 회원을 더 넣어 주세요`);break}
     case 'lunchSheet':exportDoc(lunchSheetDoc(),`도시락_주문표_${lunchPeriod()[0]}`);break;
     case 'lunchCopyPrev':{const days=lunchPeriod(),n=days.length/5*7;let c=0;days.forEach(ds=>{if(lday(ds)&&(lday(ds).menu||lday(ds).off))return;const x=new Date(ds+'T00:00');x.setDate(x.getDate()-n);const p=lday(ymd(x));if(p&&(p.menu||p.off)){S.lunch.push({id:'d-'+ds,date:ds,menu:p.menu,off:p.off,note:p.off?p.note:'',guests:p.guests||0,status:'plan'});c++}});save();render();toast(c?`${c}일 메뉴를 가져왔어요 (이미 정한 날은 그대로)`:'가져올 메뉴가 없어요');break}
+    case 'lcStoresSave':{const c=LC();c.stores=$('#lcStores').value.split('\n').map(x=>x.split('|').map(y=>y.trim())).filter(a=>a[0]).map(([name,phone,note])=>({name,phone:phone||'',note:note||''}));const cur=c.stores.find(x=>x.name===c.store);if(cur){c.storePhone=cur.phone}save();render();toast('업체 목록을 저장했어요');break}
     case 'lcMembersSave':{const c=LC();c.members=$('#lcMembers').value.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>({name:x.replace(/^-\s*/,''),active:!x.startsWith('-')}));save();render();toast('회원 명단을 저장했어요');break}
     case 'lcMenusSave':{const c=LC();c.menus=$('#lcMenus').value.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{const [n,p]=x.split('|').map(y=>(y||'').trim());return {name:n,price:+String(p||'').replace(/[^\d]/g,'')||0}});
       c.alias=$('#lcAlias').value.split('\n').map(x=>x.split('=').map(y=>y.trim())).filter(a=>a[0]&&a[1]);c.centerItems=$('#lcCenter').value.split(',').map(x=>x.trim()).filter(Boolean);save();render();toast('메뉴를 저장했어요');break}
@@ -1139,7 +1156,7 @@ document.addEventListener('change',e=>{
   if(el.dataset.org){S.org.name=el.value.trim()||orgName();save();toast('저장했어요');return}
   if(el.dataset.st){const k=el.dataset.st;S.org.settings={...SET(),[k]:['approveItem','approveOrder'].includes(k)?Math.max(0,+el.value||0):k==='bizNo'?fmtBiz(el.value):el.value.trim()};save();if(k==='bizNo')render();toast('저장했어요');return}
   if(el.dataset.addr){const s=SET();s.addr[el.dataset.addr]=el.value.trim();S.org.settings=s;save();toast('저장했어요');return}
-  if(el.dataset.lc){const c=LC(),k=el.dataset.lc;c[k]=['base','weeks'].includes(k)?(+el.value||0):el.value.trim();save();if(k==='weeks')render();toast('저장했어요');return}
+  if(el.dataset.lc){const c=LC(),k=el.dataset.lc;const old=c.store;c[k]=['base','weeks'].includes(k)?(+el.value||0):el.value.trim();if((k==='store'||k==='storePhone')&&c.stores){const x=c.stores.find(y=>y.name===(k==='store'?old:c.store));if(x){x.name=c.store;x.phone=c.storePhone}}save();if(k==='weeks')render();toast('저장했어요');return}
   if(el.dataset.noti){const k=el.dataset.noti,N=L.noti;N[k]=el.type==='checkbox'?el.checked:(['monthDay','weekDay'].includes(k)?+el.value:el.value);saveL();render();toast('알림 설정을 저장했어요');return}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pkIn')pkCheck()});
