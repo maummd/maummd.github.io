@@ -81,15 +81,45 @@ footer{max-width:1100px;margin:auto;padding:0 max(5vw,16px) 40px;font-size:13.5p
 @media(max-width:600px){.map{grid-template-columns:1fr;grid-template-areas:"pol" "er" "core" "aft" "sui" "pi"}dl.facts{grid-template-columns:1fr}dl.facts dt{margin-top:6px}.pier{font-size:12px}.pier small{display:none}header svg{display:none}}
 @media(prefers-reduced-motion:no-preference){section{animation:in .25s ease}@keyframes in{from{opacity:0;transform:translateY(6px)}}}
 </style>
+
+<style>
+.prog{display:flex;align-items:center;gap:10px;margin:6px 0 12px}.prog span{font-size:14px;color:var(--mut);white-space:nowrap}
+.prog-bar{flex:1;height:10px;border-radius:99px;background:var(--sea2);overflow:hidden}.prog-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sea),#5fb3c4);border-radius:99px;transition:width .3s}
+.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:8px}
+.mod{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:76px;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-align:left;cursor:pointer;font:500 14.5px "Noto Sans KR",sans-serif}
+.mod span{font-size:22px}.mod small{color:var(--mut);font-size:12.5px}.mod[aria-pressed=true]{border:2px solid var(--sea);background:var(--sea2)}.mod.done small{color:var(--ok);font-weight:700}
+.say{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px;margin:12px 0}
+.say div{border-radius:12px;padding:12px 14px}.say .yes{background:light-dark(#e6f4ec,#173528)}.say .no{background:light-dark(#fdecea,#3a201c)}
+.say h4{margin:0 0 6px;font-size:15px}.say ul{margin:0;padding-left:1.2em}.say li{margin:4px 0}
+.quiz{border-top:1px dashed var(--line);margin-top:14px;padding-top:12px}.quiz .q{font-weight:700;margin:10px 0 6px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}.opt{min-height:44px;padding:8px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:500 15px "Noto Sans KR",sans-serif;cursor:pointer;text-align:left}
+.opt.right{background:light-dark(#dff3e8,#174030);border-color:var(--ok);color:var(--ok);font-weight:700}.opt.wrong{background:light-dark(#fde8e4,#43221d);border-color:var(--hot);color:light-dark(#a3301d,#ffb3a3)}
+.fb{margin-top:8px;font-size:14.5px;color:var(--mut)}
+.hud{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 16px}
+.hud>div:not(.grow){text-align:center;min-width:64px}.hud b{display:block;font:700 26px "IBM Plex Sans KR",sans-serif;color:var(--sea)}.hud span{font-size:12.5px;color:var(--mut)}.hud .grow{flex:1}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.badge{font-size:13px;padding:4px 10px;border-radius:99px;background:var(--sea2);color:var(--sea);font-weight:700}.badge.off{opacity:.4;font-weight:500}
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin:10px 0}
+.game{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:96px;padding:14px;border-radius:16px;border:0;cursor:pointer;color:#fff;text-align:left;font:700 16px "Noto Sans KR",sans-serif}
+.game span{font-size:28px}.game small{font-weight:500;font-size:13px;opacity:.92}
+.game[data-game=trap]{background:linear-gradient(135deg,#0f4c5c,#1e7f8f)}.game[data-game=reframe]{background:linear-gradient(135deg,#3f6fb5,#6f8fe0)}.game[data-game=cope]{background:linear-gradient(135deg,#c2732f,#e0a24a)}.game[data-game=record]{background:linear-gradient(135deg,#5b8c6e,#7fb7a3)}
+.game[aria-pressed=true]{outline:3px solid var(--hot);outline-offset:2px}
+.scene{font-size:17px;line-height:1.7;background:var(--sea2);border-radius:12px;padding:14px 16px;margin:8px 0 12px}
+.scene q{font-weight:700;quotes:"“" "”"}
+.cardflip{display:grid;place-items:center;min-height:170px;border-radius:18px;background:linear-gradient(135deg,#fff8ea,#fde6c8);color:#5a3a12;text-align:center;padding:18px;margin:8px 0;font-size:17px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.cardflip b{display:block;font-size:44px;margin-bottom:6px}
+.therm{display:flex;align-items:center;gap:10px}.therm input{flex:1;accent-color:var(--hot)}.therm b{min-width:2.4em;text-align:center;font-size:20px;color:var(--hot)}
+.hist{margin-top:10px}.hist div{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px}.hist div:last-child{border-bottom:0}
+.drop{font-weight:700;color:var(--ok)}
+</style>
 </head>
 <body>
 <header>
  <div class="top">
   <svg viewBox="0 0 92 52" aria-hidden="true"><ellipse cx="14" cy="40" rx="13" ry="6" fill="#e9d9b9"/><path d="M6 40c2-9 6-14 9-14s6 6 7 14z" fill="#7fb7a3"/><ellipse cx="80" cy="40" rx="12" ry="6" fill="#e9d9b9"/><path d="M73 40c2-8 5-12 7-12s5 5 6 12z" fill="#7fb7a3"/><path d="M18 34Q47 10 76 34" fill="none" stroke="#f5f0e7" stroke-width="3"/><path d="M18 34H76" stroke="#f5f0e7" stroke-width="2"/><g stroke="#f5f0e7" stroke-width="1.5"><path d="M30 34V23M40 34V18M50 34V18M60 34V23"/></g><path d="M0 47h92" stroke="#5fb3c4" stroke-width="2" stroke-dasharray="6 5"/></svg>
-  <div><h1>마음 이음</h1><p>자살위기 대응과 절차조력 안내 · 법령 기준일 2026. 11. 27.</p></div>
+  <div><h1>마음 이음</h1><p>자살위기 대응 · 보호자 교육 · 마음 연습 · 절차조력 안내 · 법령 기준일 2026. 11. 27.</p></div>
  </div>
  <nav aria-label="메뉴">
-  <a href="#now">지금 위험해요</a><a href="#rights">입원과 내 권리</a><a href="#assist">절차조력</a><a href="#worker">실무자</a><a href="#law">법 체계</a>
+  <a href="#now">지금 위험해요</a><a href="#family">보호자 교육</a><a href="#play">마음 연습</a><a href="#rights">입원과 내 권리</a><a href="#assist">절차조력</a><a href="#worker">실무자</a><a href="#law">법 체계</a>
  </nav>
 </header>
 <main>
@@ -203,6 +233,29 @@ footer{max-width:1100px;margin:auto;padding:0 max(5vw,16px) 40px;font-size:13.5p
   </ul>
  </div>
 </section>
+
+<section id="v-family" hidden>
+ <h2>보호자 교육: 곁에 있는 사람이 할 수 있는 일</h2>
+ <p class="lead">가족 · 친구 · 교사처럼 곁에 있는 사람을 위한 짧은 교육입니다. 한 장씩 읽고 확인 문제를 풀면 진도가 이 기기에 남습니다. 지금 위험한 상황이라면 이 글보다 <a href="#now">지금 위험해요</a>가 먼저입니다.</p>
+ <div class="prog" aria-live="polite"><div class="prog-bar"><i id="famBar"></i></div><span id="famProg"></span></div>
+ <div class="mods" id="famMods" role="group" aria-label="교육 단원"></div>
+ <div class="card" id="famCard" aria-live="polite"></div>
+</section>
+
+<section id="v-play" hidden>
+ <h2>마음 연습: 게임으로 익히는 인지행동치료(CBT)</h2>
+ <p class="lead">생각 · 감정 · 행동의 연결을 짧은 게임으로 연습합니다. 정답을 맞히는 것보다 ‘이렇게도 볼 수 있구나’를 경험하는 것이 목적이에요. 기록과 점수는 이 기기에만 저장됩니다.</p>
+ <div class="hud"><div><b id="xpLv">1</b><span>레벨</span></div><div class="grow"><div class="prog-bar"><i id="xpBar"></i></div><span class="note" id="xpTxt"></span></div><div><b id="streak">0</b><span>연속 정답</span></div></div>
+ <div class="badges" id="badges"></div>
+ <div class="games">
+  <button class="game" type="button" data-game="trap"><span>🕵️</span><b>생각 탐정</b><small>생각 속 ‘생각의 덫’ 찾기</small></button>
+  <button class="game" type="button" data-game="reframe"><span>🔄</span><b>생각 다시 쓰기</b><small>균형 잡힌 생각 고르기</small></button>
+  <button class="game" type="button" data-game="cope"><span>🎴</span><b>대처 카드</b><small>지금 해 볼 한 가지 뽑기</small></button>
+  <button class="game" type="button" data-game="record"><span>🌡️</span><b>생각 기록</b><small>감정 온도 낮추기 연습</small></button>
+ </div>
+ <div class="card" id="playCard" aria-live="polite"></div>
+ <p class="note">게임은 치료를 대신하지 않습니다. 힘든 마음이 계속되면 109(자살예방상담) · 1577-0199(정신건강위기상담)나 담당 선생님과 함께 연습해 주세요.</p>
+</section>
 </main>
 <footer>마음 이음은 연구 기반 시제품입니다 (maumm.org). 법률 자문이나 의료 판단을 대신하지 않으며, 법령은 2026년 11월 27일 국가법령정보센터 본문을 기준으로 정리했습니다. 위급하면 119·112, 상담은 109·1577-0199.</footer>
 
@@ -214,7 +267,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 async function copy(text,msg){try{await navigator.clipboard.writeText(text);msg.textContent='복사했습니다.'}catch(e){msg.textContent='복사가 막혀 있습니다. 글을 길게 눌러 복사해 주세요.'}}
 
 /* 라우팅 */
-const views=['now','rights','assist','worker','law'];
+const views=['now','family','play','rights','assist','worker','law'];
 function route(){const h=location.hash.slice(1);const v=views.includes(h)?h:'now';views.forEach(x=>{$('#v-'+x).hidden=x!==v});document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.getAttribute('href')==='#'+v));}
 addEventListener('hashchange',()=>{route();scrollTo(0,0)});route();
 
@@ -289,5 +342,200 @@ $('#draftRows').innerHTML=rows.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc
 </script>
 <script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
 <style>@media(max-width:600px){table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:6.5em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:6em;margin-inline-start:-6.5em;color:var(--mut)}}</style>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem('ieum.'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('ieum.'+k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ================= 보호자 교육 ================= */
+const MODS=[
+ {id:'signs',ic:'👀',t:'경고 신호 알아차리기',sub:'말 · 행동 · 기분의 변화',
+  body:`<p>자살을 생각하는 사람의 상당수는 어떤 방식으로든 신호를 보냅니다. 신호를 알아차리는 것이 첫걸음입니다. 하나만 있어도 물어볼 이유가 됩니다.</p>
+  <div class="grid2"><div><h4>말</h4><ul class="plain"><li>“죽고 싶다”, “사라지고 싶다”, “내가 없어지면 다들 편할 거야”</li><li>짐이 된다는 말, 희망이 없다는 말</li><li>작별 인사처럼 들리는 말이나 글 · SNS 게시물</li></ul></div>
+  <div><h4>행동</h4><ul class="plain"><li>소중한 물건을 나눠 주거나 주변을 정리함</li><li>사람을 피하고 연락을 끊음, 학교 · 직장을 빠짐</li><li>술 · 약물 사용이 늘어남, 잠과 식사가 크게 달라짐</li><li>자해 흔적을 숨기려 긴 옷을 계속 입음</li></ul></div></div>
+  <h4>기분</h4><ul class="plain"><li>오래가는 우울, 불안, 분노, 수치심</li><li>심하게 힘들어하던 사람이 <b>갑자기 차분해짐</b>(결심 후의 평온일 수 있음)</li></ul>
+  <p class="note">위험이 커지는 때: 이별 · 실직 · 학업 실패 · 따돌림 같은 큰 상실 직후, 이전 시도가 있었을 때, 퇴원 직후 몇 주.</p>`,
+  q:[['갑자기 밝고 차분해진 것은 언제나 좋아졌다는 뜻이다.',false,'결심한 뒤의 평온일 수도 있어요. 이럴 때 오히려 안부를 물어 주세요.'],['자해 흔적을 숨기는 행동도 도움이 필요하다는 신호일 수 있다.',true,'맞아요. 숨긴다는 것은 혼자 감당하고 있다는 뜻일 때가 많아요.'],['신호가 하나뿐이면 지켜보기만 해도 된다.',false,'하나만 있어도 직접 묻는 것이 좋아요.']]},
+ {id:'ask',ic:'💬',t:'직접 묻고 듣기',sub:'보고 · 듣고 · 말하기',
+  body:`<p>“자살”을 직접 묻는다고 위험이 높아지지 않습니다. 오히려 “말해도 되는구나”라는 안도감을 줍니다. 보건복지부 생명지킴이 교육 ‘보고 듣고 말하기’의 핵심도 같습니다.</p>
+  <div class="say"><div class="yes"><h4>✅ 이렇게 말해요</h4><ul><li>“요즘 많이 힘들어 보여. 혹시 죽고 싶다는 생각도 드니?”</li><li>“말해 줘서 고마워. 끝까지 들을게.”</li><li>“너 혼자 해결하지 않아도 돼. 같이 도와줄 사람을 찾자.”</li><li>“지금 이 순간 안전하니? 오늘 밤은 어떻게 보낼까?”</li></ul></div>
+  <div class="no"><h4>🚫 이렇게 하지 말아요</h4><ul><li>“설마 그런 생각 하는 건 아니지?” (부정하는 질문)</li><li>“그런 생각 하면 못써”, “남은 가족은 어떡하라고” (훈계 · 죄책감)</li><li>“비밀로 해 줄게” (생명이 걸린 일은 비밀로 할 수 없어요)</li><li>서둘러 해결책부터 늘어놓기</li></ul></div></div>
+  <ol class="steps"><li><b>보기</b>: 말 · 행동 · 기분의 신호를 살피기</li><li><b>듣기</b>: 직접 묻고, 판단하지 않고 끝까지 듣기</li><li><b>말하기</b>: 혼자 두지 않고 전문기관(109, 1577-0199, 정신건강복지센터)에 함께 연결하기</li></ol>`,
+  q:[['“혹시 죽고 싶은 생각이 드니?”라고 직접 묻는 것은 위험을 높인다.',false,'직접 물어도 위험이 높아지지 않아요. 말할 기회를 주는 것이에요.'],['당사자가 비밀로 해 달라고 하면 반드시 지켜 준다.',false,'생명이 걸린 일은 비밀로 할 수 없어요. “너를 지키려고 함께 도움을 구할 거야”라고 솔직히 말해 주세요.'],['들을 때는 해결책보다 공감이 먼저다.',true,'맞아요. 충분히 들어 준 뒤에 함께 도움을 찾으면 돼요.']]},
+ {id:'safe',ic:'🔒',t:'안전한 환경 만들기',sub:'위험한 물건 멀리 두기',
+  body:`<p>위기는 파도처럼 몇 분~몇 시간 사이에 가장 높아졌다가 내려옵니다. 그 시간에 위험한 물건에 쉽게 닿지 않도록 하는 것만으로도 생명을 지킬 수 있습니다. 이것은 의심이 아니라 <b>보호</b>입니다.</p>
+  <ul class="plain"><li><b>약</b>: 집에 있는 약은 필요한 만큼만 두고, 나머지는 잠그거나 보호자가 보관해요. 처방약은 정해진 양을 그때그때 건네요. 다 쓴 약은 약국에 반납해요.</li>
+  <li><b>날카로운 물건 · 끈 · 화학제품</b>: 눈에 띄지 않는 곳에 치우거나 잠가요.</li>
+  <li><b>차 열쇠 · 높은 곳</b>: 위기 때는 혼자 운전하지 않게 하고, 혼자 높은 곳에 있지 않도록 곁에 있어요.</li>
+  <li><b>술</b>: 위기 때 충동을 키우므로 집에 두지 않아요.</li></ul>
+  <p>치울 때는 당사자와 함께 정하는 것이 좋아요. “네가 힘든 순간에 안전하도록 잠깐 맡아 둘게. 괜찮아지면 같이 다시 정하자.”</p>`,
+  q:[['위험한 물건을 멀리 두는 것은 자살 예방에 실제로 도움이 된다.',true,'맞아요. 위기의 순간에 시간을 벌어 주는 것이 생명을 지켜요.'],['처방약은 한 달 치를 한꺼번에 당사자에게 맡기는 것이 존중이다.',false,'위기 동안에는 필요한 만큼만 건네는 것이 안전해요. 당사자와 함께 정해요.'],['물건을 치울 때는 몰래 하는 것이 가장 좋다.',false,'가능하면 이유를 말하고 함께 정해야 신뢰가 지켜져요.']]},
+ {id:'harm',ic:'🩹',t:'자해를 알게 되었을 때',sub:'놀라도 침착하게',
+  body:`<p>자해는 견디기 힘든 감정을 다루려는 몸부림인 경우가 많습니다. 자살 시도와 다를 수 있지만, 자살 위험을 높이는 신호이기도 하니 <b>가볍게 넘기지도, 다그치지도 않는 것</b>이 중요합니다.</p>
+  <ol class="steps"><li><b>먼저 몸을 확인</b>해요. 상처가 깊거나 피가 멈추지 않거나, 약 · 물질을 먹었다면 바로 <a href="tel:119">119</a>.</li>
+  <li><b>숨 고르고 침착하게</b>: 화내기 · 울기 · 벌주기 대신 “얘기해 줘서 / 알게 돼서 다행이야. 많이 힘들었구나.”</li>
+  <li><b>방법이 아니라 마음을</b> 물어요: “그때 어떤 마음이었어?”, “무엇이 가장 힘들어?”</li>
+  <li><b>“다시는 안 한다고 약속해”를 강요하지 않아요.</b> 숨기게 만들 수 있어요. 대신 “다시 하고 싶어질 때 나에게 말해 줄 수 있을까?”</li>
+  <li><b>전문가와 연결</b>해요: 정신건강의학과, 지역 정신건강복지센터, 청소년이라면 Wee클래스 · 1388.</li>
+  <li><b>함께 안전계획</b>을 써요. 힘들 때 해 볼 것(산책, 샤워, 음악, 그림, 사람에게 연락, 천천히 숨쉬기)을 당사자가 고르게 해요.</li></ol>`,
+  q:[['자해를 알게 되면 먼저 다시는 안 하겠다는 약속부터 받아야 한다.',false,'약속을 강요하면 숨기게 될 수 있어요. 힘들 때 말해 달라고 부탁해 주세요.'],['상처가 깊거나 약을 먹었다면 바로 119에 연락한다.',true,'맞아요. 몸의 안전이 가장 먼저예요.'],['자해는 관심을 끌려는 행동이니 모른 척하는 것이 낫다.',false,'자해는 도움이 필요하다는 신호예요. 모른 척하지 말고 차분히 다가가 주세요.']]},
+ {id:'after',ic:'🏥',t:'시도 이후 · 퇴원 직후',sub:'가장 조심할 몇 주',
+  body:`<p>자살 시도 뒤, 그리고 정신과 퇴원 직후 몇 주는 위험이 특히 높은 시기입니다. 이 시기의 꾸준한 연결이 다음 위기를 막습니다.</p>
+  <ul class="plain"><li><b>다음 진료 · 상담 날짜</b>를 퇴원 전에 정하고 함께 가요.</li>
+  <li>응급실을 거쳤다면 <b>응급실 기반 사후관리</b>, 지역 <b>정신건강복지센터</b> · <b>자살예방센터</b>의 사례관리를 받을 수 있는지 물어봐요. 연계에는 당사자의 동의가 필요해요(<a href="#rights">입원과 내 권리</a> 참고).</li>
+  <li>약은 보호자가 보관하고 정해진 만큼만 건네요.</li>
+  <li><a href="#now">안전계획</a>을 함께 다시 써요. 경고 신호, 연락할 사람, 안전한 장소를 구체적으로.</li>
+  <li>“예전처럼”을 서두르지 않아요. 학교 · 직장 복귀는 천천히, 담당 선생님과 상의해서.</li>
+  <li>매일 짧게라도 안부를 물어요. “오늘은 마음이 몇 점이야?”(0~10)</li></ul>`,
+  q:[['퇴원하면 위험이 끝났으니 평소처럼 지내면 된다.',false,'퇴원 직후 몇 주는 오히려 조심할 시기예요. 다음 진료와 연결을 꼭 챙겨 주세요.'],['센터 사례관리로 연결하려면 당사자의 동의가 필요하다.',true,'맞아요. 함께 설명하고 동의를 구해 주세요.'],['매일 짧은 안부(마음 점수 묻기)도 도움이 된다.',true,'맞아요. 작은 연결이 큰 보호가 돼요.']]},
+ {id:'youth',ic:'🎒',t:'아이 · 청소년일 때',sub:'부모 · 교사를 위한 안내',
+  body:`<p>청소년은 위기를 말 대신 짜증, 성적 하락, 방에 틀어박히기, SNS 글로 드러내기도 합니다. “사춘기라서”로 넘기지 말고 물어봐 주세요.</p>
+  <ul class="plain"><li>혼내기보다 먼저 묻기: “요즘 무슨 일 있어? 네 편에서 듣고 싶어.”</li>
+  <li>SNS · 메신저의 작별 글, 자해 사진, 위험한 챌린지를 보면 바로 대화하고 필요하면 신고해요.</li>
+  <li>학교의 <b>Wee클래스 · Wee센터</b>, <a href="tel:1388">청소년상담 1388</a>, 청소년 모바일 상담 앱 ‘다 들어줄 개’, <a href="tel:109">109</a>를 아이와 함께 저장해 두어요.</li>
+  <li>따돌림 · 학교폭력 · 가정 갈등이 있으면 그 문제를 함께 해결하는 것이 예방이에요.</li>
+  <li>부모가 먼저 지치지 않도록 상담을 함께 받아요.</li></ul>`,
+  q:[['청소년의 짜증과 고립은 사춘기니까 그냥 두면 된다.',false,'위기의 신호일 수 있어요. 혼내기 전에 먼저 물어봐 주세요.'],['1388과 109는 아이와 함께 휴대폰에 저장해 두면 좋다.',true,'맞아요. 위기 때 찾지 않아도 되게 미리 저장해요.']]},
+ {id:'self',ic:'🫶',t:'보호자 자신 돌보기',sub:'지치지 않아야 오래 곁에',
+  body:`<p>위기에 있는 사람 곁을 지키는 일은 큰 부담입니다. 보호자가 무너지지 않아야 오래 함께할 수 있어요.</p>
+  <ul class="plain"><li>혼자 감당하지 말고 다른 가족 · 친구와 역할을 나눠요.</li>
+  <li>보호자도 <a href="tel:109">109</a>, <a href="tel:15770199">1577-0199</a>, 정신건강복지센터에서 상담받을 수 있어요.</li>
+  <li>잠 · 식사 · 짧은 휴식을 챙겨요. “내가 잘못해서”라는 생각이 들면 그것도 상담에서 이야기해요.</li>
+  <li>가족을 자살로 잃었다면 <b>자살유족 지원</b>(지역 자살예방센터 · 정신건강복지센터)을 받을 수 있어요.</li></ul>`,
+  q:[['보호자가 상담을 받는 것도 위기 대응의 일부다.',true,'맞아요. 보호자의 회복이 곁에 있는 힘이 돼요.'],['좋은 보호자는 모든 것을 혼자 해낸다.',false,'역할을 나누고 도움을 받는 것이 오래 지키는 방법이에요.']]}
+];
+const famDone=store.get('famDone',{});let famCur=store.get('famCur','signs');
+function famProg(){const n=MODS.filter(m=>famDone[m.id]).length;$('#famBar').style.width=Math.round(n/MODS.length*100)+'%';$('#famProg').textContent=`${n} / ${MODS.length}단원 완료`}
+function drawFam(){
+ $('#famMods').innerHTML=MODS.map(m=>`<button class="mod ${famDone[m.id]?'done':''}" type="button" data-m="${m.id}" aria-pressed="${m.id===famCur}"><span>${m.ic}</span>${m.t}<small>${famDone[m.id]?'✓ 완료':m.sub}</small></button>`).join('');
+ const m=MODS.find(x=>x.id===famCur);
+ $('#famCard').innerHTML=`<h3>${m.ic} ${m.t}</h3>${m.body}<div class="quiz"><b>✔ 확인 문제</b> <span class="note">O · X를 골라 보세요</span>${m.q.map(([q],i)=>`<div class="q">${i+1}. ${esc(q)}</div><div class="opts"><button class="opt" type="button" data-qi="${i}" data-a="1">⭕ 맞아요</button><button class="opt" type="button" data-qi="${i}" data-a="0">❌ 아니에요</button></div><div class="fb" id="fb${i}"></div>`).join('')}</div>
+ <div class="row"><button class="btn ghost" type="button" id="famPrev">← 이전</button><button class="btn" type="button" id="famNext">다음 단원 →</button></div>`;
+ famProg();
+}
+let famAns={};
+$('#famMods').addEventListener('click',e=>{const b=e.target.closest('.mod');if(!b)return;famCur=b.dataset.m;store.set('famCur',famCur);famAns={};drawFam();$('#famCard').scrollIntoView({behavior:'smooth',block:'start'})});
+$('#famCard').addEventListener('click',e=>{
+ const o=e.target.closest('.opt');
+ if(o){const m=MODS.find(x=>x.id===famCur),i=+o.dataset.qi,[,ans,why]=m.q[i],pick=o.dataset.a==='1',ok=pick===ans;
+  o.parentElement.querySelectorAll('.opt').forEach(x=>x.classList.remove('right','wrong'));o.classList.add(ok?'right':'wrong');
+  $('#fb'+i).innerHTML=(ok?'👍 정답! ':'💡 다시 볼까요? ')+esc(why);famAns[i]=ok;
+  if(m.q.every((_,k)=>famAns[k])){famDone[famCur]=1;store.set('famDone',famDone);famProg();document.querySelector(`.mod[data-m="${famCur}"]`)?.classList.add('done');gainXP(10,'보호자 교육 단원 완료')}
+  return}
+ const i=MODS.findIndex(x=>x.id===famCur);
+ if(e.target.id==='famNext'&&i<MODS.length-1){famCur=MODS[i+1].id}else if(e.target.id==='famPrev'&&i>0){famCur=MODS[i-1].id}else return;
+ store.set('famCur',famCur);famAns={};drawFam();$('#famCard').scrollIntoView({behavior:'smooth',block:'start'});
+});
+drawFam();
+
+/* ================= 마음 연습 (게임 CBT) ================= */
+const TRAPS={all:['흑백논리','중간 없이 전부 아니면 전무로 봐요'],cat:['파국화','가장 나쁜 결과를 확신해요'],mind:['독심술','다른 사람의 속마음을 안다고 확신해요'],over:['과잉일반화','한 번의 일을 ‘항상 · 절대’로 넓혀요'],emo:['감정적 추론','그렇게 느끼니까 사실이라고 믿어요'],should:['당위 진술','‘~해야만 해’로 나와 남을 몰아세워요'],label:['낙인찍기','한 행동으로 ‘나는 ○○한 사람’이라 이름 붙여요'],pers:['개인화','내 책임이 아닌 일까지 내 탓으로 돌려요'],filt:['정신적 여과','좋은 것은 빼고 나쁜 것만 봐요'],fort:['점쟁이 오류','앞일이 나쁘게 될 거라 단정해요']};
+const TRAP_Q=[
+ ['발표에서 한 번 말을 더듬었다.','나는 완전히 망했어. 발표는 실패야.','all'],
+ ['친구가 메시지에 한참 답이 없다.','분명 나한테 화가 났거나 나를 싫어하는 거야.','mind'],
+ ['시험 하나를 망쳤다.','나는 항상 이래. 뭘 해도 절대 안 돼.','over'],
+ ['내일 면접이 있다.','분명 떨어질 거야. 해 봐야 소용없어.','fort'],
+ ['가슴이 두근거리고 불안하다.','이렇게 불안한 걸 보면 정말 큰일이 날 거야.','emo'],
+ ['집안일을 다 못 했다.','완벽하게 해냈어야 해. 이것도 못 하다니.','should'],
+ ['약속 시간을 깜빡했다.','나는 정말 한심한 인간이야.','label'],
+ ['부모님이 다투셨다.','다 나 때문이야. 내가 문제야.','pers'],
+ ['칭찬 다섯 개와 지적 한 개를 들었다.','결국 내가 못한다는 소리잖아.','filt'],
+ ['머리가 아프다.','큰 병이면 어떡하지? 이러다 모든 게 끝날 거야.','cat'],
+ ['단톡방에서 내 말에 아무도 반응하지 않았다.','다들 나를 귀찮아해.','mind'],
+ ['운동을 사흘 빼먹었다.','역시 나는 아무것도 꾸준히 못 해.','over'],
+ ['동료가 나를 보고 웃지 않고 지나갔다.','내가 뭘 잘못했나 봐. 나 때문에 기분이 나쁜 거야.','pers'],
+ ['상담 예약을 앞두고 있다.','어차피 말해 봤자 아무것도 안 바뀔 거야.','fort'],
+ ['하루 종일 기운이 없다.','쓸모없다고 느껴지니까 나는 쓸모없는 사람이야.','emo']];
+const REFRAME_Q=[
+ ['나는 완전히 망했어.',['한 부분이 아쉬웠지만, 끝까지 해낸 부분도 있어. 다음엔 그 부분을 연습해 보자.','맞아, 나는 원래 아무것도 못 해.','괜찮아, 아무 일도 없었던 거야. 신경 쓰지 말자.'],0],
+ ['친구가 나를 싫어하는 게 분명해.',['다시는 연락하지 말아야지.','답이 늦은 이유는 여러 가지일 수 있어. 궁금하면 가볍게 물어볼 수 있어.','친구가 나를 좋아할 리 없어.'],1],
+ ['나는 짐만 되는 사람이야.',['힘든 지금은 그렇게 느껴지지만, 느낌이 곧 사실은 아니야. 나를 아끼는 사람도 있고, 도움을 청해도 괜찮아.','아무도 나를 필요로 하지 않아.','그런 생각은 하면 안 돼. 그냥 참아야 해.'],0],
+ ['이 고통은 절대 끝나지 않을 거야.',['맞아, 영원히 이럴 거야.','지금은 정말 힘들지만, 감정은 파도처럼 오르내려. 예전에도 지나간 적이 있어. 지금 도움을 청해 보자.','억지로라도 웃자.'],1],
+ ['실수했으니 나는 실패자야.',['실수는 사람이면 누구나 해. 실수 하나가 나 전체를 말해 주지는 않아.','다음엔 절대 실수하면 안 돼.','실패자가 맞으니 그만두자.'],0],
+ ['아무도 나를 이해하지 못해.',['그러니 혼자 견뎌야 해.','지금은 이해받지 못한다고 느끼지만, 이야기를 들어 줄 사람이나 전화(109)가 있어. 한 명에게 말해 볼 수 있어.','다른 사람은 다 행복해 보여.'],1],
+ ['내일 일을 망칠 게 뻔해.',['아직 일어나지 않은 일이야. 준비할 수 있는 것 한 가지를 해 보자.','그럼 아예 가지 말자.','망칠 게 뻔하니 걱정만 하자.'],0],
+ ['다 내 잘못이야.',['내가 모든 걸 망쳤어.','내 몫의 책임과 내가 어쩔 수 없었던 일을 나눠 보자. 내 몫이 있다면 할 수 있는 만큼 고치면 돼.','남 탓을 하자.'],1]];
+const COPE=[
+ ['🌬️','4-6 숨쉬기','숨을 4초 동안 들이쉬고 6초 동안 내쉬어요. 다섯 번 반복해요. 내쉬는 숨을 길게 하면 몸이 진정돼요.'],
+ ['🖐️','5-4-3-2-1 감각 찾기','보이는 것 5개, 들리는 것 4개, 만질 수 있는 것 3개, 냄새 2개, 맛 1개를 차례로 찾아 말해요.'],
+ ['📞','한 사람에게 연락','“지금 좀 힘들어. 잠깐 얘기할 수 있어?” 한 문장이면 충분해요. 떠오르는 사람이 없으면 109.'],
+ ['🚶','10분 걷기','밖이든 집 안이든 10분만 걸어요. 발이 땅에 닿는 느낌에 집중해요.'],
+ ['🎧','마음 플레이리스트','힘낼 때 · 가라앉힐 때 듣는 노래 한 곡을 끝까지 들어요.'],
+ ['✏️','감정 쏟아 쓰기','지금 마음을 5분 동안 맞춤법 신경 쓰지 말고 적어요. 다 쓰면 덮어 둬요.'],
+ ['🚿','따뜻한 샤워','따뜻한 물로 씻으며 물의 온도와 소리에 집중해요.'],
+ ['🍵','따뜻한 차 한 잔','천천히 마시며 컵의 온기와 향을 느껴요.'],
+ ['🧸','안전한 장소 떠올리기','편안했던 장소를 눈을 감고 떠올려요. 무엇이 보이고 들리는지 자세히 그려요.'],
+ ['🧩','손으로 하는 일','색칠, 퍼즐, 뜨개질, 설거지처럼 손을 쓰는 일을 15분 해요.'],
+ ['🐾','반려동물 · 식물 돌보기','물 주기, 쓰다듬기처럼 다른 생명을 돌보는 작은 일을 해요.'],
+ ['🗒️','안전계획 펼치기','미리 적어 둔 나의 안전계획을 열어 2번부터 차례로 해 봐요.'],
+ ['🤸','몸 풀기','어깨를 귀까지 올렸다 툭 떨어뜨리기 10번, 팔 크게 돌리기 10번.'],
+ ['🌤️','창밖 보기','창문을 열고 1분 동안 하늘과 바깥 풍경을 바라봐요.']];
+const BADGES=[['first','🌱 첫걸음','처음으로 게임 완료'],['detect','🕵️ 생각 탐정','생각의 덫 10개 찾기'],['reframe','🔄 다시 쓰기 달인','균형 잡힌 생각 5개 고르기'],['cope','🎴 대처 수집가','대처 카드 5장 해 보기'],['record','🌡️ 온도 낮추기','생각 기록 3번'],['family','🫶 든든한 보호자','보호자 교육 전 단원 완료'],['streak','🔥 5연속','5문제 연속 정답']];
+const P=store.get('play',{xp:0,streak:0,trap:0,reframe:0,cope:0,record:0,badges:{}});
+const save=()=>store.set('play',P);
+const lv=()=>Math.floor(P.xp/50)+1;
+function hud(){$('#xpLv').textContent=lv();$('#xpBar').style.width=(P.xp%50)*2+'%';$('#xpTxt').textContent=`경험치 ${P.xp} · 다음 레벨까지 ${50-P.xp%50}`;$('#streak').textContent=P.streak;
+ if(MODS.every(m=>famDone[m.id]))P.badges.family=1;
+ $('#badges').innerHTML=BADGES.map(([k,n,d])=>`<span class="badge ${P.badges[k]?'':'off'}" title="${d}">${n}</span>`).join('')}
+function badge(k){if(!P.badges[k]){P.badges[k]=1;const b=BADGES.find(x=>x[0]===k);toastMsg(`🏅 배지 획득: ${b[1]}`)}}
+window.gainXP=function(n){P.xp+=n;if(!P.badges.first)badge('first');save();hud()};
+function toastMsg(t){let e=document.getElementById('ieToast');if(!e){e=document.createElement('div');e.id='ieToast';e.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f4c5c;color:#fff;padding:12px 18px;border-radius:14px;z-index:50;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90vw;text-align:center';document.body.appendChild(e)}e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',2600)}
+let game=null,deck=[],qi=0;
+function pick(g){game=g;document.querySelectorAll('.game').forEach(b=>b.setAttribute('aria-pressed',b.dataset.game===g));
+ if(g==='trap'){deck=shuffle(TRAP_Q).slice(0,5);qi=0;drawTrap()}
+ if(g==='reframe'){deck=shuffle(REFRAME_Q).slice(0,4);qi=0;drawReframe()}
+ if(g==='cope')drawCope();
+ if(g==='record')drawRecord();
+ $('#playCard').scrollIntoView({behavior:'smooth',block:'start'})}
+function drawTrap(){const [sit,th,ans]=deck[qi];const opts=shuffle([ans,...shuffle(Object.keys(TRAPS).filter(k=>k!==ans)).slice(0,3)]);
+ $('#playCard').innerHTML=`<h3>🕵️ 생각 탐정 <span class="note">${qi+1} / ${deck.length}</span></h3><div class="scene">상황: ${esc(sit)}<br>떠오른 생각: <q>${esc(th)}</q></div><p>이 생각에 숨은 <b>생각의 덫</b>은 무엇일까요?</p>
+ <div class="opts">${opts.map(k=>`<button class="opt" type="button" data-trap="${k}">${TRAPS[k][0]}</button>`).join('')}</div><div class="fb" id="gfb"></div>`}
+function drawReframe(){const [th,opts,ans]=deck[qi];const ord=shuffle(opts.map((t,i)=>[t,i]));
+ $('#playCard').innerHTML=`<h3>🔄 생각 다시 쓰기 <span class="note">${qi+1} / ${deck.length}</span></h3><div class="scene">떠오른 생각: <q>${esc(th)}</q></div><p>가장 <b>균형 잡힌 생각</b>을 골라 보세요. 무조건 긍정도, 나를 탓하는 것도 아닌 생각이에요.</p>
+ <div class="opts" style="flex-direction:column">${ord.map(([t,i])=>`<button class="opt" type="button" data-rf="${i}">${esc(t)}</button>`).join('')}</div><div class="fb" id="gfb"></div>`}
+function nextBtn(label){return `<div class="row"><button class="btn" type="button" id="gNext">${label}</button></div>`}
+function drawCope(){const c=COPE[Math.floor(Math.random()*COPE.length)];
+ $('#playCard').innerHTML=`<h3>🎴 대처 카드</h3><div class="cardflip"><div><b>${c[0]}</b><strong style="font-size:20px">${c[1]}</strong><p style="margin:8px 0 0">${c[2]}</p></div></div>
+ <div class="row"><button class="btn" type="button" id="copeDone">✅ 해 봤어요</button><button class="btn ghost" type="button" id="copeAgain">🔀 다른 카드</button></div><p class="note">해 본 뒤 마음 점수가 어떻게 바뀌었는지 ‘생각 기록’에 남겨 보세요.</p>`}
+const REC=store.get('records',[]);
+function drawRecord(){
+ $('#playCard').innerHTML=`<h3>🌡️ 생각 기록 (감정 온도 낮추기)</h3>
+ <div class="field"><label for="rSit">1. 어떤 일이 있었나요? (상황)</label><textarea id="rSit" placeholder="예: 친구가 약속을 취소했다"></textarea></div>
+ <div class="field"><label for="rTh">2. 그때 떠오른 생각은?</label><textarea id="rTh" placeholder="예: 나는 누구에게도 중요하지 않아"></textarea></div>
+ <div class="field"><label>3. 지금 감정의 온도 (0 편안 ~ 10 매우 힘듦)</label><div class="therm"><input type="range" id="rB" min="0" max="10" value="6"><b id="rBv">6</b></div></div>
+ <div class="field"><label for="rFor">4. 그 생각이 맞다는 근거</label><textarea id="rFor"></textarea></div>
+ <div class="field"><label for="rAg">5. 그 생각과 다른 근거 · 다르게 볼 수 있는 점</label><textarea id="rAg" placeholder="예: 친구는 지난주에 먼저 연락했다"></textarea></div>
+ <div class="field"><label for="rNew">6. 균형 잡힌 생각</label><textarea id="rNew" placeholder="예: 일정이 생겼을 수 있어. 다음 약속을 내가 먼저 잡아 볼 수 있어"></textarea></div>
+ <div class="field"><label>7. 다시 재는 감정의 온도</label><div class="therm"><input type="range" id="rA" min="0" max="10" value="6"><b id="rAv">6</b></div></div>
+ <div id="rWarn"></div>
+ <div class="row"><button class="btn" type="button" id="rSave">기록 저장</button></div>
+ <div class="hist" id="rHist">${REC.slice(-5).reverse().map(r=>`<div><span>${esc(r.d)} · ${esc(r.th.slice(0,24))}${r.th.length>24?'…':''}</span><span>${r.b} → ${r.a} ${r.b>r.a?`<span class="drop">▼${r.b-r.a}</span>`:''}</span></div>`).join('')}</div>`;
+ const warn=()=>{const v=Math.max(+$('#rB').value,+$('#rA').value);$('#rWarn').innerHTML=v>=9?`<div class="warn"><b>많이 힘든 상태예요.</b> 기록보다 연결이 먼저예요. <a href="tel:109">109</a> · <a href="tel:15770199">1577-0199</a>에 전화하거나 <a href="#now">지금 위험해요</a>의 안전계획을 펼쳐 주세요.</div>`:''};
+ ['B','A'].forEach(k=>{const r=$('#r'+k);r.oninput=()=>{$('#r'+k+'v').textContent=r.value;warn()}});
+}
+$('.games').addEventListener('click',e=>{const b=e.target.closest('.game');if(b)pick(b.dataset.game)});
+$('#playCard').addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+ if(t.dataset.trap){if($('#gfb').textContent)return;const [,,ans]=deck[qi],ok=t.dataset.trap===ans;
+  t.classList.add(ok?'right':'wrong');if(!ok)document.querySelector(`[data-trap="${ans}"]`).classList.add('right');
+  $('#gfb').innerHTML=`${ok?'🎉 정답! +5':'💡 정답은 '+TRAPS[ans][0]}: ${TRAPS[ans][1]}.`+nextBtn(qi<deck.length-1?'다음 문제 →':'결과 보기');
+  if(ok){P.streak++;P.trap++;gainXP(5);if(P.trap>=10)badge('detect');if(P.streak>=5)badge('streak')}else{P.streak=0;save();hud()}return}
+ if(t.dataset.rf!==undefined){if($('#gfb').textContent)return;const [,opts,ans]=deck[qi],ok=+t.dataset.rf===ans;
+  t.classList.add(ok?'right':'wrong');if(!ok)document.querySelector(`[data-rf="${ans}"]`).classList.add('right');
+  $('#gfb').innerHTML=(ok?'🎉 좋아요! +5 ':'💡 ')+'균형 잡힌 생각은 사실을 인정하면서도 다른 가능성과 할 수 있는 일을 함께 봐요.'+nextBtn(qi<deck.length-1?'다음 문제 →':'결과 보기');
+  if(ok){P.streak++;P.reframe++;gainXP(5);if(P.reframe>=5)badge('reframe');if(P.streak>=5)badge('streak')}else{P.streak=0;save();hud()}return}
+ if(t.id==='gNext'){qi++;if(qi<deck.length){game==='trap'?drawTrap():drawReframe()}else{gainXP(5);$('#playCard').innerHTML=`<h3>🏁 한 판 끝!</h3><p>생각을 한 걸음 떨어져서 보는 연습을 했어요. 실제로 힘든 생각이 들 때도 “이건 어떤 덫일까?” 하고 이름 붙여 보세요. 이름을 붙이면 생각과 거리가 생겨요.</p><div class="row"><button class="btn" type="button" id="gAgain">한 판 더</button></div>`}return}
+ if(t.id==='gAgain'){pick(game);return}
+ if(t.id==='copeDone'){P.cope++;gainXP(5);if(P.cope>=5)badge('cope');toastMsg('잘했어요! 작은 행동이 감정을 바꿔요 🌿');drawCope();return}
+ if(t.id==='copeAgain'){drawCope();return}
+ if(t.id==='rSave'){const th=$('#rTh').value.trim();if(!th){toastMsg('떠오른 생각을 적어 주세요');return}
+  REC.push({d:new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}),sit:$('#rSit').value.trim(),th,b:+$('#rB').value,a:+$('#rA').value,new:$('#rNew').value.trim()});store.set('records',REC.slice(-100));
+  P.record++;gainXP(10);if(P.record>=3)badge('record');toastMsg(+$('#rB').value>+$('#rA').value?`감정 온도가 ${$('#rB').value-$('#rA').value}만큼 내려갔어요 👏`:'기록했어요. 꾸준히 하면 패턴이 보여요');drawRecord();return}
+});
+hud();
+}
+</script>
 </body>
 </html>
