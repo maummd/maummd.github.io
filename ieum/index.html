@@ -9,10 +9,10 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#F4EEDF">
 <title>마음 이음 — 위기대응 · 절차조력 안내</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
 /* VOICE: 차분하고 분명한 공공 안내. 위기 화면은 짧고 크게, 법 설명은 조문 근거까지.
    IDEA: 섬(島)과 육지를 잇는 다리 — 고립된 사람이 단계마다 끊기지 않고 건너가는 길.
@@ -112,51 +112,6 @@ footer{max-width:1100px;margin:auto;padding:0 max(5vw,16px) 40px;font-size:13.5p
 .hist{margin-top:10px}.hist div{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px}.hist div:last-child{border-bottom:0}
 .drop{font-weight:700;color:var(--ok)}
 </style>
-<style>
-/* ---------- 밝고 생동감 있는 마음 이음 ---------- */
-:root{color-scheme:light;--bg:#F2FBF9;--panel:#fff;--ink:#16323A;--mut:#5A7279;--sea:#0E8C8C;--sea2:#DDF5F1;--hot:#FF5A4E;--line:#DCEDEA;--ok:#12A36B}
-body{background:linear-gradient(180deg,#DFF7F2 0,#F2FBF9 260px,#F8FCFB 100%) fixed}
-header{background:linear-gradient(120deg,#14A3A3 0%,#2FB8C9 45%,#59C7E8 100%);color:#fff;padding-top:16px;box-shadow:0 6px 24px rgba(20,163,163,.25)}
-header h1{color:#fff;font-weight:800;letter-spacing:-.5px}header p{color:#E8FBFF}
-nav{gap:6px;padding-bottom:10px}
-nav a{display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:16px;padding:8px 12px;background:rgba(255,255,255,.16);color:#fff;font-size:13.5px;font-weight:600;min-width:74px}
-nav a span{font-size:22px;line-height:1.2}
-nav a[aria-current]{background:#fff;color:#0E7C7C;box-shadow:0 4px 12px rgba(0,0,0,.12);font-weight:800}
-.hero{display:flex;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(135deg,#FFE9A8,#FFD3B5 55%,#FFC2CF);border-radius:22px;padding:18px 20px;margin:0 0 6px;color:#5A2A1A;box-shadow:0 6px 18px rgba(255,140,100,.18)}
-.hero b{display:block;font:800 clamp(22px,4vw,30px)/1.25 "IBM Plex Sans KR",sans-serif}.hero span{font-size:15.5px}
-.hero-sun{font-size:54px;animation:sun 6s ease-in-out infinite}@keyframes sun{50%{transform:rotate(12deg) scale(1.06)}}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-h2{color:#0E6E73;font-weight:800}
-.card{border:0;border-radius:20px;box-shadow:0 3px 14px rgba(14,90,90,.08)}
-.call{border:0;border-radius:20px;box-shadow:0 4px 14px rgba(14,90,90,.1);transition:transform .12s}.call:active{transform:scale(.98)}
-.call b{color:#0E8C8C}
-.call.hot{background:linear-gradient(135deg,#FF6A5C,#FF8A4C);box-shadow:0 6px 18px rgba(255,90,78,.35)}
-.calls .call:nth-child(3){background:linear-gradient(135deg,#E3F7FF,#D5F3EC)}.calls .call:nth-child(4){background:linear-gradient(135deg,#F0EBFF,#E3F0FF)}
-.calls .call:nth-child(4) b{color:#6A4FD8}
-.btn{border-radius:14px;background:linear-gradient(135deg,#14A3A3,#2FB8C9);color:#fff;box-shadow:0 4px 12px rgba(20,163,163,.3)}
-.btn.ghost{background:#fff;color:#0E8C8C;border:1.5px solid #9EDDD6;box-shadow:none}
-.chip{border:0;box-shadow:0 2px 8px rgba(14,90,90,.08);font-weight:600}.chip[aria-pressed=true]{background:linear-gradient(135deg,#14A3A3,#2FB8C9);color:#fff}
-.pier i{border-color:#14A3A3;color:#0E8C8C;box-shadow:0 3px 8px rgba(20,163,163,.2)}.pier[aria-pressed=true] i{background:linear-gradient(135deg,#14A3A3,#59C7E8);color:#fff}
-.bridge::before{background:linear-gradient(90deg,#14A3A3,#59C7E8,#FFB86B);opacity:.6;height:6px}
-input[type=text],textarea,select{background:#F7FCFB;border:1.5px solid var(--line);border-radius:14px}textarea:focus,input:focus{border-color:#2FB8C9;background:#fff}
-.mod{border:0;box-shadow:0 2px 10px rgba(14,90,90,.08);border-radius:18px}.mod[aria-pressed=true]{background:linear-gradient(135deg,#DDF7F2,#E6F4FF);border:2px solid #2FB8C9}
-.mod:nth-child(7n+1) span,.mod:nth-child(7n+4) span{filter:saturate(1.3)}
-.say .yes{background:#E3F9EE}.say .no{background:#FFECEA}
-.opt{border:1.5px solid var(--line);background:#fff;border-radius:14px}
-.hud{border:0;border-radius:20px;background:linear-gradient(135deg,#FFF7DA,#E8FBF4);box-shadow:0 3px 14px rgba(14,90,90,.08)}.hud b{color:#E8743B}
-.prog-bar{background:#E2F3F0}.prog-bar i{background:linear-gradient(90deg,#14A3A3,#59C7E8,#FFB86B)}
-.badge{background:linear-gradient(135deg,#FFE9A8,#FFD3B5);color:#7A3A12}.badge.off{background:#EEF3F2;color:#7D9096}
-.game{border-radius:20px;box-shadow:0 6px 16px rgba(0,0,0,.12);transition:transform .12s}.game:active{transform:scale(.97)}
-.game[data-game=trap]{background:linear-gradient(135deg,#14A3A3,#2FB8C9)}.game[data-game=reframe]{background:linear-gradient(135deg,#7B6CFF,#5AA0FF)}.game[data-game=cope]{background:linear-gradient(135deg,#FF8A4C,#FFB84D)}.game[data-game=record]{background:linear-gradient(135deg,#21B573,#7BD389)}
-.scene{background:linear-gradient(135deg,#E6F8F5,#EAF3FF);border-radius:16px}
-.cardflip{background:linear-gradient(135deg,#FFF6D6,#FFE0C2,#FFD6E0)}
-.warn{border-left-color:#FF5A4E;background:#FFF1EF}
-.map .n{border:0;box-shadow:0 2px 10px rgba(14,90,90,.08)}.map .core{background:linear-gradient(135deg,#DDF7F2,#E6F4FF);border:2px solid #2FB8C9}
-.tag{background:#DDF7F2;color:#0E7C7C}
-pre.out{background:#EAF8F5}
-footer{color:#6E858B}
-@media(max-width:600px){nav a{min-width:68px;padding:7px 8px;font-size:12.5px}.hero-sun{font-size:42px}}
-</style>
 
 <style>
 .hero.rehab{background:linear-gradient(135deg,#D9F7E8,#C8EEDF 50%,#BDE7F2);color:#164A3A}
@@ -169,78 +124,81 @@ footer{color:#6E858B}
 @media(min-width:700px){.sheetbg{align-items:center}.sheetbox{border-radius:22px}}
 </style>
 <style>
-/* ---------- 웹툰 앱 느낌: 흰 바탕 · 초록 강조 · 굵은 글씨 · 썸네일 목록 · 말풍선 ---------- */
-:root{--bg:#fff;--panel:#fff;--ink:#111;--mut:#6b6b6b;--sea:#00C46A;--sea2:#E9FBF1;--line:#ECECEC;--ok:#00B35F;--hot:#FF4B3E}
-body{background:#fff;font-family:"Noto Sans KR",system-ui,sans-serif;letter-spacing:-.2px}
-header{background:#fff;color:#111;box-shadow:none;border-bottom:1px solid #EFEFEF;padding:14px max(5vw,16px) 0;position:sticky;top:0;z-index:20}
-header h1{color:#111;font-weight:900;font-size:26px;letter-spacing:-1px}header h1::after{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--sea);margin-left:4px;vertical-align:4px}
-header p{color:#8a8a8a;font-size:12.5px}header svg{display:none}
-nav{gap:0;margin-top:8px;padding:0}
-nav a{flex-direction:row;gap:4px;background:none;color:#8a8a8a;border-radius:0;padding:10px 12px 12px;min-width:0;font-size:15px;font-weight:700;border-bottom:3px solid transparent}
-nav a span{font-size:15px}
-nav a[aria-current]{background:none;color:#111;box-shadow:none;border-bottom-color:var(--sea)}
-main{padding-top:18px}
-h2{color:#111;font-weight:900;font-size:22px;letter-spacing:-.6px}h3{font-weight:800;letter-spacing:-.4px}
-.lead{color:#6b6b6b}
-.card{border:1px solid #EFEFEF;border-radius:14px;box-shadow:none}
-.toon{display:flex;align-items:flex-end;gap:10px;margin:4px 0 14px}
-.toon-char{flex:none;display:grid;place-items:center;width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#E9FBF1,#D1F7E2);border:3px solid #111;position:relative}
-.toon-char span{font-size:40px;animation:bob 2.6s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-4px)}}
-.toon-char i{position:absolute;bottom:-12px;background:#111;color:#fff;font:700 11px "Noto Sans KR";font-style:normal;padding:2px 8px;border-radius:99px}
-.bubble{position:relative;flex:1;background:#fff;border:3px solid #111;border-radius:22px;padding:14px 16px;box-shadow:4px 4px 0 #111}
-.bubble::before{content:"";position:absolute;left:-14px;bottom:18px;border:10px solid transparent;border-right:14px solid #111}
-.bubble::after{content:"";position:absolute;left:-8px;bottom:20px;border:8px solid transparent;border-right:10px solid #fff}
-.bubble b{display:block;font:900 clamp(20px,4.6vw,26px)/1.25 "Noto Sans KR",sans-serif;letter-spacing:-.8px}.bubble span{color:#444;font-size:15px}
-.hero{border:3px solid #111;border-radius:18px;box-shadow:4px 4px 0 #111}
-.call{border:2px solid #111;border-radius:16px;box-shadow:3px 3px 0 #111;background:#fff}
-.call b{color:#111;font-weight:900}
-.call.hot{background:var(--hot);border-color:#111;box-shadow:3px 3px 0 #111}.call.hot b{color:#fff}
-.calls .call:nth-child(3){background:#E9FBF1}.calls .call:nth-child(4){background:#F2EEFF}.calls .call:nth-child(4) b{color:#111}
-.btn{background:var(--sea);color:#fff;border-radius:10px;box-shadow:none;font-weight:800}
-.btn.ghost{background:#fff;color:#111;border:1.5px solid #DADADA}
-.chip{border:1.5px solid #E3E3E3;box-shadow:none;background:#fff;font-weight:700}.chip[aria-pressed=true]{background:#111;color:#fff;border-color:#111}
-.mods{grid-template-columns:1fr;gap:0;border-top:1px solid #EFEFEF}
-.mod.ep{flex-direction:row;align-items:center;gap:12px;min-height:0;padding:12px 4px;border:0;border-bottom:1px solid #EFEFEF;border-radius:0;box-shadow:none;background:#fff}
-.mod.ep[aria-pressed=true]{background:#F6FFF9;border:0;border-bottom:1px solid #EFEFEF}
-.thumb{flex:none;display:grid;place-items:center;width:84px;height:62px;border-radius:8px;font-size:30px}
-.t0{background:#FFE7C7}.t1{background:#D9F2FF}.t2{background:#E8E1FF}.t3{background:#FFD9DE}.t4{background:#D6F7E5}.t5{background:#FFF3B8}.t6{background:#F0E6DA}
-.ept{display:flex;flex-direction:column;align-items:flex-start;gap:1px}.ept em{font-style:normal;font-size:12.5px;color:var(--sea);font-weight:800}.ept b{font-size:16px;font-weight:800;color:#111}.ept small{color:#8a8a8a;font-size:12.5px}
-.mod.ep.done .ept small{color:var(--ok);font-weight:800}
-.hud{border:1px solid #EFEFEF;background:#fff;border-radius:14px;box-shadow:none}.hud b{color:var(--sea)}
-.prog-bar{background:#F0F0F0}.prog-bar i{background:var(--sea)}
-.badge{background:#E9FBF1;color:#00964F}.badge.off{background:#F4F4F4;color:#aaa}
-.games{grid-template-columns:repeat(2,1fr);gap:12px}
-.game{display:block;min-height:0;padding:0;border-radius:12px;overflow:hidden;color:#111;background:#fff !important;border:1px solid #EFEFEF;box-shadow:none;text-align:left}
-.game span{display:grid;place-items:center;height:104px;font-size:46px}
-.game[data-game=trap] span{background:#D9F2FF}.game[data-game=reframe] span{background:#E8E1FF}.game[data-game=cope] span{background:#FFE7C7}.game[data-game=record] span{background:#D6F7E5}
-.game b{display:block;padding:8px 10px 0;font-size:16px;font-weight:800}.game small{display:block;padding:0 10px 10px;color:#8a8a8a;font-size:12.5px}
-.game[aria-pressed=true]{outline:3px solid var(--sea);outline-offset:0}
-.scene{background:#fff;border:3px solid #111;border-radius:18px;box-shadow:3px 3px 0 #111}
-.opt{border:1.5px solid #E3E3E3;border-radius:10px}
-.cardflip{border:3px solid #111;box-shadow:4px 4px 0 #111;background:#FFF6D6}
-.pier i{border-color:#111;color:#111}.pier[aria-pressed=true] i{background:var(--sea);color:#fff;border-color:#111}.bridge::before{background:#111;opacity:.15;height:4px}
-input[type=text],textarea,select{background:#fff;border:1.5px solid #E3E3E3;border-radius:10px}textarea:focus,input:focus{border-color:var(--sea)}
-.map .n{border:1.5px solid #E3E3E3;box-shadow:none}.map .core{background:#E9FBF1;border:2px solid var(--sea)}
-.hero.rehab,.hero.garden{color:#111}.hero b{font-weight:900;letter-spacing:-.6px}
-.sendbox button{border:1.5px solid #111}
-@media(max-width:600px){nav a{padding:10px 9px 12px;font-size:14px}.toon-char{width:64px;height:64px}.toon-char span{font-size:34px}}
+/* ---------- 고전문학 책: 한지색 바탕 · 먹색 명조 · 가는 선 · 장 번호 ---------- */
+:root{color-scheme:light;--bg:#F4EEDF;--panel:#FBF7EC;--ink:#2A2320;--mut:#7A6E62;--sea:#7A2E22;--sea2:#EDE4CF;--line:#D9CDB4;--hot:#8E2A1E;--ok:#4E6B3A}
+body{background:var(--bg);color:var(--ink);font:17px/1.85 "Noto Serif KR","Gowun Batang",serif;letter-spacing:0}
+h1,h2,h3{font-family:"Gowun Batang","Noto Serif KR",serif;font-weight:700;letter-spacing:.02em;color:var(--ink)}
+header{background:var(--bg);color:var(--ink);box-shadow:none;border-bottom:1px solid var(--line);padding:26px max(5vw,16px) 0;text-align:center}
+header .top{justify-content:center}header svg{display:none}
+header h1{font-size:30px;letter-spacing:.3em;font-weight:700}header h1::after{content:none}
+header p{color:var(--mut);font-size:13px;letter-spacing:.05em;margin-top:6px}
+nav{justify-content:flex-start;gap:0;margin:16px auto 0;padding:0 0 2px}
+nav a{background:none;color:var(--mut);font:400 15px "Gowun Batang",serif;padding:10px 12px;border-radius:0;border-bottom:1px solid transparent;min-width:0;box-shadow:none}
+nav a[aria-current]{background:none;color:var(--ink);border-bottom:1px solid var(--ink);font-weight:700;box-shadow:none}
+main{max-width:720px;padding-top:28px}
+h2{font-size:24px;margin:8px 0 6px;text-align:center}h2::after{content:"❦";display:block;font-size:14px;color:var(--mut);margin-top:6px;font-weight:400}
+h3{font-size:19px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:8px}
+.lead{color:var(--mut);text-align:center;margin:6px auto 24px}
+.epi{margin:6px auto 22px;padding:0;border:0;text-align:center;font:400 21px/1.8 "Gowun Batang",serif;color:var(--ink)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:2px;box-shadow:none;padding:22px 24px}
+.grid2{gap:16px}
+.calls{gap:10px}
+.call{background:var(--panel);border:1px solid var(--line);border-radius:2px;box-shadow:none;padding:16px 18px}
+.call b{font:700 32px "Noto Serif KR",serif;color:var(--ink)}
+.call.hot{background:var(--panel);border:1.5px solid var(--hot);color:var(--ink);box-shadow:none}.call.hot b{color:var(--hot)}
+.calls .call:nth-child(3),.calls .call:nth-child(4){background:var(--panel)}.calls .call:nth-child(4) b{color:var(--ink)}
+.btn{background:var(--ink);color:var(--bg);border-radius:2px;box-shadow:none;font:600 15px "Noto Serif KR",serif;letter-spacing:.05em}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.chip{background:transparent;border:1px solid var(--line);border-radius:2px;box-shadow:none;font:400 15px "Noto Serif KR",serif}.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mods{grid-template-columns:1fr;gap:0;border-top:1px solid var(--line);margin:10px 0}
+.mod.toc{display:grid;grid-template-columns:4.2em 1fr auto;align-items:baseline;gap:8px;min-height:0;padding:12px 6px;border:0;border-bottom:1px dotted var(--line);border-radius:0;background:transparent;box-shadow:none;font:400 16px "Noto Serif KR",serif}
+.mod.toc em{font-style:normal;color:var(--mut);font-family:"Gowun Batang",serif}.mod.toc b{font-weight:600}.mod.toc small{color:var(--ok);font-size:13px}
+.mod.toc[aria-pressed=true]{background:var(--sea2);border:0;border-bottom:1px dotted var(--line)}
+.say div{border-radius:2px;border:1px solid var(--line);background:var(--panel)}.say .yes,.say .no{background:var(--panel)}
+.say .yes h4{color:var(--ok)}.say .no h4{color:var(--hot)}
+.opt{background:transparent;border:1px solid var(--line);border-radius:2px;font-family:"Noto Serif KR",serif}
+.opt.right{background:#E6EBDD;border-color:var(--ok);color:var(--ok)}.opt.wrong{background:#F1DFD6;border-color:var(--hot);color:var(--hot)}
+.hud{background:var(--panel);border:1px solid var(--line);border-radius:2px;box-shadow:none}.hud b{color:var(--ink);font-family:"Gowun Batang",serif}
+.prog-bar{background:var(--sea2);height:4px;border-radius:0}.prog-bar i{background:var(--ink);border-radius:0}
+.badges{display:none}
+.games{grid-template-columns:1fr;gap:0;border-top:1px solid var(--line)}
+.game{display:grid;grid-template-columns:1fr;gap:2px;min-height:0;padding:14px 6px;border:0;border-bottom:1px dotted var(--line);border-radius:0;background:transparent !important;color:var(--ink);box-shadow:none;font:600 17px "Noto Serif KR",serif}
+.game span{display:none}.game small{color:var(--mut);font-weight:400;font-size:14px}
+.game[aria-pressed=true]{outline:0;background:var(--sea2) !important}
+.scene{background:transparent;border:0;border-left:2px solid var(--ink);border-radius:0;box-shadow:none;padding:6px 16px;font-family:"Gowun Batang",serif}
+.cardflip{background:var(--panel);border:1px solid var(--line);border-radius:2px;box-shadow:none;color:var(--ink)}.cardflip b{display:none}
+.pier i{background:var(--panel);border:1px solid var(--ink);color:var(--ink);box-shadow:none;font-family:"Gowun Batang",serif}.pier[aria-pressed=true] i{background:var(--ink);color:var(--bg)}
+.bridge::before{background:var(--line);opacity:1;height:1px;top:22px}
+input[type=text],input[type=date],textarea,select{background:var(--bg);border:1px solid var(--line);border-radius:2px;font-family:"Noto Serif KR",serif}
+textarea:focus,input:focus,select:focus{border-color:var(--ink);background:var(--panel)}
+.map .n{border:1px solid var(--line);border-radius:2px;box-shadow:none;background:var(--panel)}.map .core{background:var(--sea2);border:1px solid var(--ink)}
+.tag{background:transparent;border:1px solid var(--line);border-radius:2px;color:var(--mut)}
+pre.out{background:var(--bg);border:1px solid var(--line);border-radius:2px;font-family:"Noto Serif KR",serif}
+.warn{border-left:2px solid var(--hot);background:transparent}
+.sendbox button{background:var(--panel) !important;border:1px solid var(--line);border-radius:2px;font-family:"Noto Serif KR",serif}.sendbox span{display:none}
+.sheetbox{background:var(--panel);border-radius:2px}
+table th{font-family:"Gowun Batang",serif}
+footer{text-align:center;color:var(--mut);border-top:1px solid var(--line);padding-top:18px}
+a{color:var(--sea)}
+@media(max-width:600px){header h1{font-size:26px}nav a{padding:9px 9px;font-size:14px}.card{padding:18px}}
+@media(prefers-reduced-motion:no-preference){section{animation:in .4s ease}}
 </style>
 </head>
 <body>
 <header>
  <div class="top">
   <svg viewBox="0 0 92 52" aria-hidden="true"><ellipse cx="14" cy="40" rx="13" ry="6" fill="#e9d9b9"/><path d="M6 40c2-9 6-14 9-14s6 6 7 14z" fill="#7fb7a3"/><ellipse cx="80" cy="40" rx="12" ry="6" fill="#e9d9b9"/><path d="M73 40c2-8 5-12 7-12s5 5 6 12z" fill="#7fb7a3"/><path d="M18 34Q47 10 76 34" fill="none" stroke="#f5f0e7" stroke-width="3"/><path d="M18 34H76" stroke="#f5f0e7" stroke-width="2"/><g stroke="#f5f0e7" stroke-width="1.5"><path d="M30 34V23M40 34V18M50 34V18M60 34V23"/></g><path d="M0 47h92" stroke="#5fb3c4" stroke-width="2" stroke-dasharray="6 5"/></svg>
-  <div><h1>마음 이음</h1><p>위기 연결 · 마음지기 교실 · 마음 연습 · 마음재활 · 마음정원 · 절차조력 · 법령 기준일 2026. 11. 27.</p></div>
+  <div><h1>마음 이음</h1><p>곁에서 마음을 잇는 안내서</p></div>
  </div>
  <nav aria-label="메뉴">
-  <a href="#now"><span>🆘</span>지금 위험해요</a><a href="#family"><span>🫶</span>마음지기 교실</a><a href="#play"><span>🎮</span>마음 연습</a><a href="#rehab"><span>🏡</span>마음재활</a><a href="#garden"><span>🌊</span>마음정원</a><a href="#rights"><span>⚖️</span>입원과 내 권리</a><a href="#assist"><span>🤝</span>절차조력</a><a href="#worker"><span>🧑‍⚕️</span>실무자</a><a href="#law"><span>📜</span>법 체계</a>
+  <a href="#now">지금 위험해요</a><a href="#family">마음지기 교실</a><a href="#play">마음 연습</a><a href="#rehab">마음재활</a><a href="#garden">마음정원</a><a href="#rights">입원과 내 권리</a><a href="#assist">절차조력</a><a href="#worker">실무자</a><a href="#law">법 체계</a>
  </nav>
 </header>
 <main>
 
 <section id="v-now">
- <div class="toon"><div class="toon-char" aria-hidden="true"><span>🌱</span><i>이음이</i></div><div class="bubble"><b>혼자 견디지 않아도 돼요.</b><span>지금 이 순간도 지나가요. 내가 곁에 있을게요.</span></div></div>
- <h2 class="sr">혼자 견디지 않아도 됩니다</h2>
+ <blockquote class="epi">혼자 견디지 않아도 돼요.<br>지금 이 순간도 지나갑니다.</blockquote>
+ 
  <p class="lead">지금 스스로를 해칠 것 같거나 이미 위험한 행동을 했다면 바로 연결하세요. 번호를 눌러도 연결되지 않으면 휴대전화에서 직접 걸어 주세요.</p>
  <div class="calls">
   <a class="call hot" href="tel:119"><b>119</b><span>다쳤거나 약·물질을 먹었을 때, 생명이 급할 때</span></a>
@@ -373,24 +331,24 @@ input[type=text],textarea,select{background:#fff;border:1.5px solid #E3E3E3;bord
 </section>
 
 <section id="v-rehab" hidden>
- <div class="hero rehab"><div><b>마음재활 · 용인가족치유센터</b><span>가족이 함께 회복하는 곳 · 가족상담연구소 재활정원 in MaumM</span></div><div class="hero-sun" aria-hidden="true">🏡</div></div>
+ <h2>마음재활 · 용인가족치유센터</h2><p class="lead">가족이 함께 회복하는 곳 · 가족상담연구소 재활정원 in MaumM</p>
  <div class="grid2">
-  <div class="card"><h3>🌱 이런 분과 함께해요</h3><ul class="plain">
+  <div class="card"><h3>이런 분과 함께해요</h3><ul class="plain">
    <li>위기를 지나 다시 일상을 세우려는 당사자와 가족</li>
    <li>자살 · 자해 위기를 겪은 가족을 돌보다 지친 보호자</li>
    <li>대화가 끊긴 가족, 마음을 다시 잇고 싶은 가족</li></ul></div>
-  <div class="card"><h3>🧩 프로그램</h3><ul class="plain">
+  <div class="card"><h3>프로그램</h3><ul class="plain">
    <li><b>마음엠디 가족치료</b>: 인지행동치료(CBT) 기반, 매주 일요일 1년 과정 · 반기마다 함께 돌아보기</li>
    <li><b>온라인 가족상담</b>: 멀리 있어도 화상으로</li>
    <li><b>마음지기 교실</b>: 보호자 교육 (이 앱의 🫶 탭과 이어져요)</li>
    <li><b>요리 · 전시 · 쉼 공간</b>: 함께 만들고 나누는 회복 활동 (준비 중)</li></ul></div>
  </div>
- <div class="card"><h3>📍 오시는 곳</h3>
+ <div class="card"><h3>오시는 곳</h3>
   <dl class="facts"><dt>위치</dt><dd>경기도 용인시 처인구 <span class="note">(자세한 주소는 예약이 확정되면 안내해요)</span></dd>
    <dt>운영</dt><dd>가족상담연구소 재활정원 in MaumM · 비영리</dd>
    <dt>누리집</dt><dd><a href="https://maumm.org" target="_blank" rel="noopener">maumm.org</a></dd></dl>
  </div>
- <div class="card"><h3>📝 상담 신청</h3>
+ <div class="card"><h3>상담 신청</h3>
   <p class="note">신청 내용은 이 기기에서 문자 · 카카오톡 · 이메일로 바로 보내요. 앱이 따로 저장해 두지 않아요. 지금 위험한 상황이라면 신청보다 <a href="#now">지금 위험해요</a>가 먼저예요.</p>
   <div class="grid2">
    <div class="field"><label for="rq-name">이름(별칭 가능)</label><input type="text" id="rq-name"></div>
@@ -399,24 +357,24 @@ input[type=text],textarea,select{background:#fff;border:1.5px solid #E3E3E3;bord
    <div class="field"><label for="rq-way">원하는 방식</label><select id="rq-way"><option>방문 상담</option><option>온라인(화상) 상담</option><option>마음엠디 가족치료 문의</option><option>마음지기 교실(보호자 교육) 문의</option></select></div>
   </div>
   <div class="field"><label for="rq-msg">하고 싶은 이야기 (짧게)</label><textarea id="rq-msg" placeholder="예: 퇴원한 아이와 가족이 함께 상담받고 싶어요"></textarea></div>
-  <div class="row"><button class="btn" type="button" data-send="rehab">📤 상담 신청 보내기</button></div>
+  <div class="row"><button class="btn" type="button" data-send="rehab">상담 신청 보내기</button></div>
  </div>
 </section>
 
 <section id="v-garden" hidden>
- <div class="hero garden"><div><b>마음정원 · 남해 쉼터</b><span>바다와 숲 사이에서 잠시 숨 고르기 🌊</span></div><div class="hero-sun" aria-hidden="true">🌿</div></div>
+ <h2>마음정원 · 남해 쉼터</h2><p class="lead">바다와 숲 사이에서 잠시 숨을 고르는 곳</p>
  <div class="grid2">
-  <div class="card"><h3>🛖 쉼터 소개</h3><ul class="plain">
+  <div class="card"><h3>쉼터 소개</h3><ul class="plain">
    <li>위기를 지나온 당사자 · 가족, 소진된 보호자와 실무자가 며칠 쉬어 가는 곳</li>
    <li>정해진 일정 없이 쉬기 · 걷기 · 바다 보기 · 마음 연습</li>
    <li>원하면 상담 · 가족 프로그램과 함께 (사전 문의)</li></ul></div>
-  <div class="card"><h3>📍 주소 · 길찾기</h3>
+  <div class="card"><h3>주소 · 길찾기</h3>
    <p style="font-size:17px;font-weight:700;margin:4px 0 10px">경상남도 남해군 삼동면 영지리</p>
    <p class="note">남해읍에서 독일마을 쪽으로 가는 길 근처예요. 정확한 위치는 예약이 확정되면 안내해요.</p>
-   <div class="row"><a class="btn" href="https://map.naver.com/p/search/%EB%82%A8%ED%95%B4%EA%B5%B0%20%EC%82%BC%EB%8F%99%EB%A9%B4%20%EC%98%81%EC%A7%80%EB%A6%AC" target="_blank" rel="noopener">🗺️ 네이버 지도</a><a class="btn ghost" href="https://map.kakao.com/?q=%EB%82%A8%ED%95%B4%EA%B5%B0%20%EC%82%BC%EB%8F%99%EB%A9%B4%20%EC%98%81%EC%A7%80%EB%A6%AC" target="_blank" rel="noopener">카카오맵</a><button class="btn ghost" type="button" id="addrCopy">주소 복사</button></div>
+   <div class="row"><a class="btn" href="https://map.naver.com/p/search/%EB%82%A8%ED%95%B4%EA%B5%B0%20%EC%82%BC%EB%8F%99%EB%A9%B4%20%EC%98%81%EC%A7%80%EB%A6%AC" target="_blank" rel="noopener">네이버 지도</a><a class="btn ghost" href="https://map.kakao.com/?q=%EB%82%A8%ED%95%B4%EA%B5%B0%20%EC%82%BC%EB%8F%99%EB%A9%B4%20%EC%98%81%EC%A7%80%EB%A6%AC" target="_blank" rel="noopener">카카오맵</a><button class="btn ghost" type="button" id="addrCopy">주소 복사</button></div>
   </div>
  </div>
- <div class="card"><h3>📅 쉼터 예약 신청</h3>
+ <div class="card"><h3>쉼터 예약 신청</h3>
   <p class="note">날짜와 인원을 고르고 보내면 운영자가 확인해 연락드려요. 연락을 받아야 예약이 확정돼요.</p>
   <div class="grid2">
    <div class="field"><label for="gd-in">들어오는 날</label><input type="date" id="gd-in"></div>
@@ -428,7 +386,7 @@ input[type=text],textarea,select{background:#fff;border:1.5px solid #E3E3E3;bord
   </div>
   <div class="field"><label for="gd-msg">요청 사항</label><textarea id="gd-msg" placeholder="예: 조용한 방이 필요해요, 아이와 함께 가요"></textarea></div>
   <p class="note" id="gdNights"></p>
-  <div class="row"><button class="btn" type="button" data-send="garden">📤 예약 신청 보내기</button></div>
+  <div class="row"><button class="btn" type="button" data-send="garden">예약 신청 보내기</button></div>
   <div class="hist" id="gdHist"></div>
  </div>
 </section>
@@ -586,9 +544,9 @@ const MODS=[
 const famDone=store.get('famDone',{});let famCur=store.get('famCur','signs');
 function famProg(){const n=MODS.filter(m=>famDone[m.id]).length;$('#famBar').style.width=Math.round(n/MODS.length*100)+'%';$('#famProg').textContent=`${n} / ${MODS.length}단원 완료`}
 function drawFam(){
- $('#famMods').innerHTML=MODS.map((m,i)=>`<button class="mod ep ${famDone[m.id]?'done':''}" type="button" data-m="${m.id}" aria-pressed="${m.id===famCur}"><span class="thumb t${i%7}">${m.ic}</span><span class="ept"><em>${i+1}화</em><b>${m.t}</b><small>${famDone[m.id]?'✓ 다 봤어요':m.sub}</small></span></button>`).join('');
+ $('#famMods').innerHTML=MODS.map((m,i)=>`<button class="mod toc ${famDone[m.id]?'done':''}" type="button" data-m="${m.id}" aria-pressed="${m.id===famCur}"><em>제${i+1}장</em><b>${m.t}</b><small>${famDone[m.id]?'읽음':''}</small></button>`).join('');
  const m=MODS.find(x=>x.id===famCur);
- $('#famCard').innerHTML=`<h3>${m.ic} ${m.t}</h3>${m.body}<div class="quiz"><b>✔ 확인 문제</b> <span class="note">O · X를 골라 보세요</span>${m.q.map(([q],i)=>`<div class="q">${i+1}. ${esc(q)}</div><div class="opts"><button class="opt" type="button" data-qi="${i}" data-a="1">⭕ 맞아요</button><button class="opt" type="button" data-qi="${i}" data-a="0">❌ 아니에요</button></div><div class="fb" id="fb${i}"></div>`).join('')}</div>
+ $('#famCard').innerHTML=`<h3>${m.t}</h3>${m.body}<div class="quiz"><b>✔ 확인 문제</b> <span class="note">O · X를 골라 보세요</span>${m.q.map(([q],i)=>`<div class="q">${i+1}. ${esc(q)}</div><div class="opts"><button class="opt" type="button" data-qi="${i}" data-a="1">⭕ 맞아요</button><button class="opt" type="button" data-qi="${i}" data-a="0">❌ 아니에요</button></div><div class="fb" id="fb${i}"></div>`).join('')}</div>
  <div class="row"><button class="btn ghost" type="button" id="famPrev">← 이전</button><button class="btn" type="button" id="famNext">다음 단원 →</button></div>`;
  famProg();
 }
