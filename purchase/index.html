@@ -569,7 +569,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.7 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.8 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -1132,17 +1132,21 @@ function shParseCell(raw){
 /* ===================== 📥 도시락 주문표 불러오기 (PDF · HWPX) =====================
    기존 주문표 파일에서 날짜 · 메뉴 · 수량 · X(휴일)를 읽어 날짜별 주문으로 넣습니다.
    읽는 도구(pdf.js, fflate)는 불러오기를 누를 때만 인터넷에서 받아요. */
-const SHEET_LIB={pdf:'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/pdf.min.mjs',worker:'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/pdf.worker.min.mjs',zip:'https://cdn.jsdelivr.net/npm/fflate@0.8.2/esm/browser.js'};
+// 앱 안에 들어 있는 도구를 먼저 쓰고, 없으면 인터넷(jsdelivr)에서 받아요.
+const LIB_LOCAL={pdf:'lib/pdf.min.js',worker:'lib/pdf.worker.min.js',zip:'lib/fflate.js'};
+const LIB_CDN={pdf:'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/pdf.min.mjs',worker:'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/pdf.worker.min.mjs',zip:'https://cdn.jsdelivr.net/npm/fflate@0.8.2/esm/browser.js'};
+async function loadLib(k){let e1;try{const u=new URL(LIB_LOCAL[k],location.href).href;return {mod:await import(u),base:'local'}}catch(e){e1=e}
+  try{return {mod:await import(LIB_CDN[k]),base:'cdn'}}catch(e){throw new Error('표 읽는 도구를 불러오지 못했어요 ('+(e1&&e1.message||'')+' / '+(e&&e.message||'')+')')}}
 async function readPdfPages(buf){
-  const pdfjs=await import(SHEET_LIB.pdf);
-  pdfjs.GlobalWorkerOptions.workerSrc=SHEET_LIB.worker;  // 다른 주소의 작업 파일은 pdf.js가 알아서 감싸 쓰고, 안 되면 화면에서 직접 읽어요
+  const L=await loadLib('pdf'),pdfjs=L.mod;
+  pdfjs.GlobalWorkerOptions.workerSrc=L.base==='local'?new URL(LIB_LOCAL.worker,location.href).href:LIB_CDN.worker;
   const doc=await pdfjs.getDocument({data:new Uint8Array(buf)}).promise,pages=[];
-  for(let i=1;i<=doc.numPages;i++){const p=await doc.getPage(i);const tc=await p.getTextContent();pages.push({items:tc.items.filter(it=>it.str).map(it=>({s:it.str,x:it.transform[4],y:it.transform[5],w:it.width}))})}
+  for(let i=1;i<=doc.numPages;i++){const pe=document.getElementById('shProg');if(pe)pe.textContent=`${i} / ${doc.numPages}쪽 읽는 중…`;const p=await doc.getPage(i);const tc=await p.getTextContent();pages.push({items:tc.items.filter(it=>it.str).map(it=>({s:it.str,x:it.transform[4],y:it.transform[5],w:it.width}))})}
   return pages;
 }
 // HWPX(한글 새 형식): 압축을 풀어 문단 글자와 표(행 · 칸)를 차례대로 읽어 PDF와 같은 모양으로 만듭니다.
 async function readHwpxPeriods(buf){
-  const {unzipSync,strFromU8}=await import(SHEET_LIB.zip);
+  const {unzipSync,strFromU8}=(await loadLib('zip')).mod;
   const files=unzipSync(new Uint8Array(buf));
   const secs=Object.keys(files).filter(n=>/Contents\/section\d+\.xml$/i.test(n)).sort();
   if(!secs.length)throw new Error('한글 문서 내용을 찾지 못했어요');
@@ -1457,7 +1461,7 @@ document.addEventListener('click',async e=>{
 let _leaveArm=0;function confirmLeave(){if(Date.now()-_leaveArm<4000)return true;_leaveArm=Date.now();toast('한 번 더 누르면 이 휴대폰에서 기관 연결을 끊어요');return false}
 document.addEventListener('change',e=>{
   const el=e.target;
-  if(el.id==='sheetIn'&&el.files[0]){const f=el.files[0];el.value='';modal('<h3>📥 주문표 읽는 중…</h3><p class="muted">파일이 크면 잠시 걸려요.</p>');
+  if(el.id==='sheetIn'&&el.files[0]){const f=el.files[0];el.value='';modal('<h3>📥 주문표 읽는 중…</h3><p class="muted" id="shProg">파일을 여는 중…</p>');
     importSheetFile(f).then(r=>{sheetImport=r;sheetPreview()}).catch(err=>{console.error(err);modal(`<h3>읽지 못했어요</h3><p>${esc(err&&err.message||err)}</p><p class="muted" style="margin-top:6px">인터넷 연결이 필요해요 (읽는 도구를 처음 한 번 받아요).</p><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn" data-act="closeModal">닫기</button></div>`)});return}
   if(el.id==='repMonth'){repMonth=el.value;render();return}
   if(el.id==='expFrom'||el.id==='expTo'){if(el.id==='expFrom')expFrom=el.value;else expTo=el.value;if(expFrom>expTo){const t=expFrom;expFrom=expTo;expTo=t}const y=scrollY;render();scrollTo(0,y);return}

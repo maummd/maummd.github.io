@@ -14,6 +14,7 @@ for k,name,short,src,color,desc in apps:
   json.dump({"name":name,"short_name":short,"start_url":"./","scope":"./","display":"standalone","background_color":"#F4F5F1","theme_color":color,"lang":"ko",
    "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]},open(f'{H}/{k}/manifest.webmanifest','w'),ensure_ascii=False,indent=1)
 shutil.copytree('/home/claude/nurse-united/web/vendor',f'{H}/nurse-united/vendor',dirs_exist_ok=True)
+shutil.copytree('/home/claude/maummd-maum-purchase/web/lib',f'{H}/purchase/lib',dirs_exist_ok=True)  # purchase/lib: 주문표 읽는 도구
 cards=''.join(f'<a class="app" href="{k}/"><img src="{k}/icon-192.png" alt=""><div><b>{name}</b><span>{desc}</span></div></a>' for k,name,short,src,color,desc in apps)
 open(f'{H}/index.html','w').write(f'''<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>maumm.org 앱</title><link rel="icon" href="maummd/icon-192.png">
 <style>body{{margin:0;font-family:'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif;background:#F4F5F1;color:#22302C}}.w{{max-width:560px;margin:0 auto;padding:28px 16px}}h1{{font-size:22px;margin:0 0 4px}}p{{color:#66726D;margin:0 0 18px;font-size:14px}}
