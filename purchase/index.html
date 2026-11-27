@@ -209,6 +209,7 @@ const DEFAULT_NOTI={on:true,time:'09:00',monthDay:1,weekDay:1,w2Days:[1,4],lunch
 /* ===================== 상태 ===================== */
 let AUTH=null,ORG=null,UNSUB=null,ready=false;
 let S={me:null,org:null,members:[],requests:[],orders:[],surveys:[],lunch:[]};
+let LUNCH_ERR='';         // 도시락 서버 저장 · 읽기 거절 (보안 규칙 미게시)
 let BASE={};               // 서버에서 받은 마지막 모습 (바뀐 것만 저장하기 위해)
 const LK='mp-prefs-v1';
 let L;try{L=JSON.parse(localStorage.getItem(LK))||{}}catch(e){L={}}
@@ -241,7 +242,7 @@ function onData(part){
 function save(){
   if(!ORG)return;
   const errs=e=>{console.error(e);toast('⚠️ 저장하지 못했어요 — 권한 또는 연결을 확인하세요')};
-  for(const col of ['requests','orders','surveys','lunch']){
+  for(const col of ['requests','orders','surveys','lunch']){const errs=e=>{console.error(e);if(col==='lunch'){LUNCH_ERR=(e&&e.code)||'error';render()}toast('⚠️ 서버에 저장하지 못했어요 — 다시 로그인하면 사라져요')};
     const base=BASE[col]||{},cur=S[col]||[],ids=new Set(cur.map(x=>x.id));
     cur.forEach(x=>{const j=JSON.stringify(x);if(base[x.id]!==j){base[x.id]=j;const {id,...d}=x;ST.put(ORG,col,id,d).catch(errs)}});
     Object.keys(base).forEach(id=>{if(!ids.has(id)){delete base[id];ST.del(ORG,col,id).catch(errs)}});
@@ -576,7 +577,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.9 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">물품 구매 관리 v2.9.1 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -853,9 +854,14 @@ function weekCols(c){const od=orderDays(c||LC()||LUNCH_DEFAULT());return [1,2,3,
 function lunchWeeks(){const c=LC()||LUNCH_DEFAULT();if(!lunchStart)lunchStart=ymd(weekStart());const s=new Date(lunchStart+'T00:00'),cols=weekCols(c),out=[];
   for(let w=0;w<(+c.weeks||3);w++)out.push(cols.map(d=>{const x=new Date(s);x.setDate(s.getDate()+w*7+(d+6)%7);return ymd(x)}));return out}
 const LST={plan:['계획','w'],ordered:['주문함','ok'],received:['받음','ok']};
+function lunchErrCard(){if(!LUNCH_ERR||ST.mode==='local')return '';const perm=/permission/.test(LUNCH_ERR);
+  return `<div class="card" style="border:2px solid var(--bad,#B03A3A);background:#FFF3F3"><h2>⚠️ 도시락 자료가 서버에 저장되지 않고 있어요</h2>
+   ${perm?`<p>서버 보안 규칙에 ‘도시락’ 항목이 아직 없어요. 지금 넣은 자료는 이 화면에만 있고, 다시 로그인하면 사라져요.</p>
+   <ol class="steps"><li>PC에서 <a href="https://console.firebase.google.com/project/maumpurchase/firestore/rules" target="_blank">Firebase 콘솔 → Firestore → 규칙</a>을 열어요.</li><li><a href="https://github.com/maummd/maummd-maum-purchase/blob/main/firestore.rules" target="_blank">새 보안 규칙</a> 내용을 통째로 복사해 붙여 넣고 <b>게시</b>를 눌러요.</li><li>앱을 새로 열고, 주문표 파일을 한 번 더 불러와요.</li></ol>`
+   :`<p>인터넷 연결을 확인해 주세요 (${esc(LUNCH_ERR)}).</p>`}</div>`}
 function vLunch(){
   const c=LC();
-  if(!c)return hdr('도시락','주문표 · 회원별 대체 메뉴 · 비용')+`<div class="card"><h2>도시락 관리 시작하기</h2><p class="muted">업체 · 메뉴는 기본값으로 만들고, 회원 명단과 ‘도시락 현황’(못 먹는 메뉴 → 대체 메뉴)은 아래에 붙여 넣어요. 회원 정보는 로그인한 관리자만 볼 수 있는 서버에만 저장돼요.</p>
+  if(!c)return hdr('도시락','주문표 · 회원별 대체 메뉴 · 비용')+lunchErrCard()+`<div class="card"><h2>도시락 관리 시작하기</h2><p class="muted">업체 · 메뉴는 기본값으로 만들고, 회원 명단과 ‘도시락 현황’(못 먹는 메뉴 → 대체 메뉴)은 아래에 붙여 넣어요. 회원 정보는 로그인한 관리자만 볼 수 있는 서버에만 저장돼요.</p>
    ${canLunch()?`<label class="f">도시락 현황 (평소 쓰시던 표기 그대로 붙여 넣기)</label><textarea id="liRules" style="min-height:220px;font-size:14px" placeholder="${esc(LUNCH_RULES_TEXT)}"></textarea>
    <label class="f">회원 명단 (한 줄에 한 명 · 비우면 위 현황에 나온 이름으로 만들어요)</label><textarea id="liMembers" style="min-height:120px"></textarea>
    <button class="btn" style="margin-top:10px" data-act="lunchInit">🍱 시작하기</button>`:'<p class="muted">구매 담당 · 중간관리자가 시작할 수 있어요.</p>'}</div>`;
@@ -863,7 +869,7 @@ function vLunch(){
   const todayPl=planDay(t);
   const cost=days.reduce((s,ds)=>s+lunchCost(ds),0),n=days.filter(ds=>planDay(ds)).length;
   const weeks=lunchWeeks();
-  return hdr('도시락',`${esc(c.store)} · ${esc(c.deliver)} · ${esc(c.pay)}`)+`
+  return hdr('도시락',`${esc(c.store)} · ${esc(c.deliver)} · ${esc(c.pay)}`)+lunchErrCard()+`
   ${lunchStoreCard(c)}
   ${todayPl&&todayPl.d.status!=='received'?`<div class="card" style="border-color:var(--warn)"><h2>🍱 오늘 ${md(t)} <span class="bd ${LST[todayPl.d.status||'plan'][1]}">${LST[todayPl.d.status||'plan'][0]}</span></h2><div class="n" style="font-size:17px;font-weight:700">${esc(orderLine(todayPl))}</div>
    <p class="muted">총 ${todayPl.count}개 · ${won(todayPl.total)}${todayPl.center.length?' · 센터 준비: '+todayPl.center.map(([k,w])=>`${esc(k)} ${w.length}`).join(', '):''} · 변경은 ${esc(c.deadline)} 전에 연락</p>
@@ -1478,9 +1484,9 @@ document.addEventListener('change',e=>{
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pkIn')pkCheck()});
 
 /* ===================== 시작 ===================== */
-function listenOrg(){if(UNSUB)UNSUB();ready=false;S={me:null,org:null,members:[],requests:[],orders:[],surveys:[],lunch:[]};BASE={};view='home';
+function listenOrg(){if(UNSUB)UNSUB();ready=false;LUNCH_ERR='';S={me:null,org:null,members:[],requests:[],orders:[],surveys:[],lunch:[]};BASE={};view='home';
   $('#app').innerHTML='<div class="empty" style="padding-top:40vh">기관 자료를 불러오는 중…</div>';
-  UNSUB=ST.listen(ORG,onData,(err,key)=>{console.error(key,err);if(key==='me'||key==='org'){toast('기관 자료를 볼 권한이 없어요');}})}
+  UNSUB=ST.listen(ORG,onData,(err,key)=>{console.error(key,err);if(key==='lunch'){LUNCH_ERR=(err&&err.code)||'error';render()}if(key==='me'||key==='org'){toast('기관 자료를 볼 권한이 없어요');}})}
 async function startOrg(){
   try{const me=await ST.loadMe();if(me&&me.orgId){ORG=me.orgId;listenOrg()}else{view='setup';render()}}
   catch(err){toast(errMsg(err));view='setup';render()}
