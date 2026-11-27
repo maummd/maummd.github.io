@@ -164,7 +164,7 @@
   <!-- 출석 -->
   <section id="v-attend" class="view hidden">
     <div class="card">
-      <h2>출석 체크인</h2>
+      <div class="spread"><h2 style="margin:0">출석 체크인</h2><button id="impAtt">📥 출석부 불러오기</button></div>
       <div class="row"><input type="date" id="atDate"><span class="muted" id="atWeek"></span></div>
       <p class="muted">출석한 플레이어를 눌러 초록색으로 표시한 뒤 저장하세요.</p>
       <div class="toggle" id="atToggle"></div>
@@ -192,6 +192,7 @@
     <div id="exMembers"></div>
     <div class="card">
       <div class="spread"><h2 style="margin:0">📊 육각형 스탯</h2><select id="stPoint"></select></div>
+      <div style="text-align:right;margin:6px 0"><button id="impStat">📥 스탯 기록 불러오기</button></div>
       <p class="muted">6개 항목을 1~10점으로 매겨요. 시작 진단과 단계 심사 때마다 기록하면 플레이어 탭에서 성장 변화를 육각형으로 볼 수 있어요.</p>
       <div id="stMembers"></div>
     </div>
@@ -214,7 +215,7 @@
   <!-- 플레이어 -->
   <section id="v-players" class="view hidden">
     <div class="card">
-      <div class="spread"><h2 style="margin:0">플레이어</h2><button id="pEdit">✏️ 편집</button></div>
+      <div class="spread"><h2 style="margin:0">플레이어</h2><div class="row" style="gap:6px"><button id="impPl">📥 명단</button><button id="pEdit">✏️ 편집</button></div></div>
       <p class="muted">등급은 승급 심사 결과로, XP는 출석으로 올라가요.</p>
       <div id="pCards"></div>
     </div>
@@ -1220,6 +1221,80 @@ This typically indicates that your device does not have a healthy Internet conne
     listenDb(db);
   }
   connect();
+
+  // ---------- 파일에서 불러오기 (공용 도구 lib/maumm-reader.js: 엑셀 · 워드 · PDF · 한글 HWPX · 사진 · CSV) ----------
+  function loadReader() { if (window.MReader) return Promise.resolve(window.MReader); return new Promise((res, rej) => { const s = document.createElement("script"); s.src = new URL("lib/maumm-reader.js", location.href).href; s.onload = () => res(window.MReader); s.onerror = () => rej(new Error("파일 읽기 도구를 불러오지 못했어요 — 인터넷 연결을 확인해 주세요")); document.head.appendChild(s); }); }
+  const findPlayer = (name, MR) => { const P = allPlayers(), n = String(name || "").replace(/\s+/g, ""); if (!n) return null; return P.find(p => p.nick.replace(/\s+/g, "") === n) || P.find(p => p.nick && MR.similar(p.nick, n) >= 0.6) || null; };
+  const isMark = v => /^(o|○|◯|●|v|✓|✔|1|출|출석|참|참석|y|yes)$/i.test(String(v || "").trim());
+  async function impPlayers() {
+    let MR; try { MR = await loadReader(); } catch (e) { return toast(e.message); }
+    MR.importWizard({ title: "회원(플레이어) 명단 불러오기", applyLabel: "플레이어에 넣기", toast,
+      hint: `닉네임(또는 이름)만 읽어요. 이미 있는 플레이어는 그대로 두고, 새 이름만 빈 자리에 추가해요 (최대 ${MAXP}명). 아바타 · 색은 플레이어 탭에서 바꿀 수 있어요.`,
+      fields: [{ key: "nick", label: "닉네임 · 이름", aliases: ["이름", "닉네임", "회원", "성명", "선수"], required: true }],
+      async onApply(rows) {
+        const raw = state.settings.club && Array.isArray(state.settings.club.players) ? state.settings.club.players.map(p => ({ ...p })) : allPlayers().map(p => ({ nick: p.nick, avatar: p.avatar, color: p.color, off: p.off }));
+        let add = 0;
+        rows.forEach(r => { const nick = r.nick.trim().slice(0, 16); if (!nick || raw.some(p => p.nick === nick)) return;
+          const empty = raw.find(p => !p.nick); const usedA = raw.map(p => p.avatar), usedC = raw.map(p => p.color);
+          if (empty) { empty.nick = nick; empty.off = false; add++; }
+          else if (raw.length < MAXP) { raw.push({ nick, avatar: AVATARS.find(x => !usedA.includes(x)) || AVATARS[raw.length % AVATARS.length], color: COLORS.find(x => !usedC.includes(x)) || COLORS[raw.length % COLORS.length], off: false }); add++; } });
+        const club = { ...(state.settings.club || {}), players: raw, savedAt: new Date().toISOString() };
+        await save("settings/club", club, `플레이어 ${add}명을 추가했어요`);
+        return `플레이어 ${add}명 추가`;
+      } });
+  }
+  async function saveAttendance(byDate) {
+    let n = 0;
+    for (const [date, ids] of Object.entries(byDate)) {
+      const old = state.attendance[date], present = [...new Set([...(old && Array.isArray(old.present) ? old.present : []), ...ids])];
+      await save("attendance/" + date, { date, week: weekOf(date), present, savedAt: new Date().toISOString() }, `${date} 출석을 저장했어요`); n++;
+    }
+    renderAll(); return n;
+  }
+  async function impAttendance() {
+    let MR; try { MR = await loadReader(); } catch (e) { return toast(e.message); }
+    const year = new Date().getFullYear();
+    MR.importWizard({ title: "출석부 불러오기", applyLabel: "출석에 넣기", toast,
+      // 출석부 모양(이름은 줄, 날짜는 칸, O · ✓ 표시)이면 바로 읽어요
+      async onRead(R) {
+        for (const T of R.tables) {
+          const hi = T.rows.slice(0, 6).findIndex(r => r.filter(c => MR.toDate(c, year)).length >= 2); if (hi < 0) continue;
+          const head = T.rows[hi], cols = head.map((c, i) => [i, MR.toDate(c, year)]).filter(([, d]) => d);
+          const byDate = {}, miss = new Set(); let marks = 0;
+          T.rows.slice(hi + 1).forEach(r => { const nameCell = r.find((c, i) => !cols.some(([j]) => j === i) && /[가-힣a-zA-Z]{2,}/.test(c)); if (!nameCell) return;
+            const p = findPlayer(nameCell, MR); const hit = cols.filter(([i]) => isMark(r[i])); if (!hit.length) return;
+            if (!p) { miss.add(nameCell); return; } hit.forEach(([, d]) => { (byDate[d] = byDate[d] || []).push(p.id); marks++; }); });
+          if (!marks) continue;
+          if (!confirm(`출석부에서 ${Object.keys(byDate).length}일 · 출석 ${marks}건을 찾았어요.${miss.size ? `\n플레이어에 없는 이름(건너뜀): ${[...miss].join(", ")}` : ""}\n출석에 넣을까요? (이미 있는 출석은 그대로 두고 더해요)`)) return true;
+          const n = await saveAttendance(byDate); toast(`${n}일 출석을 넣었어요`); return true;
+        }
+        return false;
+      },
+      hint: "한 줄에 ‘날짜 · 이름 · 출석’ 모양이에요. 출석 칸이 없으면 줄마다 출석으로 봐요. 출석부(이름 줄 × 날짜 칸, O 표시) 모양은 이 화면 없이 바로 읽어요.",
+      fields: [{ key: "date", label: "날짜", aliases: ["일자", "수업일", "일시"], required: true }, { key: "name", label: "이름 · 닉네임", aliases: ["이름", "닉네임", "회원", "성명"], required: true }, { key: "mark", label: "출석", aliases: ["출석", "참석", "출결", "여부"] }],
+      async onApply(rows) {
+        const byDate = {}, miss = new Set();
+        rows.forEach(r => { if (r.mark && !isMark(r.mark)) return; const d = MR.toDate(r.date, year), p = findPlayer(r.name, MR); if (!d) return; if (!p) { miss.add(r.name); return; } (byDate[d] = byDate[d] || []).push(p.id); });
+        if (!Object.keys(byDate).length) throw new Error("넣을 출석이 없어요. 날짜 · 이름 칸과 플레이어 닉네임을 확인해 주세요");
+        const n = await saveAttendance(byDate);
+        return `${n}일 출석을 넣었어요${miss.size ? ` · 없는 이름 건너뜀: ${[...miss].slice(0, 4).join(", ")}` : ""}`;
+      } });
+  }
+  async function impStats() {
+    let MR; try { MR = await loadReader(); } catch (e) { return toast(e.message); }
+    const pt = Number($("stPoint").value) || 0;
+    MR.importWizard({ title: `스탯 기록 불러오기 (${ptName(pt)})`, applyLabel: "스탯에 넣기", toast,
+      hint: `지금 고른 시점(${ptName(pt)})에 넣어요. 6개 항목은 1~10점, 빈칸이 있는 줄은 건너뛰어요.`,
+      fields: [{ key: "name", label: "이름 · 닉네임", aliases: ["이름", "닉네임", "회원", "선수"], required: true }, ...STAT_AXES.map((ax, k) => ({ key: "k" + k, label: ax, aliases: [ax.replace(/\s/g, "")] }))],
+      async onApply(rows) {
+        let n = 0; const miss = [];
+        for (const r of rows) { const p = findPlayer(r.name, MR); const v = STAT_AXES.map((_, k) => Math.round(Number(String(r["k" + k]).replace(/[^\d.]/g, ""))));
+          if (!p) { miss.push(r.name); continue; } if (v.some(x => !Number.isInteger(x) || x < 1 || x > 10)) { miss.push(r.name + "(점수)"); continue; }
+          await save(`stats/${statKey(pt, p.i)}`, { point: pt, pid: p.id, v, savedAt: new Date().toISOString() }, `${nickOf(p)} 스탯을 저장했어요`); n++; }
+        renderAll(); return `${n}명 스탯을 넣었어요${miss.length ? ` · 건너뜀: ${miss.slice(0, 4).join(", ")}` : ""}`;
+      } });
+  }
+  $("impPl").onclick = impPlayers; $("impAtt").onclick = impAttendance; $("impStat").onclick = impStats;
 })();
 </script>
 </body>

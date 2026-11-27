@@ -485,9 +485,12 @@ function vSettings(){
    <label class="f">1차 평가자</label><input data-pf="name" value="${esc(profile.name)}">
    <div class="row"><div class="grow"><label class="f">평가연도</label><input type="number" data-pf="year" value="${year()}"></div><div class="grow"><label class="f">평가개시일</label><input type="date" data-pf="evalStart" value="${evalStart()}"></div></div>
    <label class="f">권고 평균 점수</label><input type="number" data-cf="target" value="${config.target||85}"></div>
+  <div class="card"><h2>📥 파일에서 불러오기</h2>
+   <p class="muted" style="margin-bottom:8px"><b>엑셀 · 워드 · PDF · 한글(HWPX) · 사진 · CSV</b> 모두 돼요. 표의 머리글(성명 · 직급 · 입사일 …)을 보고 칸을 자동으로 맞추고, 넣기 전에 미리 보고 고칠 수 있어요.</p>
+   <div class="row" style="gap:8px"><button class="btn grow" data-act="impStaff">👥 직원 명단</button><button class="btn ghost grow" data-act="impObs">📝 관찰 기록 · 평가 자료</button></div></div>
   <div class="card"><h2>면담 설문 가져오기</h2>
    <p class="muted" style="margin-bottom:8px">구글폼 응답 시트를 CSV·TSV·엑셀(.xlsx)로 내려받아 선택하세요. ‘성명/이름’ 열로 직원을 찾고, 같은 이름이 있으면 설문만 업데이트해요. 비상연락망·주소·전화번호 열은 자동으로 빼고 저장해요.</p>
-   <input type="file" id="fileIn" accept=".csv,.tsv,.txt,.xlsx,.xls"></div>
+   <input type="file" id="fileIn" accept=".csv,.tsv,.txt,.xlsx,.xls,.docx,.pdf,.hwpx,image/*"></div>
   <div class="card"><h2>내보내기</h2>
    <p class="muted" style="margin-bottom:8px">전 직원의 등급·점수·서술의견을 HIS 인사평가 화면 입력 순서대로 복사해요.</p>
    <button class="btn ghost" data-act="copyAll">전체 복사</button></div>
@@ -558,6 +561,8 @@ document.addEventListener('click',async e=>{
     case 'addObs':{const text=$('#oText').value.trim();if(!text){toast('내용을 적어 주세요');return}
       upd(p,{obs:[...(p.obs||[]),{id:uid(),date:$('#oDate').value||today(),item:$('#oItem').value,kind:obsKind,text}]});render();toast('기록했어요');break}
     case 'copyOne':copy(hisText(p));break;
+    case 'impStaff':importStaffFile();break;
+    case 'impObs':importObsFile();break;
     case 'copyAll':copy(sorted(active()).map(hisText).join('\n\n────────\n\n'));break;
     case 'saveTpl':{const k=d.k,old=(config.templates||DEFAULT_TEMPLATES)[k];const perf=parseItems($('#tPerf').value,old.perf),comp=parseItems($('#tComp').value,old.comp);
       if(!perf.length||!comp.length){toast('항목을 하나 이상 넣어 주세요');return}
@@ -609,7 +614,8 @@ function loadXLSX(){return new Promise((res,rej)=>{if(window.XLSX)return res();c
 async function importFile(file){
   try{
     let rows;
-    if(/\.xlsx?$/i.test(file.name)){await loadXLSX();const wb=XLSX.read(await file.arrayBuffer());rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''}).map(r=>r.map(String))}
+    if(/\.(docx|pdf|hwpx|png|jpe?g|webp|heic)$/i.test(file.name)||/^image\//.test(file.type)){const MR=await loadReader();const R=await MR.read(file,t=>toast(t));const T=R.tables.filter(t=>t.rows.length>1).sort((a,b)=>b.rows.length-a.rows.length)[0];if(!T){toast('표를 찾지 못했어요');return}rows=T.rows}
+    else if(/\.xlsx?$/i.test(file.name)){await loadXLSX();const wb=XLSX.read(await file.arrayBuffer());rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''}).map(r=>r.map(String))}
     else rows=parseDelim((await file.text()).replace(/^﻿/,''));
     const head=rows[0]||[]; const ni=head.findIndex(h=>/성명|이름|name/i.test(h));
     if(ni<0){toast('‘성명’ 또는 ‘이름’ 열을 찾지 못했어요');return}
@@ -629,6 +635,35 @@ async function importFile(file){
      <p class="muted" style="margin-top:6px">새로 추가되는 직원은 ‘간호직’ 평가표로 들어가요. 간호운영기능직은 정보 탭에서 바꿔 주세요.</p>
      <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn ghost" data-act="closeModal">취소</button><button class="btn" data-act="doImport">가져오기</button></div>`);
   }catch(err){toast('파일을 읽지 못했어요')}
+}
+// ---------- 공용 파일 읽기 도구 (lib/maumm-reader.js) ----------
+function loadReader(){if(window.MReader)return Promise.resolve(window.MReader);return new Promise((res,rej)=>{const s=document.createElement('script');s.src=new URL('lib/maumm-reader.js',location.href).href;s.onload=()=>res(window.MReader);s.onerror=()=>rej(new Error('파일 읽기 도구를 불러오지 못했어요 — 인터넷 연결을 확인해 주세요'));document.head.appendChild(s)})}
+const jobOf=v=>{v=String(v||'');const T=config.templates||DEFAULT_TEMPLATES;const k=Object.keys(T).find(k=>T[k].label===v||k===v);return k||(/기능|운영|조무|보조|aide/i.test(v)?'aide':'nurse')};
+const statusOf=v=>{v=String(v||'').trim();if(!v)return '';return STATUS.find(s=>s===v)||STATUS.find(s=>v.includes(s.slice(0,2)))||'재직'};
+async function importStaffFile(){let MR;try{MR=await loadReader()}catch(e){toast(e.message);return}
+  MR.importWizard({title:'직원 명단 불러오기',applyLabel:'명단에 넣기',toast,
+    hint:'같은 이름이 있으면 빈칸이 아닌 항목만 바꾸고, 관찰기록 · 평가는 그대로 둬요. 주민번호 · 주소 · 전화 칸은 맞추지 않으면 저장하지 않아요.',
+    fields:[{key:'name',label:'성명',aliases:['이름','간호사','직원명','성 명'],required:true},{key:'rank',label:'직급·연차',aliases:['직급','연차','직위','호봉','경력']},
+      {key:'job',label:'직종(평가표)',aliases:['직종','직렬','평가표','구분']},{key:'hired',label:'입사(전입)일',aliases:['입사일','전입일','발령일','입사','전입']},
+      {key:'status',label:'재직 상태',aliases:['상태','재직','근무상태']},{key:'role',label:'담당업무·역할',aliases:['업무','역할','담당','팀','비고']}],
+    onApply(rows){const byName=Object.fromEntries(Object.values(staff).map(s=>[s.name,s]));let add=0,ch=0;
+      rows.forEach(r=>{const name=r.name.replace(/\s+/g,'');if(!/[가-힣a-zA-Z]{2,}/.test(name))return;
+        const patch={};if(r.rank)patch.rank=r.rank;if(r.job)patch.job=jobOf(r.job);if(r.hired){const d=MR.toDate(r.hired);if(d)patch.hired=d}if(r.status)patch.status=statusOf(r.status);if(r.role)patch.role=r.role;
+        const ex=byName[name];if(ex){put(ex.id,{...ex,...patch});ch++}else{const id='s_'+uid();put(id,{kind:'staff',name,job:'nurse',status:'재직',obs:[],...patch});byName[name]={id};add++}});
+      view='list';render();return `새 직원 ${add}명 · 정보 바꿈 ${ch}명`}});
+}
+async function importObsFile(){let MR;try{MR=await loadReader()}catch(e){toast(e.message);return}
+  MR.importWizard({title:'관찰 기록 · 평가 자료 불러오기',applyLabel:'관찰 기록에 넣기',toast,
+    hint:'이름이 명단에 없는 줄은 건너뛰어요. 구분 칸에 ‘개선 · 보완 · 미흡’이 있으면 🌱 개선 필요, 나머지는 👍 우수 사례로 넣어요. 항목은 평가표 항목 이름과 가장 비슷한 것으로 맞춰요.',
+    fields:[{key:'name',label:'성명',aliases:['이름','간호사','대상자','직원'],required:true},{key:'date',label:'날짜',aliases:['일자','일시','관찰일','기록일']},
+      {key:'item',label:'평가 항목',aliases:['항목','역량','영역','평가요소']},{key:'kind',label:'구분(우수/개선)',aliases:['구분','유형','평가','결과']},
+      {key:'text',label:'내용',aliases:['관찰내용','기록','사례','내용','의견','코멘트'],required:true}],
+    onApply(rows){const byName=Object.fromEntries(Object.values(staff).map(s=>[s.name,s]));let n=0,miss=new Set();const add={};
+      rows.forEach(r=>{const p=byName[r.name.replace(/\s+/g,'')];if(!p){miss.add(r.name);return}
+        const its=items(p.job),it=its.find(i=>i.name===r.item)||its.find(i=>MR.similar(i.name,r.item)>0.5)||its[0];
+        (add[p.id]=add[p.id]||[]).push({id:uid(),date:MR.toDate(r.date,year())||today(),item:it?it.k:'',kind:/개선|보완|미흡|부족|dev/i.test(r.kind)?'dev':'good',text:r.text});n++});
+      Object.entries(add).forEach(([id,a])=>{const p=staff[id];put(id,{...p,obs:[...(p.obs||[]),...a]})});render();
+      return `관찰 기록 ${n}건 넣었어요${miss.size?` · 명단에 없는 이름 ${miss.size}명 건너뜀: ${[...miss].slice(0,5).join(', ')}`:''}`}});
 }
 function doImport(){
   const byName=Object.fromEntries(Object.values(staff).map(s=>[s.name,s]));

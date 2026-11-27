@@ -284,7 +284,13 @@
   }
   function headerRowIndex(rows, fields) {
     let best = 0, bs = -1;
-    rows.slice(0, 8).forEach((r, i) => { const m = guessMap(r, fields); const sc = Object.keys(m).length - r.filter((c) => /^\d[\d.,/-]*$/.test(String(c).trim())).length * 0.5; if (sc > bs) { bs = sc; best = i; } });
+    const width = Math.max(...rows.slice(0, 10).map((r) => r.filter((c) => String(c).trim()).length));
+    rows.slice(0, 10).forEach((r, i) => {
+      const filled = r.filter((c) => String(c).trim()).length;
+      if (width >= 2 && filled < 2) return;   // 표 위의 제목 줄(칸 하나)은 머리글이 아니에요
+      const m = guessMap(r, fields);
+      const sc = Object.keys(m).length * 2 + filled * 0.2 - r.filter((c) => /^\d[\d.,/-]*$/.test(String(c).trim())).length;
+      if (sc > bs) { bs = sc; best = i; } });
     return best;
   }
   async function importWizard(opt) {

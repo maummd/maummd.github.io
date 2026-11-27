@@ -339,7 +339,10 @@ function vDiary(){
   <h2>나만의 플레이리스트</h2>
   <div class="form pl">${['힘낼 때','마음 가라앉힐 때','잠들 때'].map((t,i)=>`<label for="p${i}">${t}</label><div class="row"><input id="p${i}" type="text" value="${esc(pl[i]||'')}" placeholder="노래 제목 · 가수"><a class="btn" data-pl="${i}" href="#" target="_blank" rel="noopener">▶</a></div>`).join('')}</div>
   <h2>지난 기록</h2><div class="log">${log.length?log.slice().reverse().slice(0,20).map((e,ri)=>`<div class="entry">${W[e.w][1]}<div><b>${e.d} · ${W[e.w][0]} · ${e.a}→${e.b}점</b><p class="muted">${esc(e.s||'')}${e.n?' · '+esc(e.n):''}</p></div><button class="btn ghost" data-del="${log.length-1-ri}" aria-label="이 기록 지우기">지우기</button></div>`).join(''):'<p class="muted">아직 기록이 없어요. 위에서 오늘의 날씨를 골라 첫 기록을 저장해 보세요. (예: 11/26 · 구름 조금 · 5→7점 · 고향의 봄)</p>'}</div>
+  <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" id="impSong" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 노래 목록 불러오기</button><button class="btn" type="button" id="impLog" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 지난 기록 불러오기</button></div>
+  <p class="muted" style="font-size:13px">엑셀 · 워드 · PDF · 한글(HWPX) · 사진 · CSV 파일을 읽어요. 넣기 전에 미리 보고 고칠 수 있어요.</p>
   <p class="note">기록은 이 휴대폰(브라우저)에만 저장돼요. 다른 사람에게 보이지 않고, 기기를 바꾸면 따라오지 않아요.</p>`;
+  document.getElementById('impSong').onclick=impSongs;document.getElementById('impLog').onclick=impLog;
   const plLink=()=>document.querySelectorAll('[data-pl]').forEach(a=>{const v=document.getElementById('p'+a.dataset.pl).value.trim();a.href=v?yt(v+' 가사'):'https://www.youtube.com'});plLink();
   V.querySelectorAll('.pl input').forEach(inp=>inp.addEventListener('input',()=>{store.set('pl',[0,1,2].map(i=>document.getElementById('p'+i).value));plLink()}));
   V.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{draft.w=b.dataset.w;V.querySelectorAll('[data-w]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
@@ -389,6 +392,31 @@ function vSetup(){
     catch(err){toast('마음 다이어리 백업 파일이 아니에요')}};
   document.getElementById('rsNo').onclick=()=>{pending=null;document.getElementById('rsAsk').hidden=true};
   document.getElementById('rsOk').onclick=()=>{if(!pending)return;['cfg','log','pl','best'].forEach(k=>{if(pending[k]!==undefined)store.set(k,pending[k])});Object.assign(cfg,store.get('cfg',{}));pending=null;toast('백업을 불러왔어요');location.hash='diary'};
+}
+// ---------- 파일에서 불러오기 (공용 도구 lib/maumm-reader.js) ----------
+function loadReader(){if(window.MReader)return Promise.resolve(window.MReader);return new Promise((res,rej)=>{const s=document.createElement('script');s.src=new URL('lib/maumm-reader.js',location.href).href;s.onload=()=>res(window.MReader);s.onerror=()=>rej(new Error('파일 읽기 도구를 불러오지 못했어요 — 인터넷 연결을 확인해 주세요'));document.head.appendChild(s)})}
+const PL_NAMES=['힘낼 때','마음 가라앉힐 때','잠들 때'];
+const plSlot=v=>{v=String(v||'');return /힘|에너지|활력|기운|신나|아침/.test(v)?0:/가라앉|진정|불안|화|차분|안정|위로/.test(v)?1:/잠|수면|밤|휴식|자기 전/.test(v)?2:-1};
+async function impSongs(){let MR;try{MR=await loadReader()}catch(e){toast(e.message);return}
+  MR.importWizard({title:'노래 목록 불러오기',applyLabel:'플레이리스트에 넣기',toast,
+    hint:'‘언제’ 칸에 힘 · 가라앉힘(진정 · 불안) · 잠 같은 말이 있으면 그 자리에, 없으면 빈 자리부터 차례로 넣어요. 세 자리(힘낼 때 · 마음 가라앉힐 때 · 잠들 때)예요.',
+    fields:[{key:'song',label:'노래 제목',aliases:['노래','곡','곡명','제목','song'],required:true},{key:'artist',label:'가수',aliases:['가수','아티스트','부른 사람']},{key:'when',label:'언제 듣나요',aliases:['언제','상황','용도','구분','플레이리스트']}],
+    onApply(rows){const pl=store.get('pl',['','','']).slice(0,3);while(pl.length<3)pl.push('');let n=0;
+      rows.forEach(r=>{const v=r.song+(r.artist?' · '+r.artist:'');let k=plSlot(r.when);if(k<0)k=pl.findIndex(x=>!String(x).trim());if(k<0)return;pl[k]=v;n++});
+      store.set('pl',pl);vDiary();return `플레이리스트에 ${n}곡 넣었어요${rows.length>n?` (자리가 3개라 ${rows.length-n}곡은 넣지 못했어요)`:''}`}});
+}
+const wOf=v=>{v=String(v||'');const k=Object.keys(W).find(k=>W[k][0]===v||k===v);return k||(/맑|해|좋/.test(v)?'sun':/조금|구름 조/.test(v)?'part':/흐|구름/.test(v)?'cloud':/천둥|번개|폭풍/.test(v)?'storm':/비|우울|눈물/.test(v)?'rain':/안개|멍/.test(v)?'fog':'part')};
+const score=v=>{const n=Math.round(Number(String(v||'').replace(/[^\d.]/g,'')));return Number.isFinite(n)&&String(v).trim()!==''?Math.max(0,Math.min(10,n)):null};
+async function impLog(){let MR;try{MR=await loadReader()}catch(e){toast(e.message);return}
+  MR.importWizard({title:'지난 기록 불러오기',applyLabel:'기록에 넣기',toast,
+    hint:'날짜 · 점수(0~10)가 있는 줄을 기록에 더해요. 같은 날짜 · 같은 노래 기록이 이미 있으면 건너뛰어요. 날씨 칸이 없으면 ‘구름 조금’으로 넣어요.',
+    fields:[{key:'date',label:'날짜',aliases:['일자','날','회기일'],required:true},{key:'w',label:'마음 날씨',aliases:['날씨','기분','마음']},{key:'a',label:'듣기 전 점수',aliases:['전','듣기 전','사전','before']},
+      {key:'b',label:'들은 뒤 점수',aliases:['후','들은 뒤','사후','after']},{key:'s',label:'들은 노래',aliases:['노래','곡','곡명']},{key:'n',label:'한 줄 메모',aliases:['메모','생각','느낌','소감']}],
+    onApply(rows){const L=store.get('log',[]);const seen=new Set(L.map(e=>(e.iso||'')+'|'+(e.s||'')));let n=0;
+      rows.forEach(r=>{const iso=MR.toDate(r.date);if(!iso)return;const a=score(r.a),b=score(r.b);if(a==null&&b==null&&!r.s&&!r.n)return;
+        const key=iso+'|'+(r.s||'');if(seen.has(key))return;seen.add(key);const dd=new Date(iso+'T00:00');
+        L.push({d:fmt(dd),iso,w:wOf(r.w),a:a==null?(b==null?5:b):a,b:b==null?(a==null?5:a):b,s:r.s||'',n:r.n||''});n++});
+      L.sort((x,y)=>String(x.iso||'').localeCompare(String(y.iso||'')));store.set('log',L);vDiary();return `기록 ${n}개를 넣었어요`}});
 }
 function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2200)}
 function backup(){
