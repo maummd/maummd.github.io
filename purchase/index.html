@@ -189,8 +189,27 @@ This typically indicates that your device does not have a healthy Internet conne
    결재 라인: 직원 수요 → 중간관리자 검수 → 최종관리자(원장님) 결재 → 구매 담당 결제(결제 방지 키) → 중간관리자 수령 검수 */
 const ST=window.MP_STORE;
 // 구매 장소(부서): 기관마다 이름을 바꿀 수 있어요 (설정 → 장소 · 부서). 이름을 비우면 그 장소는 숨겨요.
-const SITES_DEF={clinic:'외래 병원',center:'센터',brain:'브레인'};let SITES={...SITES_DEF};
-function syncSites(){const o=(S&&S.org&&S.org.settings&&S.org.settings.sites)||null;if(!o){SITES={...SITES_DEF};return}SITES=Object.fromEntries(Object.keys(SITES_DEF).map(k=>[k,String(o[k]??'').trim()]).filter(([,v])=>v));if(!Object.keys(SITES).length)SITES={clinic:'본원'}}
+// 구매 장소 · 부서: 기관마다 이름 바꾸기 · 추가 · 숨기기 (설정 → 장소 · 부서). settings.sites = [{k, name, off}]
+const SITES_DEF={clinic:'외래 병원',center:'센터',brain:'브레인'};
+const SITE_COLORS=['#3A6894','#2F7A56','#8A5BA8','#C0622B','#1E8C93','#B0447A','#6B7A2A','#5A5FC8','#A0522D','#2E86C1'];
+let SITES={...SITES_DEF},SITE_ALL={...SITES_DEF},SITE_LIST=Object.entries(SITES_DEF).map(([k,name])=>({k,name}));
+function siteListRaw(){const o=(S&&S.org&&S.org.settings&&S.org.settings.sites)||null;
+  if(!o)return Object.entries(SITES_DEF).map(([k,name])=>({k,name}));
+  if(Array.isArray(o))return o.filter(x=>x&&x.k).map(x=>({k:String(x.k),name:String(x.name||'').trim()||'(이름 없음)',off:!!x.off}));
+  return Object.keys(SITES_DEF).map(k=>({k,name:String(o[k]??'').trim(),off:!String(o[k]??'').trim()})).map(x=>({...x,name:x.name||SITES_DEF[x.k]}))}   // v3.3 모양
+function syncSites(){SITE_LIST=siteListRaw();if(!SITE_LIST.some(x=>!x.off))SITE_LIST=[{k:'clinic',name:'본원'}];
+  SITE_ALL=Object.fromEntries(SITE_LIST.map(x=>[x.k,x.name]));SITES=Object.fromEntries(SITE_LIST.filter(x=>!x.off).map(x=>[x.k,x.name]));
+  const css=SITE_LIST.map((x,i)=>`.s-${x.k}{background:${siteColor(x.k)}}`).join('');let el=document.getElementById('siteCss');if(!el){el=document.createElement('style');el.id='siteCss';document.head.appendChild(el)}if(el.textContent!==css)el.textContent=css}
+const siteColor=k=>{const L={clinic:'var(--clinic)',center:'var(--center)',brain:'var(--brain)'};if(L[k])return L[k];const i=SITE_LIST.filter(x=>!L[x.k]).findIndex(x=>x.k===k);return SITE_COLORS[3+((i<0?0:i)%(SITE_COLORS.length-3))]};
+const SN=k=>SITE_ALL[k]||'기타';
+function setSites(list){S.org.settings={...SET(),sites:list.map(x=>({k:x.k,name:x.name,...(x.off?{off:true}:{})}))};save();render()}
+function siteUsed(k){const has=a=>(a||[]).some(x=>x&&x.site===k);return has(S.requests)||has(S.orders)||has(S.org&&S.org.items)||has(S.surveys)}
+function addSite(name){name=String(name||'').trim().slice(0,12);if(!name)return '';const ex=siteByName(name);if(ex){if(!SITES[ex])setSites(SITE_LIST.map(x=>x.k===ex?{...x,off:false}:x));return ex}
+  const k='s'+Date.now().toString(36).slice(-5)+Math.random().toString(36).slice(2,4);setSites([...SITE_LIST,{k,name}]);syncSites();return k}
+const firstSite=(pref)=>pref&&SITES[pref]?pref:Object.keys(SITES)[0];
+const siteByName=n=>{n=String(n||'').trim();return Object.keys(SITE_ALL).find(k=>SITE_ALL[k]===n)||Object.keys(SITE_ALL).find(k=>n&&SITE_ALL[k].replace(/\s/g,'')===n.replace(/\s/g,''))||''};
+// 보고서: 쓰는 장소 + 숨긴 장소 중 기록이 있는 곳
+const repSites=list=>Object.keys(SITE_ALL).filter(k=>SN(k)||(list||[]).some(o=>(o.o||o).site===k));
 const siteList=()=>Object.values(SITES).join(' · ');
 const CYCLES={M1:'월 1회',W1:'주 1회',W2:'주 2회',ASK:'필요 시',REQ:'요청 시',AFTER:'주문 후'};
 const VENDORS=['쿠팡','네이버','기타'];
@@ -375,7 +394,7 @@ function vSetup(){
    <button class="btn" style="width:100%;margin-top:12px" data-act="joinOrg">참여하기</button></div>
   <div class="card"><h2>새 기관 만들기 <span class="muted" style="font-size:13px">처음 한 번만</span></h2><p class="muted">만든 사람이 관리자가 돼요.</p>
    <label class="f">기관 이름</label><input id="cOrg" placeholder="예: ○○병원 · ○○상담소 · ○○센터">
-   <label class="f">장소 · 부서 (쉼표로 3개까지 · 나중에 바꿀 수 있어요)</label><input id="cSites" value="본원" placeholder="예: 외래, 상담실, 센터">
+   <label class="f">장소 · 부서 (쉼표로 구분 · 개수 제한 없음 · 나중에 바꿀 수 있어요)</label><input id="cSites" value="본원" placeholder="예: 외래, 상담실, 센터">
    <label class="f">사업자등록번호 (선택 · 나중에 설정에서 넣어도 돼요)</label><input id="cBiz" inputmode="numeric" placeholder="000-00-00000" maxlength="12">
    <label class="f">내 이름</label><input id="cName">
    <label class="f">내 역할</label>${['buyer','mid','final'].map(r=>`<label class="row" style="gap:8px;margin:3px 0"><input type="checkbox" class="cRole" value="${r}" ${r==='buyer'?'checked':''} style="width:20px;height:20px">${ROLES[r]} <span class="muted" style="font-size:13px">— ${ROLE_DESC[r]}</span></label>`).join('')}
@@ -430,29 +449,29 @@ function surveyCard(sv,mgr){
   const late=sv.due&&sv.due<today();
   let agg='';
   if(mgr&&rs.length){const g={};rs.forEach(r=>{const k=r.site+'|'+r.name;(g[k]=g[k]||[]).push(r)});
-    agg=`<table style="margin-top:8px"><tr><th>품목</th><th>낸 사람 · 수량</th></tr>${Object.entries(g).sort((a,b)=>b[1].length-a[1].length).map(([k,list])=>{const [site,name]=k.split('|');return `<tr><td><span class="site s-${site}">${SITES[site][0]}</span> <b>${esc(name)}</b> <span class="bd">${list.length}명</span></td><td style="font-size:13px">${list.map(r=>`${esc(r.byName)} ${esc(r.qty||'')}`).join(', ')}</td></tr>`}).join('')}</table>`}
+    agg=`<table style="margin-top:8px"><tr><th>품목</th><th>낸 사람 · 수량</th></tr>${Object.entries(g).sort((a,b)=>b[1].length-a[1].length).map(([k,list])=>{const [site,name]=k.split('|');return `<tr><td><span class="site s-${site}">${SN(site)[0]}</span> <b>${esc(name)}</b> <span class="bd">${list.length}명</span></td><td style="font-size:13px">${list.map(r=>`${esc(r.byName)} ${esc(r.qty||'')}`).join(', ')}</td></tr>`}).join('')}</table>`}
   return `<div class="card" style="border-color:var(--brand2)"><h2><span>📝 ${esc(sv.title)}</span><span class="bd ${late?'e':'w'}">${sv.due?md(sv.due)+' 마감':'상시'}</span></h2>
-   ${sv.site&&sv.site!=='all'?`<span class="site s-${sv.site}">${SITES[sv.site]}</span> `:''}${sv.note?`<span class="muted">${esc(sv.note)}</span>`:''}
+   ${sv.site&&sv.site!=='all'?`<span class="site s-${sv.site}">${SN(sv.site)}</span> `:''}${sv.note?`<span class="muted">${esc(sv.note)}</span>`:''}
    <div class="row" style="margin-top:8px;justify-content:space-between"><span class="muted">${mgr?`모인 수요 ${rs.length}건`:`내가 낸 수요 ${mineN}건`}</span><button class="btn sm" data-newreq-sv="${sv.id}">수요 내기</button></div>
    ${agg}${mgr?`<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-svclose="${sv.id}">마감</button><button class="btn sm ghost" data-svshare="${sv.id}">직원에게 알리기</button></div>`:''}</div>`;
 }
 function reqRow(r,own){
   const [lab,cls]=REQ_ST[r.status]||['?',''];
-  return `<div class="ord"><div class="h"><span class="site s-${r.site}">${SITES[r.site]}</span>${own?'':esc(r.byName)+' · '}${md(r.at)}<span class="bd ${cls}">${lab}</span>${r.surveyId?`<span class="bd">${esc((S.surveys.find(s=>s.id===r.surveyId)||{}).title||'수요조사')}</span>`:''}</div>
+  return `<div class="ord"><div class="h"><span class="site s-${r.site}">${SN(r.site)}</span>${own?'':esc(r.byName)+' · '}${md(r.at)}<span class="bd ${cls}">${lab}</span>${r.surveyId?`<span class="bd">${esc((S.surveys.find(s=>s.id===r.surveyId)||{}).title||'수요조사')}</span>`:''}</div>
    <div class="n">${esc(r.name)}${r.qty?` · ${esc(r.qty)}`:''}</div>${r.reason?`<div class="muted" style="font-size:12.5px">${esc(r.reason)}</div>`:''}
    ${r.midNote?`<div class="muted" style="font-size:12.5px">검수: ${esc(r.midName||'')} — ${esc(r.midNote)}</div>`:''}
    ${own&&r.status==='submitted'?`<button class="btn sm ghost" style="margin-top:6px" data-delreq="${r.id}">취소</button>`:''}</div>`;
 }
 function reviewReqCard(){const rs=S.requests.filter(r=>r.status==='submitted').sort((a,b)=>a.at.localeCompare(b.at));
   return `<div class="card" style="border-color:var(--warn)"><h2>🔎 수요 검수 <span class="bd w">${rs.length}</span></h2><p class="muted" style="font-size:12.5px">수량 · 필요성을 확인하고 통과 또는 반려해요. 통과한 수요는 구매 담당이 주문서로 만들어요.</p>
-  ${rs.length?rs.map(r=>`<div class="ord"><div class="h"><span class="site s-${r.site}">${SITES[r.site]}</span>${esc(r.byName)} · ${md(r.at)}${r.due?` · ${md(r.due)}까지 필요`:''}</div>
+  ${rs.length?rs.map(r=>`<div class="ord"><div class="h"><span class="site s-${r.site}">${SN(r.site)}</span>${esc(r.byName)} · ${md(r.at)}${r.due?` · ${md(r.due)}까지 필요`:''}</div>
    <div class="n">${esc(r.name)}</div>${r.reason?`<div class="muted" style="font-size:12.5px">${esc(r.reason)}</div>`:''}
    <div class="two" style="margin-top:6px"><input id="rq-${r.id}" value="${esc(r.qty||'')}" placeholder="수량" style="padding:6px 8px;font-size:14px"><input id="rn-${r.id}" placeholder="검수 메모 (선택)" style="padding:6px 8px;font-size:14px"></div>
    <div class="row" style="margin-top:6px"><button class="btn sm grow" data-reqok="${r.id}">✓ 검수 통과</button><button class="btn sm danger grow" data-reqno="${r.id}">반려</button></div></div>`).join(''):'<div class="empty">검수할 수요가 없어요</div>'}</div>`}
 function acceptedCard(){const rs=S.requests.filter(r=>r.status==='accepted');if(!rs.length)return '';
   const g={};rs.forEach(r=>{const k=r.site+'|'+r.name;(g[k]=g[k]||[]).push(r)});
   return `<div class="card" style="border-color:var(--ok)"><h2>🧾 구매 대기 (검수 통과) <span class="bd ok">${rs.length}</span></h2><p class="muted" style="font-size:12.5px">같은 품목은 한 주문서로 묶여요. 주문서는 바로 원장님 결재로 올라가요.</p>
-  ${Object.entries(g).map(([k,list])=>{const [site,name]=k.split('|');return `<div class="ord"><div class="row" style="justify-content:space-between"><div><span class="site s-${site}">${SITES[site]}</span> <b>${esc(name)}</b><div class="muted" style="font-size:12.5px">${list.map(r=>`${esc(r.byName)} ${esc(r.qty||'')}`).join(', ')}</div></div><button class="btn sm" data-mkorder="${esc(k)}">주문서 작성</button></div></div>`}).join('')}</div>`}
+  ${Object.entries(g).map(([k,list])=>{const [site,name]=k.split('|');return `<div class="ord"><div class="row" style="justify-content:space-between"><div><span class="site s-${site}">${SN(site)}</span> <b>${esc(name)}</b><div class="muted" style="font-size:12.5px">${list.map(r=>`${esc(r.byName)} ${esc(r.qty||'')}`).join(', ')}</div></div><button class="btn sm" data-mkorder="${esc(k)}">주문서 작성</button></div></div>`}).join('')}</div>`}
 
 /* ----- 점검 ----- */
 function vCheck(){
@@ -463,7 +482,7 @@ function vCheck(){
   <div class="chips">${[['all','전체'],...Object.entries(SITES)].map(([k,l])=>`<button class="chip ${siteF===k?'on':''}" data-site="${k}">${l}</button>`).join('')}</div>
   ${lowN?`<div class="alert w">부족 · 없음 ${lowN}개 — <button class="btn sm ghost" data-act="lowToReq">수요로 한꺼번에 올리기</button></div>`:''}
   ${cats.map(key=>{const [site,cat]=key.split('|');const list=items.filter(i=>i.site===site&&i.cat===cat);
-   return `<div class="card"><h2><span><span class="site s-${site}">${SITES[site]}</span> ${esc(cat)}</span>${cat==='제과제빵'?'<span class="bd w">제과제빵 담당 확인 후 구매</span>':''}</h2>
+   return `<div class="card"><h2><span><span class="site s-${site}">${SN(site)}</span> ${esc(cat)}</span>${cat==='제과제빵'?'<span class="bd w">제과제빵 담당 확인 후 구매</span>':''}</h2>
     ${list.map(i=>{const n=doneCount(i.id,i.cycle),ok=n>=need(i.cycle),st=STOCK()[i.id];
      const ck=CHECKS()[i.id+'|'+periodKey(i.cycle)];
      return `<div class="task"><button class="ck ${ok?'on':n?'half':''}" data-it="${i.id}">${ok?'✓':''}</button><div class="grow">
@@ -516,7 +535,7 @@ function orderRow(o){
   if(['review','final','reject'].includes(o.stage)&&(has('buyer')||has('mid')))B(`data-edit="${o.id}"`,'고치기','ghost');
   B(`data-hist="${o.id}"`,'결재 기록','ghost');
   const L1=lastLog(o,'reject');
-  return `<div class="ord"><div class="h"><span class="site s-${o.site}">${SITES[o.site]}</span>${md(o.date)} · ${esc(o.vendor||'-')}${rc}${appCard(o)?'<span class="bd">원장님 앱카드</span>':''}</div>
+  return `<div class="ord"><div class="h"><span class="site s-${o.site}">${SN(o.site)}</span>${md(o.date)} · ${esc(o.vendor||'-')}${rc}${appCard(o)?'<span class="bd">원장님 앱카드</span>':''}</div>
    <div class="row" style="justify-content:space-between"><div class="n">${esc(o.name)}${o.spec?` <span class="muted">${esc(o.spec)}</span>`:''} · ${esc(o.qty||'')}</div><span class="money">${won(o.price)}</span></div>
    <div class="muted" style="font-size:12.5px">${signLine(o)}${o.eta?` · 배송 예정 ${md(o.eta)}`:''}${o.meal?` · 식사일 ${md(o.meal)}`:''}${o.note?` · ${esc(o.note)}`:''}${o.issue?` · 문제: ${esc(o.issue)}`:''}${o.stage==='reject'&&L1?` · 반려(${esc(L1.name)}): ${esc(L1.note||'')}`:''}</div>
    <div class="row w" style="margin-top:6px">${b.join('')}</div></div>`;
@@ -533,7 +552,7 @@ const catOf=o=>{if(o.lunch)return '도시락';const it=ITEMS().find(i=>i.name===
 const ym=m=>m.replace('-','년 ').replace(/년 0/,'년 ')+'월';
 function monthsBetween(a,b){const out=[];let [y,m]=a.split('-').map(Number);const [y2,m2]=b.split('-').map(Number);while(y<y2||(y===y2&&m<=m2)){out.push(`${y}-${pad(m)}`);m++;if(m>12){m=1;y++}if(out.length>60)break}return out}
 let expFrom=null,expTo=null,expDetail=true;
-function lunchRows(){const c=LC();if(!c)return [];return S.lunch.filter(d=>d.id.startsWith('d-')&&d.status==='received').map(d=>{const pl=planDay(d.date);return pl?{o:{id:d.id,name:`도시락 (${d.menu})`,site:'center',price:lunchCost(d.date),vendor:c.store,qty:`${pl.count}개`,stage:'done',log:[],lunch:1},day:d.date}:null}).filter(Boolean)}
+function lunchRows(){const c=LC();if(!c)return [];return S.lunch.filter(d=>d.id.startsWith('d-')&&d.status==='received').map(d=>{const pl=planDay(d.date);return pl?{o:{id:d.id,name:`도시락 (${d.menu})`,site:(LC().site&&SITE_ALL[LC().site])?LC().site:firstSite('center'),price:lunchCost(d.date),vendor:c.store,qty:`${pl.count}개`,stage:'done',log:[],lunch:1},day:d.date}:null}).filter(Boolean)}
 function spendRows(from,to){return [...S.orders.filter(o=>PAID.includes(o.stage)).map(o=>({o,day:spendDay(o)})),...lunchRows()].filter(x=>x.day.slice(0,7)>=from&&x.day.slice(0,7)<=to).sort((a,b)=>a.day.localeCompare(b.day))}
 function expenseCard(){
   const cur=today().slice(0,7);if(!expTo)expTo=cur;if(!expFrom)expFrom=`${cur.slice(0,4)}-01`;
@@ -556,19 +575,19 @@ function expenseDoc(){
   const period=expFrom===expTo?ym(expFrom):`${ym(expFrom)} ~ ${ym(expTo)}`;
   return docShell(`월별 지출 내역 (${period})`,siteList()+' · 결제일 기준',`
    <h2 style="clear:both">1. 월별 · 장소별 지출</h2>
-   <table><tr><th>달</th>${Object.values(SITES).map(l=>`<th class="n">${l}</th>`).join('')}<th class="n">건수</th><th class="n">합계</th></tr>
-   ${ms.map(m=>`<tr><td>${ym(m)}</td>${Object.keys(SITES).map(k=>`<td class="n">${won(sum(x=>x.day.startsWith(m)&&x.o.site===k))}</td>`).join('')}<td class="n">${rows.filter(x=>x.day.startsWith(m)).length}</td><td class="n"><b>${won(sum(x=>x.day.startsWith(m)))}</b></td></tr>`).join('')}
-   <tr><th>합계</th>${Object.keys(SITES).map(k=>`<th class="n">${won(sum(x=>x.o.site===k))}</th>`).join('')}<th class="n">${rows.length}</th><th class="n">${won(tot)}</th></tr></table>
+   <table><tr><th>달</th>${repSites(rows).map(k=>`<th class="n">${SN(k)}</th>`).join('')}<th class="n">건수</th><th class="n">합계</th></tr>
+   ${ms.map(m=>`<tr><td>${ym(m)}</td>${repSites(rows).map(k=>`<td class="n">${won(sum(x=>x.day.startsWith(m)&&x.o.site===k))}</td>`).join('')}<td class="n">${rows.filter(x=>x.day.startsWith(m)).length}</td><td class="n"><b>${won(sum(x=>x.day.startsWith(m)))}</b></td></tr>`).join('')}
+   <tr><th>합계</th>${repSites(rows).map(k=>`<th class="n">${won(sum(x=>x.o.site===k))}</th>`).join('')}<th class="n">${rows.length}</th><th class="n">${won(tot)}</th></tr></table>
    <h2>2. 분류별 지출</h2><table><tr><th>분류</th><th class="n">건수</th><th class="n">금액</th><th class="n">비율</th></tr>${cats.map(c=>[c,rows.filter(x=>catOf(x.o)===c)]).sort((a,b)=>sum(x=>catOf(x.o)===b[0])-sum(x=>catOf(x.o)===a[0])).map(([c,r])=>{const v=r.reduce((a,x)=>a+(+x.o.price||0),0);return `<tr><td>${esc(c)}</td><td class="n">${r.length}</td><td class="n">${won(v)}</td><td class="n">${tot?Math.round(v/tot*100):0}%</td></tr>`}).join('')}</table>
    <h2>3. 구매처별 지출</h2><table><tr><th>구매처</th><th class="n">건수</th><th class="n">금액</th></tr>${vend.map(v=>`<tr><td>${esc(v)}</td><td class="n">${rows.filter(x=>(x.o.vendor||'기타')===v).length}</td><td class="n">${won(sum(x=>(x.o.vendor||'기타')===v))}</td></tr>`).join('')}</table>
    ${expDetail?`<h2>4. 상세 내역 (${rows.length}건)</h2><table><tr><th>결제일</th><th>구분</th><th>분류</th><th>품목</th><th>수량</th><th>구매처</th><th class="n">금액</th><th>결재</th></tr>
-   ${rows.map(({o,day})=>`<tr><td>${md(day)}</td><td>${SITES[o.site]}</td><td>${esc(catOf(o))}</td><td>${esc(o.name)}${o.spec?` (${esc(o.spec)})`:''}</td><td>${esc(o.qty||'')}</td><td>${esc(o.vendor||'')}</td><td class="n">${won(o.price)}</td><td style="font-size:8pt">${esc((lastLog(o,'final')||{}).name||'')}</td></tr>`).join('')}</table>`:''}`,signBox());
+   ${rows.map(({o,day})=>`<tr><td>${md(day)}</td><td>${SN(o.site)}</td><td>${esc(catOf(o))}</td><td>${esc(o.name)}${o.spec?` (${esc(o.spec)})`:''}</td><td>${esc(o.qty||'')}</td><td>${esc(o.vendor||'')}</td><td class="n">${won(o.price)}</td><td style="font-size:8pt">${esc((lastLog(o,'final')||{}).name||'')}</td></tr>`).join('')}</table>`:''}`,signBox());
 }
 function expenseCsv(){
   const rows=spendRows(expFrom,expTo),q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
   const head=['결제일','달','구분','분류','품목','규격','수량','구매처','금액','주문번호','결재','결제','상태'];
-  const body=rows.map(({o,day})=>[day,day.slice(0,7),SITES[o.site],catOf(o),o.name,o.spec,o.qty,o.vendor,+o.price||0,o.orderNo,(lastLog(o,'final')||{}).name,(lastLog(o,'pay')||{}).name,STAGE[o.stage][0]]);
-  const ms=monthsBetween(expFrom,expTo);const sumRows=[[],['월별 합계'],['달',...Object.values(SITES),'합계'],...ms.map(m=>{const r=rows.filter(x=>x.day.startsWith(m));return [m,...Object.keys(SITES).map(k=>r.filter(x=>x.o.site===k).reduce((a,x)=>a+(+x.o.price||0),0)),r.reduce((a,x)=>a+(+x.o.price||0),0)]})];
+  const body=rows.map(({o,day})=>[day,day.slice(0,7),SN(o.site),catOf(o),o.name,o.spec,o.qty,o.vendor,+o.price||0,o.orderNo,(lastLog(o,'final')||{}).name,(lastLog(o,'pay')||{}).name,STAGE[o.stage][0]]);
+  const ms=monthsBetween(expFrom,expTo);const sumRows=[[],['월별 합계'],['달',...repSites(rows).map(SN),'합계'],...ms.map(m=>{const r=rows.filter(x=>x.day.startsWith(m));return [m,...repSites(rows).map(k=>r.filter(x=>x.o.site===k).reduce((a,x)=>a+(+x.o.price||0),0)),r.reduce((a,x)=>a+(+x.o.price||0),0)]})];
   return '\ufeff'+[head,...body,...sumRows].map(r=>r.map(q).join(',')).join('\r\n');
 }
 function vReport(){
@@ -577,14 +596,14 @@ function vReport(){
   const paid=os.filter(o=>['ship','arrived','done','issue'].includes(o.stage));
   const tot=sumP(paid);
   const grp=f=>{const m={};paid.forEach(o=>{const k=f(o);m[k]=(m[k]||0)+(+o.price||0)});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
-  const cols={clinic:'var(--clinic)',center:'var(--center)',brain:'var(--brain)'};
+  const cols=new Proxy({},{get:(_,k)=>siteColor(k)});
   return hdr('구매 · 지출 내역','결제된 주문 기준')+`
   ${expenseCard()}
   <div class="row" style="margin:14px 0 10px"><select id="repMonth" class="grow">${ms.map(m=>`<option value="${m}" ${m===repMonth?'selected':''}>${m.replace('-','년 ')}월</option>`).join('')}</select><button class="btn" data-act="printMonth">📄 문서</button></div>
   <div class="card"><div class="sum"><div><b>${won(tot)}</b><span>결제 합계</span></div><div><b>${paid.length}</b><span>결제 건</span></div><div><b>${os.length-paid.length}</b><span>결재 · 결제 전</span></div></div></div>
-  <div class="card"><h2>장소별</h2>${grp(o=>o.site).length?grp(o=>o.site).map(([k,v])=>`<div style="margin-bottom:6px"><div class="row" style="justify-content:space-between;font-size:13.5px"><span class="site s-${k}">${SITES[k]}</span><span class="money">${won(v)}</span></div><div class="bar"><i style="width:${tot?v/tot*100:0}%;background:${cols[k]}"></i></div></div>`).join(''):'<div class="empty">이 달 결제가 없어요</div>'}
+  <div class="card"><h2>장소별</h2>${grp(o=>o.site).length?grp(o=>o.site).map(([k,v])=>`<div style="margin-bottom:6px"><div class="row" style="justify-content:space-between;font-size:13.5px"><span class="site s-${k}">${SN(k)}</span><span class="money">${won(v)}</span></div><div class="bar"><i style="width:${tot?v/tot*100:0}%;background:${cols[k]}"></i></div></div>`).join(''):'<div class="empty">이 달 결제가 없어요</div>'}
    ${paid.length?`<h3>구매처별</h3><table>${grp(o=>o.vendor||'-').map(([k,v])=>`<tr><td>${esc(k)}</td><td class="n">${won(v)}</td></tr>`).join('')}</table>`:''}</div>
-  <div class="card"><h2>물품 구매 기록표</h2>${os.length?`<table><tr><th>주문일</th><th>품목 · 결재</th><th class="n">금액</th><th>상태</th></tr>${os.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(o=>`<tr><td>${md(o.date)}</td><td><span class="site s-${o.site}">${SITES[o.site][0]}</span> ${esc(o.name)} ${esc(o.qty||'')}<div class="muted" style="font-size:12.5px">${signLine(o)}</div></td><td class="n">${won(o.price)}</td><td style="font-size:13px">${STAGE[o.stage][0]}</td></tr>`).join('')}</table>`:'<div class="empty">기록이 없어요</div>'}</div>`;
+  <div class="card"><h2>물품 구매 기록표</h2>${os.length?`<table><tr><th>주문일</th><th>품목 · 결재</th><th class="n">금액</th><th>상태</th></tr>${os.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(o=>`<tr><td>${md(o.date)}</td><td><span class="site s-${o.site}">${SN(o.site)[0]}</span> ${esc(o.name)} ${esc(o.qty||'')}<div class="muted" style="font-size:12.5px">${signLine(o)}</div></td><td class="n">${won(o.price)}</td><td style="font-size:13px">${STAGE[o.stage][0]}</td></tr>`).join('')}</table>`:'<div class="empty">기록이 없어요</div>'}</div>`;
 }
 
 /* ----- 설정 ----- */
@@ -604,12 +623,13 @@ function vSettings(){
    <label class="f">사업자등록번호 (쿠팡 · 네이버 사업자 결제용)</label><input data-st="bizNo" value="${esc(st.bizNo)}" inputmode="numeric" placeholder="000-00-00000" maxlength="12" ${dis}>
    ${!st.bizNo?'<p class="muted" style="margin-top:4px">비어 있어요. 숫자 10자리를 넣으면 자동으로 000-00-00000 모양이 돼요.</p>':bizValid(st.bizNo)?'<p class="muted" style="margin-top:4px">✅ 사업자등록번호 검증번호 확인</p>':'<div class="alert e" style="margin:6px 0 0">사업자등록번호 검증번호가 맞지 않아요. 숫자를 다시 확인해 주세요.</div>'}
    <div class="two"><div><label class="f">원장님 앱카드 — 단일 품목 (원 이상)</label><input type="number" data-st="approveItem" value="${st.approveItem}" ${dis}></div><div><label class="f">원장님 앱카드 — 한 번 결제 합계</label><input type="number" data-st="approveOrder" value="${st.approveOrder}" ${dis}></div></div>
-   <h3>장소 · 부서 이름</h3><p class="muted" style="font-size:13px">물품을 나눠 사는 곳이에요 (예: 외래 · 상담실 · 센터). 이름을 비우면 숨겨요.</p>
-   <div class="row" style="gap:6px">${Object.keys(SITES_DEF).map(k=>`<input class="grow" data-site-name="${k}" value="${esc((SET().sites||SITES_DEF)[k]??'')}" placeholder="(안 씀)" ${dis}>`).join('')}</div>
+   <h3>장소 · 부서</h3><p class="muted" style="font-size:13px">물품을 나눠 사는 곳이에요 (예: 외래 · 상담실 · 센터 · 브레인). 이름을 누르고 바꾸면 바로 저장돼요. 개수 제한 없어요.</p>
+   ${SITE_LIST.map((x,i)=>`<div class="row" style="gap:6px;margin:6px 0;${x.off?'opacity:.55':''}"><span class="site s-${x.k}" style="min-width:14px">&nbsp;</span><input class="grow" data-site-name="${x.k}" value="${esc(x.name)}" maxlength="12" ${dis}>${adm?`<button class="btn sm ghost" data-site-up="${i}" ${i?'':'disabled'} aria-label="위로">▲</button><button class="btn sm ghost" data-site-off="${x.k}">${x.off?'다시 쓰기':'숨기기'}</button>${siteUsed(x.k)?'':`<button class="btn sm ghost" data-site-del="${x.k}" aria-label="삭제">🗑</button>`}`:''}</div>`).join('')}
+   ${adm?`<div class="row" style="gap:6px;margin-top:6px"><input class="grow" id="newSite" placeholder="새 장소 · 부서 이름" maxlength="12"><button class="btn sm" data-act="addSite">+ 추가</button></div><p class="muted" style="font-size:12.5px;margin-top:4px">기록이 있는 장소는 지우지 않고 ‘숨기기’만 돼요 (지난 내역에는 이름이 남아요).</p>`:''}
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">마음 살림 v3.3 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">마음 살림 v3.4 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -640,7 +660,7 @@ function bizValid(n){const d=String(n).replace(/\D/g,'').split('').map(Number);i
 function modal(h){$('#modal').innerHTML=`<div class="modal" data-bg="1"><div class="sheet">${h}</div></div>`}
 function closeModal(){$('#modal').innerHTML='';render()}
 function fillDatalist(){const names=[...new Set([...ITEMS().map(i=>i.name),...S.orders.map(o=>o.name),...S.requests.map(r=>r.name)])];$('#dlItems').innerHTML=names.map(n=>`<option value="${esc(n)}">`).join('')}
-function siteSel(v,id='fSite'){return `<select id="${id}">${Object.entries(SITES).map(([k,l])=>`<option value="${k}" ${v===k?'selected':''}>${l}</option>`).join('')}</select>`}
+function siteSel(v,id='fSite'){const E=Object.entries(SITES);if(v&&!SITES[v]&&SITE_ALL[v])E.push([v,SITE_ALL[v]+' (숨김)']);return `<select id="${id}">${E.map(([k,l])=>`<option value="${k}" ${v===k?'selected':''}>${l}</option>`).join('')}</select>`}
 const IS_MOBILE=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 function shopUrl(o){
   let u=String(o.url||'').trim();
@@ -660,7 +680,7 @@ function openShop(url){
 
 function orderForm(o={},title='주문서 작성'){
   modal(`<h3>${title}</h3>${o.reqIds&&o.reqIds.length?`<div class="alert ok" style="font-size:12.5px">검수 통과한 수요 ${o.reqIds.length}건 — 저장하면 바로 원장님 결재로 올라가요</div>`:'<div class="alert w" style="font-size:12.5px">저장하면 중간관리자 검수 → 원장님 결재로 올라가요</div>'}
-   <div class="two"><div><label class="f">주문일</label><input type="date" id="fDate" value="${o.date||today()}"></div><div><label class="f">구분</label>${siteSel(o.site||'center')}</div></div>
+   <div class="two"><div><label class="f">주문일</label><input type="date" id="fDate" value="${o.date||today()}"></div><div><label class="f">구분</label>${siteSel(o.site||firstSite('center'))}</div></div>
    <label class="f">구매 품목</label><input id="fName" list="dlItems" value="${esc(o.name||'')}" placeholder="예: 대형 롤휴지">
    <div id="fPrev" class="muted" style="font-size:13px;margin-top:4px"></div>
    <div class="two"><div><label class="f">규격</label><input id="fSpec" value="${esc(o.spec||'')}"></div><div><label class="f">수량</label><input id="fQty" value="${esc(o.qty||'')}"></div></div>
@@ -689,7 +709,7 @@ function reqForm(r={}){
   const svs=S.surveys.filter(s=>s.open);
   modal(`<h3>📝 수요 내기</h3><p class="muted" style="font-size:12.5px">필요한 물품을 적으면 중간관리자 검수 → 원장님 결재 → 구매로 이어져요.</p>
    ${svs.length?`<label class="f">수요조사</label><select id="rSv"><option value="">(조사 없이 바로)</option>${svs.map(s=>`<option value="${s.id}" ${r.surveyId===s.id?'selected':''}>${esc(s.title)}</option>`).join('')}</select>`:''}
-   <div class="two"><div><label class="f">구분 (쓸 곳)</label>${siteSel(r.site||((S.surveys.find(s=>s.id===r.surveyId)||{}).site!=='all'&&(S.surveys.find(s=>s.id===r.surveyId)||{}).site)||'center')}</div><div><label class="f">필요한 날</label><input type="date" id="rDue" value="${r.due||''}"></div></div>
+   <div class="two"><div><label class="f">구분 (쓸 곳)</label>${siteSel(r.site||((S.surveys.find(s=>s.id===r.surveyId)||{}).site!=='all'&&(S.surveys.find(s=>s.id===r.surveyId)||{}).site)||firstSite('center'))}</div><div><label class="f">필요한 날</label><input type="date" id="rDue" value="${r.due||''}"></div></div>
    <label class="f">품목</label><input id="rName" list="dlItems" value="${esc(r.name||'')}" placeholder="예: 물티슈">
    <label class="f">수량 · 규격</label><input id="rQty" value="${esc(r.qty||'')}" placeholder="예: 2박스">
    <label class="f">필요한 이유 · 메모</label><input id="rReason" value="${esc(r.reason||'')}">
@@ -705,7 +725,7 @@ function surveyForm(){
 }
 function finalScreen(){const os=by('final');if(!os.length){toast('결재할 주문서가 없어요');closeModal();return}
   modal(`<h3>👨‍⚕️ 원장님 최종 결재</h3><p class="muted">${esc(orgName())} · ${os.length}건 · 합계 <b>${won(sumP(os))}</b></p>
-  ${os.map(o=>`<div class="ord"><div class="h"><span class="site s-${o.site}">${SITES[o.site]}</span>${esc(o.vendor||'')}${appCard(o)?'<span class="bd w">원장님 앱카드</span>':''}</div>
+  ${os.map(o=>`<div class="ord"><div class="h"><span class="site s-${o.site}">${SN(o.site)}</span>${esc(o.vendor||'')}${appCard(o)?'<span class="bd w">원장님 앱카드</span>':''}</div>
    <div class="row" style="justify-content:space-between"><div class="n">${esc(o.name)}${o.spec?` <span class="muted">${esc(o.spec)}</span>`:''} · ${esc(o.qty||'')}</div><span class="money">${won(o.price)}</span></div>
    <div class="muted" style="font-size:12.5px">${signLine(o)}${o.note?' · '+esc(o.note):''}</div>
    <input id="fn-${o.id}" placeholder="반려 사유 (반려할 때)" style="margin-top:6px;font-size:14px;padding:6px 8px">
@@ -734,7 +754,7 @@ async function pkCheck(){
   else{const f=lockState();if(Date.now()-f.t>600000)f.n=0;f.n++;f.t=Date.now();localStorage.setItem('mp-pk-fail',JSON.stringify(f));$('#pkIn').value='';toast(f.n>=5?'5번 틀려 10분간 잠겨요':`키가 맞지 않아요 (${f.n}/5)`)}
 }
 let payPending=null,payQueue=[];
-function payForm(o){if(!o)return;modal(`<h3>💳 결제 완료 기록</h3><p><b>${esc(o.name)}</b> ${esc(o.qty||'')} <span class="site s-${o.site}">${SITES[o.site]}</span></p><p class="muted" style="font-size:12.5px">결재 금액 ${won(o.price)} · 결제 화면에서 본 내용을 적어 주세요.</p>
+function payForm(o){if(!o)return;modal(`<h3>💳 결제 완료 기록</h3><p><b>${esc(o.name)}</b> ${esc(o.qty||'')} <span class="site s-${o.site}">${SN(o.site)}</span></p><p class="muted" style="font-size:12.5px">결재 금액 ${won(o.price)} · 결제 화면에서 본 내용을 적어 주세요.</p>
   <div class="two"><div><label class="f">실제 결제 금액</label><input type="number" inputmode="numeric" id="pPrice" value="${o.price??''}"></div><div><label class="f">배송 예정일</label><input type="date" id="pEta" value="${o.eta||''}"></div></div>
   <label class="f">주문번호 (선택)</label><input id="pNo" value="${esc(o.orderNo||'')}">
   <label class="f">상품 링크 (다음 구매 때 바로 열려요 · 선택)</label><input id="pUrl" value="${esc(o.url||'')}" placeholder="쿠팡 앱 ‘공유 → 링크 복사’ 후 붙여넣기">
@@ -756,7 +776,7 @@ function ckEditForm(kind,id){
    ${has('admin')?`<p style="margin-top:10px"><button class="btn sm ghost" ${kind==='rt'?`data-rtedit="${it.id}"`:`data-itedit="${it.id}"`}>✏️ ${kind==='rt'?'업무 내용 · 주기':'품목 내용'} 고치기</button></p>`:''}
    <div class="row" style="margin-top:14px;justify-content:flex-end">${c?`<button class="btn danger" data-ckdel="${esc(k)}">체크 취소</button><span class="grow"></span>`:''}<button class="btn ghost" data-act="closeModal">닫기</button><button class="btn" data-cksave="${esc(k)}">${c?'고치기':'체크로 기록'}</button></div>`);
 }
-function itemForm(i){const n=!i;i=i||{site:'center',cat:'',name:'',cycle:'W1',rule:'',stock:true};
+function itemForm(i){const n=!i;i=i||{site:firstSite('center'),cat:'',name:'',cycle:'W1',rule:'',stock:true};
   modal(`<h3>${n?'품목 추가':'품목 고치기'}</h3>
    <div class="two"><div><label class="f">구분</label>${siteSel(i.site,'iSite')}</div><div><label class="f">분류</label><input id="iCat" value="${esc(i.cat)}" placeholder="예: 사무·소모품" list="dlCats"></div></div>
    <datalist id="dlCats">${[...new Set(ITEMS().map(x=>x.cat))].map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
@@ -773,12 +793,11 @@ function rtForm(r){const n=!r;r=r||{cycle:'W1',text:''};
 function editItemsForm(){
   modal(`<h3>품목 · 정기 업무 고치기</h3>
    <p class="muted">한 줄에 하나씩. 형식: <b>구분 | 분류 | 품목 | 주기 | 구매 기준 | 재고점검</b><br>구분 = ${siteList()}, 주기 = 월 1회 · 주 1회 · 주 2회 · 필요 시 · 요청 시, 재고점검 = O 또는 빈칸</p>
-   <textarea id="eItems" style="min-height:260px;font-size:13px">${esc(ITEMS().map(i=>[SITES[i.site],i.cat,i.name,CYCLES[i.cycle],i.rule,i.stock?'O':''].join(' | ')).join('\n'))}</textarea>
+   <textarea id="eItems" style="min-height:260px;font-size:13px">${esc(ITEMS().map(i=>[SN(i.site),i.cat,i.name,CYCLES[i.cycle],i.rule,i.stock?'O':''].join(' | ')).join('\n'))}</textarea>
    <h3 style="margin-top:12px">정기 업무</h3><p class="muted">형식: <b>주기 | 업무 내용</b></p>
    <textarea id="eRoutine" style="min-height:160px;font-size:13px">${esc(ROUTINE().map(r=>CYCLES[r.cycle]+' | '+r.text).join('\n'))}</textarea>
    <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn danger" data-act="resetItems">인수인계서 기본값</button><span class="grow"></span><button class="btn ghost" data-act="closeModal">취소</button><button class="btn" data-act="saveItems">저장</button></div>`);
 }
-const SITE_BY_NAME=Object.fromEntries(Object.entries(SITES).map(([k,v])=>[v,k]));
 const CYC_BY_NAME=Object.fromEntries(Object.entries(CYCLES).map(([k,v])=>[v,k]));
 
 /* ===================== 🍱 도시락 =====================
@@ -1298,8 +1317,8 @@ function buildReminders(){
     if(rt('W2').length&&(N.w2Days||[]).map(Number).includes(dow)){const k=CHECKS()[rt('W2')[0].id+'|'+periodKey('W2',d)];const cnt=k?(k.n||1):0;const idx=(N.w2Days||[]).map(Number).sort().indexOf(dow);if(cnt<=idx)push('r-'+ds,at(ds,N.time),'🍱 레토르트 주문 · 도착 확인',rt('W2').map(r=>r.text).join(' / '))}
   }
   if(N.order)S.orders.forEach(o=>{
-    if(o.stage==='ship'&&o.eta&&(has('buyer')||has('mid'))){push('e-'+o.id,at(o.eta,N.time),has('mid')?'📦 오늘 도착 예정 — 수령 검수':'📦 오늘 도착 예정',`${SITES[o.site]} · ${o.name} ${o.qty||''}`);push('e2-'+o.id,at(ymd(addDays(new Date(o.eta+'T00:00'),1)),N.time),'⚠️ 수령 검수가 안 됐어요',`${SITES[o.site]} · ${o.name} — 미도착 · 누락 확인`)}
-    if(o.meal&&has('buyer')&&!['done','reject'].includes(o.stage))push('meal-'+o.id,at(ymd(addDays(new Date(o.meal+'T00:00'),-1)),'15:00'),'🍱 내일 식사용 레토르트 도착했나요?',`${SITES[o.site]} · ${o.name} — 식사일 ${md(o.meal)}`);
+    if(o.stage==='ship'&&o.eta&&(has('buyer')||has('mid'))){push('e-'+o.id,at(o.eta,N.time),has('mid')?'📦 오늘 도착 예정 — 수령 검수':'📦 오늘 도착 예정',`${SN(o.site)} · ${o.name} ${o.qty||''}`);push('e2-'+o.id,at(ymd(addDays(new Date(o.eta+'T00:00'),1)),N.time),'⚠️ 수령 검수가 안 됐어요',`${SN(o.site)} · ${o.name} — 미도착 · 누락 확인`)}
+    if(o.meal&&has('buyer')&&!['done','reject'].includes(o.stage))push('meal-'+o.id,at(ymd(addDays(new Date(o.meal+'T00:00'),-1)),'15:00'),'🍱 내일 식사용 레토르트 도착했나요?',`${SN(o.site)} · ${o.name} — 식사일 ${md(o.meal)}`);
   });
   if(N.order&&LC()&&(has('buyer')||has('mid')))for(let i=0;i<14;i++){const ds=ymd(addDays(new Date(),i)),pl=planDay(ds);if(pl&&(pl.d.status||'plan')==='plan'){const [h,m]=(LC().deadline||'10:00').split(':').map(Number);const t=`${pad(Math.max(0,h-1))}:${pad(m||0)}`;push('lunch-'+ds,at(ds,t),`🍱 오늘 도시락 ${pl.count}개 — ${LC().deadline} 전 확인`,`${orderLine(pl)} · 결석 · 추가 인원이 있으면 업체에 연락`)}}
   if(N.approve){let k=0;for(let i=0;i<10&&k<3;i++){const d=addDays(new Date(),i),dow=d.getDay();if(dow===0||dow===6)continue;const ds=ymd(d);
@@ -1323,10 +1342,10 @@ function monthDoc(){
   const paid=os.filter(o=>['ship','arrived','done','issue'].includes(o.stage)),tot=sumP(paid);
   const site=k=>sumP(paid.filter(o=>o.site===k));
   return docShell(`${repMonth.replace('-','년 ')}월 물품 구매 내역`,siteList(),`
-   <table style="width:auto;min-width:60%"><tr>${Object.values(SITES).map(l=>`<th class="c">${l}</th>`).join('')}<th class="c">결제 합계</th></tr><tr>${Object.keys(SITES).map(k=>`<td class="c">${won(site(k))}</td>`).join('')}<td class="c"><b>${won(tot)}</b></td></tr></table>
+   <table style="width:auto;min-width:60%"><tr>${repSites(os).map(k=>`<th class="c">${SN(k)}</th>`).join('')}<th class="c">결제 합계</th></tr><tr>${repSites(os).map(k=>`<td class="c">${won(site(k))}</td>`).join('')}<td class="c"><b>${won(tot)}</b></td></tr></table>
    <h2 style="clear:both">물품 구매 기록표 (${os.length}건)</h2>
    <table><tr><th>주문일</th><th>구분</th><th>구매 품목</th><th>수량</th><th class="n">금액</th><th>구매처</th><th>결재 라인</th><th class="c">상태</th></tr>
-   ${os.map(o=>`<tr><td>${md(o.date)}</td><td>${SITES[o.site]}</td><td>${esc(o.name)}${o.spec?` (${esc(o.spec)})`:''}${appCard(o)?'<br><small>원장님 앱카드</small>':''}</td><td>${esc(o.qty||'')}</td><td class="n">${won(o.price)}</td><td>${esc(o.vendor||'')}</td><td style="font-size:8.5pt">${signLine(o)}</td><td class="c">${STAGE[o.stage][0]}${o.issue?'<br>'+esc(o.issue):''}</td></tr>`).join('')}</table>
+   ${os.map(o=>`<tr><td>${md(o.date)}</td><td>${SN(o.site)}</td><td>${esc(o.name)}${o.spec?` (${esc(o.spec)})`:''}${appCard(o)?'<br><small>원장님 앱카드</small>':''}</td><td>${esc(o.qty||'')}</td><td class="n">${won(o.price)}</td><td>${esc(o.vendor||'')}</td><td style="font-size:8.5pt">${signLine(o)}</td><td class="c">${STAGE[o.stage][0]}${o.issue?'<br>'+esc(o.issue):''}</td></tr>`).join('')}</table>
    ${os.some(o=>!['done'].includes(o.stage))?`<h2>미완료 · 추가 확인 필요</h2><ul>${os.filter(o=>o.stage!=='done').map(o=>`<li>${esc(o.name)} — ${STAGE[o.stage][0]}${o.issue?': '+esc(o.issue):''}</li>`).join('')}</ul>`:''}`,signBox());
 }
 function handoverDoc(){
@@ -1415,6 +1434,9 @@ document.addEventListener('click',async e=>{
   if(d.attall!==undefined){const e=$('#attRes');if(e)delete e.dataset.keep;document.querySelectorAll('.ldIn').forEach(x=>x.checked=d.attall==='1');attCount();return}
   if(d.attlink){const ds=d.attlink,c=LC();sendMenu({title:'출석 체크 링크 보내기',subject:`${md(ds)} 도시락 출석 체크`,text:`[${c.orderName||orgName()}] ${md(ds)} 도시락 출석 체크\n아래 링크를 열어 ‘마음 살림’ 앱에 로그인하면 그날 출석 화면이 바로 열려요. 결석한 분 체크를 끄고 저장해 주세요 (마감 ${esc(c.deadline||'10:00')}).`,link:`${WEB_URL}#att/${ds}`});return}
   if(d.snd){doSend(d.snd);return}
+  if(d.siteUp!==undefined){const i=+d.siteUp,L=SITE_LIST.slice();if(i>0){[L[i-1],L[i]]=[L[i],L[i-1]];setSites(L)}return}
+  if(d.siteOff){const L=SITE_LIST.map(x=>x.k===d.siteOff?{...x,off:!x.off}:x);if(!L.some(x=>!x.off)){toast('쓰는 장소가 하나는 있어야 해요');return}setSites(L);toast(L.find(x=>x.k===d.siteOff).off?'숨겼어요 (지난 기록은 그대로)':'다시 써요');return}
+  if(d.siteDel){if(siteUsed(d.siteDel)){toast('기록이 있어 숨기기만 돼요');return}const L=SITE_LIST.filter(x=>x.k!==d.siteDel);if(!L.some(x=>!x.off)){toast('쓰는 장소가 하나는 있어야 해요');return}if(!confirm(`‘${SN(d.siteDel)}’ 장소를 지울까요?`))return;setSites(L);return}
   if(d.ltab){lunchTab=d.ltab;render();scrollTo(0,0);return}
   if(d.lmob){const c=LC(),y=scrollY;smsNum(c,d.lmob,true);scrollTo(0,y);return}
   if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}const c=LC();sendMenu({title:'오늘 주문 보내기',text:m,num:smsTarget(c),askNum:true});return}
@@ -1549,7 +1571,7 @@ document.addEventListener('click',async e=>{
     case 'shareCode':share(`[${orgName()}] 마음 살림 (물품 구매 · 결재 · 도시락)\n1) 아래 주소를 열고 이메일로 가입 (설치 필요 없음)\n${WEB_URL}\n2) 참여 코드 ${O().joinCode} 입력\n3) 수요 탭에서 필요한 물품을 내 주세요`);break;
     case 'newCode':try{await ST.newJoinCode(ORG,O().joinCode);toast('새 참여 코드를 만들었어요 — 예전 코드는 못 써요')}catch(err){toast(errMsg(err))}break;
     case 'editItems':editItemsForm();break;
-    case 'saveItems':{const its=[],bad=[];$('#eItems').value.split('\n').map(l=>l.trim()).filter(Boolean).forEach((l,i)=>{const [s,c,n,cy,r,st]=l.split('|').map(x=>(x||'').trim());const site=SITE_BY_NAME[s],cycle=CYC_BY_NAME[cy];if(!site||!n||!cycle){bad.push(i+1);return}const old=ITEMS().find(x=>x.site===site&&x.name===n);its.push({id:old?old.id:uid(),site,cat:c||'기타',name:n,cycle,rule:r||'',stock:/^o$/i.test(st||'')})});
+    case 'saveItems':{const its=[],bad=[];$('#eItems').value.split('\n').map(l=>l.trim()).filter(Boolean).forEach((l,i)=>{const [s,c,n,cy,r,st]=l.split('|').map(x=>(x||'').trim());const site=siteByName(s)||(s?addSite(s):''),cycle=CYC_BY_NAME[cy];if(!site||!n||!cycle){bad.push(i+1);return}const old=ITEMS().find(x=>x.site===site&&x.name===n);its.push({id:old?old.id:uid(),site,cat:c||'기타',name:n,cycle,rule:r||'',stock:/^o$/i.test(st||'')})});
       const rts=[],bad2=[];$('#eRoutine').value.split('\n').map(l=>l.trim()).filter(Boolean).forEach((l,i)=>{const [cy,...tx]=l.split('|').map(x=>x.trim());const cycle=CYC_BY_NAME[cy];if(!cycle||!tx.join('|')){bad2.push(i+1);return}const old=ROUTINE().find(x=>x.text===tx.join(' | '));rts.push({id:old?old.id:uid(),cycle,text:tx.join(' | ')})});
       if(bad.length||bad2.length){toast(`형식이 맞지 않는 줄: ${bad.length?'품목 '+bad.join(','):''} ${bad2.length?'정기 업무 '+bad2.join(','):''}`);return}
       S.org.items=its;S.org.routine=rts;save();closeModal();toast('저장했어요');break}
@@ -1575,8 +1597,9 @@ document.addEventListener('click',async e=>{
     case 'logout':if(UNSUB)UNSUB();UNSUB=null;ORG=null;ready=false;await ST.signOut();break;
     case 'leave':if(!confirmLeave()){break}if(UNSUB)UNSUB();UNSUB=null;ORG=null;ready=false;S={me:null,org:null,members:[],requests:[],orders:[],surveys:[],lunch:[]};await ST.leaveOrg();view='setup';render();break;
     case 'joinOrg':{const nm=$('#jName').value.trim(),cd=$('#jCode').value.trim();if(!nm||!cd){toast('이름과 참여 코드를 넣어 주세요');return}t.disabled=true;try{ORG=await ST.joinOrg(cd,nm);listenOrg()}catch(err){t.disabled=false;toast(errMsg(err))}break}
+    case 'addSite':{const v=($('#newSite')||{}).value||'';if(!v.trim()){toast('이름을 넣어 주세요');break}if(siteByName(v)&&SITES[siteByName(v)]){toast('같은 이름이 있어요');break}addSite(v);toast('장소를 추가했어요');break}
     case 'createOrg':{const on=$('#cOrg').value.trim(),nm=$('#cName').value.trim();if(!on||!nm){toast('기관 이름과 내 이름을 넣어 주세요');return}const roles=[...document.querySelectorAll('.cRole:checked')].map(x=>x.value);t.disabled=true;
-      try{ORG=await ST.createOrg({orgName:on,myName:nm,roles,seed:{settings:{...DEFAULT_SETTINGS,bizNo:fmtBiz(($('#cBiz')||{}).value||''),sites:(()=>{const v=(($('#cSites')||{}).value||'본원').split(/[,·/]/).map(x=>x.trim()).filter(Boolean).slice(0,3);const k=Object.keys(SITES_DEF);return Object.fromEntries(k.map((x,i)=>[x,v[i]||'']))})()},...(($('#cSample')||{}).checked?{items:DEFAULT_ITEMS(),routine:DEFAULT_ROUTINE()}:{items:[],routine:[]}),checks:{},stock:{}}});listenOrg()}catch(err){t.disabled=false;toast(errMsg(err))}break}
+      try{ORG=await ST.createOrg({orgName:on,myName:nm,roles,seed:{settings:{...DEFAULT_SETTINGS,bizNo:fmtBiz(($('#cBiz')||{}).value||''),sites:(()=>{const v=[...new Set((($('#cSites')||{}).value||'본원').split(/[,·/]/).map(x=>x.trim().slice(0,12)).filter(Boolean))];return (v.length?v:['본원']).map((name,i)=>({k:['clinic','center','brain'][i]||('s'+i+Date.now().toString(36).slice(-4)),name}))})()},...(($('#cSample')||{}).checked?{items:DEFAULT_ITEMS(),routine:DEFAULT_ROUTINE()}:{items:[],routine:[]}),checks:{},stock:{}}});listenOrg()}catch(err){t.disabled=false;toast(errMsg(err))}break}
   }
 });
 let _leaveArm=0;function confirmLeave(){if(Date.now()-_leaveArm<4000)return true;_leaveArm=Date.now();toast('한 번 더 누르면 이 휴대폰에서 기관 연결을 끊어요');return false}
@@ -1591,7 +1614,7 @@ document.addEventListener('change',e=>{
   if(el.id==='rSv'){const s=S.surveys.find(x=>x.id===el.value);if(s&&s.site&&s.site!=='all')$('#fSite').value=s.site;return}
   if(el.dataset.myname!==undefined){const v=el.value.trim();if(!v)return;const {id,...m}=S.me;ST.put(ORG,'members',id,{...m,name:v}).then(()=>toast('이름을 바꿨어요')).catch(err=>toast(errMsg(err)));return}
   if(el.dataset.org){S.org.name=el.value.trim()||orgName();save();toast('저장했어요');return}
-  if(el.dataset.siteName){const cur={...SITES_DEF,...(SET().sites||{})};cur[el.dataset.siteName]=el.value.trim().slice(0,12);if(!Object.values(cur).some(Boolean)){toast('장소는 하나 이상 있어야 해요');render();return}S.org.settings={...SET(),sites:cur};save();render();toast('장소 이름을 저장했어요');return}
+  if(el.dataset.siteName){const v=el.value.trim().slice(0,12);if(!v){toast('이름을 비울 수 없어요 — 안 쓰면 숨기기를 눌러 주세요');render();return}if(SITE_LIST.some(x=>x.k!==el.dataset.siteName&&x.name===v)){toast('같은 이름이 있어요');render();return}setSites(SITE_LIST.map(x=>x.k===el.dataset.siteName?{...x,name:v}:x));toast('장소 이름을 저장했어요');return}
   if(el.dataset.st){const k=el.dataset.st;S.org.settings={...SET(),[k]:['approveItem','approveOrder'].includes(k)?Math.max(0,+el.value||0):k==='bizNo'?fmtBiz(el.value):el.value.trim()};save();if(k==='bizNo')render();toast('저장했어요');return}
   if(el.dataset.addr){const s=SET();s.addr[el.dataset.addr]=el.value.trim();S.org.settings=s;save();toast('저장했어요');return}
   if(el.dataset.lc){const c=LC(),k=el.dataset.lc;const old=c.store;c[k]=['base','weeks'].includes(k)?(+el.value||0):el.value.trim();if((k==='store'||k==='storePhone')&&c.stores){const x=c.stores.find(y=>y.name===(k==='store'?old:c.store));if(x){x.name=c.store;x.phone=c.storePhone}}save();if(k==='weeks')render();toast('저장했어요');return}
