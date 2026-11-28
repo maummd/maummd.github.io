@@ -140,6 +140,13 @@ input:disabled{background:#F2F3F0;color:var(--sub)}
 .snd button span{font-size:24px;line-height:1.1}.snd button small{font-size:10px;font-weight:500;color:#4E5B56}.snd .s1{background:#E3F8EE}.snd .s2{background:#FEE500}.snd .s3{background:#E3EEFF}.snd .s4{background:#FFF1E5}.snd .s5{background:#F1F2EE}
 .att-bar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.att-b{display:flex;align-items:center;gap:6px;padding:10px;border-radius:12px;font-weight:700;font-size:14px;text-align:left}
 .att-b span{font-size:20px}.att-b.a1{background:linear-gradient(135deg,#12A36B,#0E8C8C);color:#fff}.att-b.a2{background:#FFF1E5;color:#C4521C}.att-b.a3{background:#E3F8EE;color:#0E7A50}.att-b.a4{background:#F1F2EE;color:#4E5B56}
+
+.duty-card{border-left:4px solid var(--brand,#2F5D50)}
+.duty-cash{margin-top:8px;padding:8px 10px;border-radius:10px;background:#FFF4E0;font-size:14.5px}.duty-cash.ok{background:#E3FAF0}
+.duty-total{font-size:28px;font-weight:800;margin:10px 0 4px;color:var(--brand,#2F5D50)}.duty-total span{font-size:14px;font-weight:600;color:var(--sub,#667)}
+.tl{display:grid;gap:0;margin-top:8px}.tl-row{display:grid;grid-template-columns:28px 96px 1fr;align-items:center;gap:6px;padding:11px 4px;border-bottom:1px solid var(--line,#E5E8E4);cursor:pointer}
+.tl-row:last-child{border-bottom:0}.tl-row input{width:20px;height:20px}.tl-t{font-variant-numeric:tabular-nums;font-weight:700;color:var(--sub,#667);font-size:14px}.tl-w{font-size:15.5px}
+.tl-row.now{background:#FFF6DD;border-radius:10px}.tl-row.done .tl-w{text-decoration:line-through;color:var(--sub,#999)}
 </style></head><body>
 <div class="wrap" id="app"><div class="empty" style="padding-top:40vh">불러오는 중…</div></div>
 <nav id="nav" hidden></nav>
@@ -361,9 +368,9 @@ function renderNav(){
 }
 function render(){syncSites();
   if(!ready&&view!=='auth'&&view!=='setup'&&view!=='gone')return;
-  const T=tabs().map(t=>t[0]);if(ORG&&S.me&&!['auth','setup','gone'].includes(view)&&!T.includes(view))view=T[0];
+  const T=tabs().map(t=>t[0]);if(ORG&&S.me&&!['auth','setup','gone'].includes(view)&&!T.includes(view)&&!(view==='duty'&&isMgr()))view=T[0];
   renderNav();
-  const V={lunch:vLunch,home:vHome,demand:vDemand,check:vCheck,order:vOrder,report:vReport,settings:vSettings,auth:vAuth,setup:vSetup,gone:vGone}[view]||vHome;
+  const V={duty:vDuty,lunch:vLunch,home:vHome,demand:vDemand,check:vCheck,order:vOrder,report:vReport,settings:vSettings,auth:vAuth,setup:vSetup,gone:vGone}[view]||vHome;
   $('#app').innerHTML=V();
   fillDatalist();
 }
@@ -405,6 +412,53 @@ function vSetup(){
 function vGone(){return hdr('마음 살림','')+`<div class="card"><div class="alert e">이 기관에서 나가졌거나 구성원 정보가 없어요.</div><button class="btn" style="width:100%" data-act="leave">다른 기관 연결</button></div>`}
 
 /* ----- 할 일 (관리자) ----- */
+
+/* ===================== 토요일 당직 =====================
+   lunch/duty           : 시간표 · 1인 지원금 · 당직 요일
+   lunch/duty-YYYY-MM-DD: 그날 당직자 · 인원 · 진행 체크 · 지원금 지급 */
+const DUTY_DEFAULT=()=>({id:'duty',day:6,per:5000,schedule:[
+  {t:'09:30~10:30',w:'개별활동'},{t:'10:30~11:30',w:'문화활동'},{t:'11:30~12:30',w:'지원금 지급 및 점심식사',pay:true},
+  {t:'12:40~13:20',w:'CBT교육'},{t:'13:30~13:50',w:'회진'},{t:'13:50~',w:'외출 (이스트폴)'}],
+  prep:['지원금 현금을 미리 은행에서 바꿔 두기 (5천원권)']});
+const DC=()=>S.lunch.find(x=>x.id==='duty')||DUTY_DEFAULT();
+const dutyDate=(from)=>{const d=new Date(from||new Date());d.setHours(0,0,0,0);const w=+DC().day;while(d.getDay()!==w)d.setDate(d.getDate()+1);return ymd(d)};
+const DL=ds=>S.lunch.find(x=>x.id==='duty-'+ds)||{id:'duty-'+ds,date:ds,done:{},who:'',count:null,paid:false,cash:false};
+const dutyCount=ds=>{const l=DL(ds);if(l.count!=null)return +l.count;const c=LC();return c?c.members.filter(m=>m.active!==false).length:10};
+function putDuty(doc){const i=S.lunch.findIndex(x=>x.id===doc.id);if(i<0)S.lunch.push(doc);else S.lunch[i]=doc;save()}
+const wonC=n=>n.toLocaleString('ko-KR')+'원';
+const DOWN='일월화수목금토';
+function dutyCash(ds){const n=dutyCount(ds),per=+DC().per||0;return {n,per,total:n*per,bills:per%5000===0?`5천원권 ${n*per/5000}장`:''}}
+function dutyCard(){if(!isMgr())return '';const ds=dutyDate(),d=new Date(ds+'T00:00'),today=ymd(new Date()),L=DL(ds),c=dutyCash(ds);
+  const left=Math.round((d-new Date(today+'T00:00'))/864e5);const when=left===0?'오늘':left===1?'내일':`${left}일 뒤`;
+  const steps=DC().schedule.length,done=Object.values(L.done||{}).filter(Boolean).length;
+  return `<button class="card duty-card" data-act="dutyOpen" style="display:block;width:100%;text-align:left">
+   <div class="spread"><h2 style="margin:0">🗓️ ${DOWN[d.getDay()]}요일 당직 <span class="muted" style="font-weight:500;font-size:14px">${d.getMonth()+1}/${d.getDate()} · ${when}</span></h2><span class="bd ${left===0?'e':''}">${left===0?`${done}/${steps}`:'열기'}</span></div>
+   <div class="duty-cash ${L.cash?'ok':''}">${L.cash?'✅':'💵'} 지원금 현금 <b>${wonC(c.total)}</b> <span class="muted">${c.n}명 × ${wonC(c.per)}${c.bills?` · ${c.bills}`:''}</span>${L.cash?' · 준비 완료':left===1?' · <b style="color:var(--warn,#B5602A)">오늘 은행에서 바꿔 두세요</b>':left===0?' · <b style="color:var(--warn,#B5602A)">현금 준비 확인</b>':''}</div>
+   ${L.who?`<div class="muted" style="font-size:13.5px;margin-top:4px">당직: ${esc(L.who)}</div>`:''}</button>`}
+let dutySel=null,dutyEdit=false;
+function vDuty(){const ds=dutySel||dutyDate(),d=new Date(ds+'T00:00'),C=DC(),L=DL(ds),c=dutyCash(ds),today=ymd(new Date())===ds;
+  const now=new Date(),mins=now.getHours()*60+now.getMinutes();
+  const pm=t=>{const m=String(t).match(/(\d{1,2}):(\d{2})/g)||[];return m.map(x=>{const [h,mm]=x.split(':').map(Number);return h*60+mm})};
+  const curIdx=today?C.schedule.findIndex((x,i)=>{const [a,b]=pm(x.t);const nb=b!=null?b:(i+1<C.schedule.length?pm(C.schedule[i+1].t)[0]:24*60);return mins>=a&&mins<nb}):-1;
+  const mem=[...new Set(S.members.filter(m=>m.active!==false).map(m=>m.name).filter(Boolean))];
+  return hdr(`${DOWN[d.getDay()]}요일 당직`,`${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.`)+`
+  <div class="row" style="margin-bottom:10px"><button class="btn ghost sm" data-dutynav="-7">‹ 지난주</button><div class="grow" style="text-align:center;font-weight:700">${d.getMonth()+1}월 ${d.getDate()}일 (${DOWN[d.getDay()]})${today?' · 오늘':''}</div><button class="btn ghost sm" data-dutynav="7">다음 주 ›</button></div>
+  <div class="card"><h2>💵 지원금 준비</h2>
+   <div class="row" style="gap:8px;align-items:center"><span>인원</span><button class="btn ghost sm" data-dutycnt="-1">−</button><b style="font-size:20px;min-width:2.4em;text-align:center">${c.n}명</b><button class="btn ghost sm" data-dutycnt="1">＋</button><span class="muted">× ${wonC(c.per)}</span></div>
+   <div class="duty-total">${wonC(c.total)}${c.bills?` <span>${c.bills}</span>`:''}</div>
+   ${(C.prep||[]).map(t=>`<p class="muted" style="margin:4px 0">· ${esc(t)}</p>`).join('')}
+   <label class="row" style="gap:8px;margin-top:8px"><input type="checkbox" data-dutyflag="cash" ${L.cash?'checked':''} style="width:22px;height:22px"> 현금 준비 완료 (은행에서 바꿈)</label>
+   <label class="row" style="gap:8px;margin-top:6px"><input type="checkbox" data-dutyflag="paid" ${L.paid?'checked':''} style="width:22px;height:22px"> 지원금 지급 완료</label></div>
+  <div class="card"><h2>👤 당직자</h2><select data-dutywho style="width:100%"><option value="">(고르기)</option>${mem.map(n=>`<option ${n===L.who?'selected':''}>${esc(n)}</option>`).join('')}${L.who&&!mem.includes(L.who)?`<option selected>${esc(L.who)}</option>`:''}</select></div>
+  <div class="card"><div class="spread"><h2 style="margin:0">⏰ 시간표</h2><button class="btn ghost sm" data-act="dutyEdit">${dutyEdit?'닫기':'고치기'}</button></div>
+   ${dutyEdit?`<p class="muted" style="margin:8px 0 4px">한 줄에 하나: <b>시간 내용</b> (예: 09:30~10:30 개별활동). 지원금 지급 줄에는 맨 뒤에 <b>*</b>를 붙여요.</p>
+    <textarea id="dutyText" rows="8" style="width:100%">${esc(C.schedule.map(x=>`${x.t} ${x.w}${x.pay?' *':''}`).join('\n'))}</textarea>
+    <div class="two"><div><label class="f">1인 지원금 (원)</label><input type="number" id="dutyPer" value="${C.per}"></div><div><label class="f">당직 요일</label><select id="dutyDay">${[0,1,2,3,4,5,6].map(w=>`<option value="${w}" ${+C.day===w?'selected':''}>${DOWN[w]}요일</option>`).join('')}</select></div></div>
+    <label class="f">미리 준비할 것 (한 줄에 하나)</label><textarea id="dutyPrep" rows="2" style="width:100%">${esc((C.prep||[]).join('\n'))}</textarea>
+    <button class="btn" data-act="dutySave" style="width:100%;margin-top:8px">시간표 저장</button>`
+   :`<div class="tl">${C.schedule.map((x,i)=>`<label class="tl-row ${i===curIdx?'now':''} ${L.done&&L.done[i]?'done':''}"><input type="checkbox" data-dutydone="${i}" ${L.done&&L.done[i]?'checked':''}><span class="tl-t">${esc(x.t)}</span><span class="tl-w">${esc(x.w)}${x.pay?` <span class="bd">💵 ${wonC(c.total)}</span>`:''}${i===curIdx?' <span class="bd e">지금</span>':''}</span></label>`).join('')}</div>`}
+  </div>
+  <button class="btn ghost" data-act="dutyShare" style="width:100%;margin-bottom:14px">📤 당직 일정 보내기</button>`}
 function vHome(){
   const q=myQueue(),rl=myRoles();
   const showRoutine=has('buyer')||has('mid');
@@ -415,7 +469,7 @@ function vHome(){
   ((has('buyer')||has('final'))?bizCard():'')+
   (q.length?`<div class="card"><h2>내 차례 <span class="bd e">${q.length}</span></h2>${q.map(a=>`<button class="alert ${a.lvl}" style="display:block;width:100%;text-align:left" ${a.act?`data-act="${a.act}"`:`data-go="${a.go}"${a.of?` data-of="${a.of}"`:''}`}>${esc(a.txt)} ›</button>`).join('')}</div>`:'<div class="alert ok">✅ 지금 내 차례인 결재 · 검수 · 결제가 없어요</div>')+
   (has('final')&&by('final').length?`<button class="btn" style="width:100%;margin-bottom:12px;padding:13px" data-act="finalView">👨‍⚕️ 결재하기 (${by('final').length}건)</button>`:'')+
-  lineCard()+
+  dutyCard()+lineCard()+
   (showRoutine?`<div class="card"><h2>정기 업무 <span class="muted">${done}/${regular.length} 완료</span></h2><p class="muted" style="margin:-4px 0 6px">네모를 누르면 체크, 글자를 누르면 체크 날짜 · 메모를 고치거나 취소해요.</p>
    <div class="bar"><i style="width:${regular.length?done/regular.length*100:0}%;background:var(--ok)"></i></div>
    ${has('admin')?'<div style="text-align:right;margin-top:6px"><button class="btn sm ghost" data-rtnew="1">+ 정기 업무 추가</button></div>':''}${groups.map(([c,lab])=>{const list=ROUTINE().filter(r=>c==='ASK'?!isRegular(r.cycle):r.cycle===c);if(!list.length)return '';
@@ -629,7 +683,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">마음 살림 v3.4 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">마음 살림 v3.5 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
@@ -1308,6 +1362,10 @@ function buildReminders(){
   const push=(id,t,title,body)=>{if(t>now+30000)out.push({id,at:t,title,body})};
   S.surveys.filter(s=>s.open&&s.due).forEach(s=>{if(!S.requests.some(r=>r.surveyId===s.id&&r.by===AUTH.uid))push('sv-'+s.id,at(ymd(addDays(new Date(s.due+'T00:00'),-1)),N.time),`📝 내일 마감: ${s.title}`,'필요한 물품이 있으면 수요를 내 주세요')});
   if(!isMgr())return out.sort((a,b)=>a.at-b.at);
+  for(let k=0;k<3;k++){const ds=dutyDate(addDays(new Date(),k*7)),L=DL(ds);if(L.who&&L.who!==myName())continue;const c=dutyCash(ds),prev=ymd(addDays(new Date(ds+'T00:00'),-1)),C=DC();
+    if(!L.cash)push('dc-'+ds,at(prev,N.time),`💵 내일 당직 지원금 현금 준비`,`은행에서 ${wonC(c.total)}${c.bills?` (${c.bills})`:''} 바꿔 두세요 · ${c.n}명 × ${wonC(c.per)}`);
+    const first=(C.schedule[0]||{}).t||'09:30';const m=String(first).match(/(\d{1,2}):(\d{2})/);const hm=m?`${String(Math.max(0,+m[1]-1)).padStart(2,'0')}:${m[2]}`:'08:30';
+    push('dd-'+ds,at(ds,hm),`🗓️ 오늘 당직`,C.schedule.map(x=>`${x.t} ${x.w}`).join(' / '))}
   const rt=c=>ROUTINE().filter(r=>r.cycle===c);
   const doneAll=(c,d)=>rt(c).every(r=>{const x=CHECKS()[r.id+'|'+periodKey(c,d)];return x&&(x.n||1)>=need(c)});
   if(N.cyc&&(has('buyer')||has('mid')))for(let i=0;i<60;i++){const d=addDays(new Date(),i),ds=ymd(d),dow=d.getDay();
@@ -1437,6 +1495,8 @@ document.addEventListener('click',async e=>{
   if(d.siteUp!==undefined){const i=+d.siteUp,L=SITE_LIST.slice();if(i>0){[L[i-1],L[i]]=[L[i],L[i-1]];setSites(L)}return}
   if(d.siteOff){const L=SITE_LIST.map(x=>x.k===d.siteOff?{...x,off:!x.off}:x);if(!L.some(x=>!x.off)){toast('쓰는 장소가 하나는 있어야 해요');return}setSites(L);toast(L.find(x=>x.k===d.siteOff).off?'숨겼어요 (지난 기록은 그대로)':'다시 써요');return}
   if(d.siteDel){if(siteUsed(d.siteDel)){toast('기록이 있어 숨기기만 돼요');return}const L=SITE_LIST.filter(x=>x.k!==d.siteDel);if(!L.some(x=>!x.off)){toast('쓰는 장소가 하나는 있어야 해요');return}if(!confirm(`‘${SN(d.siteDel)}’ 장소를 지울까요?`))return;setSites(L);return}
+  if(d.dutynav!==undefined){const x=new Date((dutySel||dutyDate())+'T00:00');x.setDate(x.getDate()+(+d.dutynav));dutySel=ymd(x);render();return}
+  if(d.dutycnt!==undefined){const ds=dutySel||dutyDate(),L=DL(ds);putDuty({...L,count:Math.max(0,dutyCount(ds)+(+d.dutycnt))});render();return}
   if(d.ltab){lunchTab=d.ltab;render();scrollTo(0,0);return}
   if(d.lmob){const c=LC(),y=scrollY;smsNum(c,d.lmob,true);scrollTo(0,y);return}
   if(d.lmsg){const m=lunchMsg(d.lmsg);if(!m){toast('그날 메뉴가 없어요');return}const c=LC();sendMenu({title:'오늘 주문 보내기',text:m,num:smsTarget(c),askNum:true});return}
@@ -1597,6 +1657,14 @@ document.addEventListener('click',async e=>{
     case 'logout':if(UNSUB)UNSUB();UNSUB=null;ORG=null;ready=false;await ST.signOut();break;
     case 'leave':if(!confirmLeave()){break}if(UNSUB)UNSUB();UNSUB=null;ORG=null;ready=false;S={me:null,org:null,members:[],requests:[],orders:[],surveys:[],lunch:[]};await ST.leaveOrg();view='setup';render();break;
     case 'joinOrg':{const nm=$('#jName').value.trim(),cd=$('#jCode').value.trim();if(!nm||!cd){toast('이름과 참여 코드를 넣어 주세요');return}t.disabled=true;try{ORG=await ST.joinOrg(cd,nm);listenOrg()}catch(err){t.disabled=false;toast(errMsg(err))}break}
+    case 'dutyOpen':dutySel=null;dutyEdit=false;view='duty';render();scrollTo(0,0);break;
+    case 'dutyEdit':dutyEdit=!dutyEdit;render();break;
+    case 'dutySave':{const lines=($('#dutyText').value||'').split('\n').map(x=>x.trim()).filter(Boolean);
+      const sch=lines.map(l=>{const pay=/\*\s*$/.test(l);l=l.replace(/\*\s*$/,'').trim();const m=l.match(/^(\d{1,2}:\d{2}\s*(?:[~\-–]\s*(?:\d{1,2}:\d{2})?)?)\s*(.*)$/);return m?{t:m[1].replace(/\s+/g,'').replace(/[-–]/,'~'),w:m[2]||'',...(pay?{pay:true}:{})}:{t:'',w:l,...(pay?{pay:true}:{})}});
+      if(!sch.length){toast('시간표를 한 줄 이상 적어 주세요');break}
+      putDuty({...DC(),id:'duty',schedule:sch,per:Math.max(0,+$('#dutyPer').value||0),day:+$('#dutyDay').value,prep:($('#dutyPrep').value||'').split('\n').map(x=>x.trim()).filter(Boolean)});dutyEdit=false;render();toast('시간표를 저장했어요');break}
+    case 'dutyShare':{const ds=dutySel||dutyDate(),d=new Date(ds+'T00:00'),C=DC(),L=DL(ds),c=dutyCash(ds);
+      sendMenu({title:'당직 일정 보내기',subject:`${d.getMonth()+1}/${d.getDate()} ${DOWN[d.getDay()]}요일 당직`,text:`[${orgName()}] ${d.getMonth()+1}/${d.getDate()}(${DOWN[d.getDay()]}) 당직${L.who?` · ${L.who}`:''}\n${C.schedule.map(x=>`${x.t} ${x.w}`).join('\n')}\n\n💵 지원금 ${c.n}명 × ${wonC(c.per)} = ${wonC(c.total)}${c.bills?` (${c.bills})`:''}`});break}
     case 'addSite':{const v=($('#newSite')||{}).value||'';if(!v.trim()){toast('이름을 넣어 주세요');break}if(siteByName(v)&&SITES[siteByName(v)]){toast('같은 이름이 있어요');break}addSite(v);toast('장소를 추가했어요');break}
     case 'createOrg':{const on=$('#cOrg').value.trim(),nm=$('#cName').value.trim();if(!on||!nm){toast('기관 이름과 내 이름을 넣어 주세요');return}const roles=[...document.querySelectorAll('.cRole:checked')].map(x=>x.value);t.disabled=true;
       try{ORG=await ST.createOrg({orgName:on,myName:nm,roles,seed:{settings:{...DEFAULT_SETTINGS,bizNo:fmtBiz(($('#cBiz')||{}).value||''),sites:(()=>{const v=[...new Set((($('#cSites')||{}).value||'본원').split(/[,·/]/).map(x=>x.trim().slice(0,12)).filter(Boolean))];return (v.length?v:['본원']).map((name,i)=>({k:['clinic','center','brain'][i]||('s'+i+Date.now().toString(36).slice(-4)),name}))})()},...(($('#cSample')||{}).checked?{items:DEFAULT_ITEMS(),routine:DEFAULT_ROUTINE()}:{items:[],routine:[]}),checks:{},stock:{}}});listenOrg()}catch(err){t.disabled=false;toast(errMsg(err))}break}
@@ -1614,6 +1682,9 @@ document.addEventListener('change',e=>{
   if(el.id==='rSv'){const s=S.surveys.find(x=>x.id===el.value);if(s&&s.site&&s.site!=='all')$('#fSite').value=s.site;return}
   if(el.dataset.myname!==undefined){const v=el.value.trim();if(!v)return;const {id,...m}=S.me;ST.put(ORG,'members',id,{...m,name:v}).then(()=>toast('이름을 바꿨어요')).catch(err=>toast(errMsg(err)));return}
   if(el.dataset.org){S.org.name=el.value.trim()||orgName();save();toast('저장했어요');return}
+  if(el.dataset.dutydone!==undefined){const ds=dutySel||dutyDate(),L=DL(ds);putDuty({...L,done:{...(L.done||{}),[el.dataset.dutydone]:el.checked}});render();return}
+  if(el.dataset.dutyflag){const ds=dutySel||dutyDate(),L=DL(ds);putDuty({...L,[el.dataset.dutyflag]:el.checked});render();toast(el.checked?(el.dataset.dutyflag==='cash'?'현금 준비 완료':'지원금 지급 완료'):'체크를 풀었어요');return}
+  if(el.dataset.dutywho!==undefined){const ds=dutySel||dutyDate(),L=DL(ds);putDuty({...L,who:el.value});render();return}
   if(el.dataset.siteName){const v=el.value.trim().slice(0,12);if(!v){toast('이름을 비울 수 없어요 — 안 쓰면 숨기기를 눌러 주세요');render();return}if(SITE_LIST.some(x=>x.k!==el.dataset.siteName&&x.name===v)){toast('같은 이름이 있어요');render();return}setSites(SITE_LIST.map(x=>x.k===el.dataset.siteName?{...x,name:v}:x));toast('장소 이름을 저장했어요');return}
   if(el.dataset.st){const k=el.dataset.st;S.org.settings={...SET(),[k]:['approveItem','approveOrder'].includes(k)?Math.max(0,+el.value||0):k==='bizNo'?fmtBiz(el.value):el.value.trim()};save();if(k==='bizNo')render();toast('저장했어요');return}
   if(el.dataset.addr){const s=SET();s.addr[el.dataset.addr]=el.value.trim();S.org.settings=s;save();toast('저장했어요');return}
