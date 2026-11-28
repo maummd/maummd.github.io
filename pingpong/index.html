@@ -718,8 +718,9 @@ This typically indicates that your device does not have a healthy Internet conne
     const st = STAGES[Number($("atStage").value) - 1], P = players();
     $("atRates").innerHTML = P.map(p => { const c = attendCount(p.id, st), r = c / 24; return `<div style="margin:12px 0"><div class="spread">${who(p)}<span class="muted">${c} / 24회 · ${Math.round(r * 100)}%</span></div><div class="xp"><i class="${r < 0.8 ? "low" : ""}" style="width:${Math.min(100, r * 100)}%"></i></div></div>`; }).join("");
     const byId = Object.fromEntries(P.map(p => [p.id, p]));
-    const docs = Object.values(state.attendance).filter(d => d && d.date).sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 12);
-    $("atLog").innerHTML = docs.length ? `<table><thead><tr><th>날짜</th><th>주차</th><th>출석</th></tr></thead><tbody>${docs.map(d => `<tr><td>${esc(d.date)}</td><td>${esc(d.week)}</td><td>${(d.present || []).filter(id => byId[id]).map(id => byId[id].avatar).join(" ") || "-"}</td></tr>`).join("")}</tbody></table>` : "아직 기록이 없습니다.";
+    const docs = Object.entries(state.attendance).filter(([, d]) => d && d.date).map(([id, d]) => ({ ...d, _id: id })).sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 12);
+    $("atLog").innerHTML = docs.length ? `<table><thead><tr><th>날짜</th><th>주차</th><th>출석</th><th></th></tr></thead><tbody>${docs.map(d => `<tr><td>${esc(d.date)}</td><td>${esc(d.week)}</td><td>${(d.present || []).filter(id => byId[id]).map(id => byId[id].avatar).join(" ") || "-"}</td><td><button data-atdel="${esc(d._id)}" data-date="${esc(d.date)}" aria-label="지우기" style="padding:4px 8px">🗑️</button></td></tr>`).join("")}</tbody></table>` : "아직 기록이 없습니다.";
+    $("atLog").querySelectorAll("[data-atdel]").forEach(b => b.onclick = async () => { if (await askDel(`${b.dataset.date} 출석 기록을 지울까요?`, "출석률(XP)에서도 빠져요.")) remove(`attendance/${b.dataset.atdel}`, "출석 기록을 지웠어요"); });
   }
   $("atStage").onchange = renderAtRates;
 
@@ -750,9 +751,11 @@ This typically indicates that your device does not have a healthy Internet conne
       return `<div class="member" data-idx="${p.i}"><div class="spread">${who(p)}<span class="muted">${nSheet ? `📝 기록지 ${nSheet} · ` : ""}출석 ${Math.round(rate * 100)}%</span></div>
         <div class="scores">${SCORE_FIELDS.map(([k, label, max]) => `<label>${label} (${max})<input type="number" inputmode="numeric" min="0" max="${max}" data-k="${k}" value="${typeof sc[k] === "number" ? sc[k] : ""}"></label>`).join("")}</div>
         <input type="text" data-k="memo" placeholder="메모 (선택)" value="${esc(sc.memo || "")}" style="width:100%;margin-bottom:8px">
-        <div class="spread"><span>합계 <b>${j.total == null ? "-" : j.total}</b>점 · <span class="result ${j.cls}">${esc(j.text)}</span></span><button class="primary" data-save>저장</button></div></div>`;
+        <div class="spread"><span>합계 <b>${j.total == null ? "-" : j.total}</b>점 · <span class="result ${j.cls}">${esc(j.text)}</span></span><span>${Object.keys(sc).length ? '<button data-exdel style="margin-right:6px">🗑️</button>' : ""}<button class="primary" data-save>저장</button></span></div></div>`;
     }).join("");
     $("exMembers").querySelectorAll(".member").forEach(card => {
+      const xd = card.querySelector("[data-exdel]");
+      if (xd) xd.onclick = async () => { const idx = Number(card.dataset.idx); if (await askDel(`${nickOf(allPlayers()[idx])} ${st.name} 심사 기록을 지울까요?`, "점수 · 메모 · 제출한 기록지가 함께 지워져요.")) remove(`scores/s${st.n}-${idx}`, "심사 기록을 지웠어요"); };
       card.querySelector("[data-save]").onclick = async () => {
         const idx = Number(card.dataset.idx), prev = state.scores[`s${st.n}-${idx}`] || {}, body = { stage: st.n, pid: pidOf(idx), savedAt: new Date().toISOString() };
         if (Array.isArray(prev.sheets)) body.sheets = prev.sheets;
@@ -780,9 +783,11 @@ This typically indicates that your device does not have a healthy Internet conne
       const f = findGame(x, y), g = f ? f.g : {};
       const sa = typeof g.sa === "number" ? (f.flip ? g.sb : g.sa) : "", sb = typeof g.sb === "number" ? (f.flip ? g.sa : g.sb) : "";
       const done = sa !== "" && sb !== "" && sa !== sb;
-      return `<div class="match" data-k="${k}"><span class="p r${done && sa > sb ? " win" : ""}"><span class="nm">${esc(nickOf(x))}</span>${ava(x)}</span><input type="number" inputmode="numeric" min="0" max="99" data-s="a" value="${sa}"><span class="muted">:</span><input type="number" inputmode="numeric" min="0" max="99" data-s="b" value="${sb}"><span class="p${done && sb > sa ? " win" : ""}">${ava(y)}<span class="nm">${esc(nickOf(y))}</span></span><button class="icon" data-save aria-label="저장">💾</button></div>`;
+      return `<div class="match" data-k="${k}"><span class="p r${done && sa > sb ? " win" : ""}"><span class="nm">${esc(nickOf(x))}</span>${ava(x)}</span><input type="number" inputmode="numeric" min="0" max="99" data-s="a" value="${sa}"><span class="muted">:</span><input type="number" inputmode="numeric" min="0" max="99" data-s="b" value="${sb}"><span class="p${done && sb > sa ? " win" : ""}">${ava(y)}<span class="nm">${esc(nickOf(y))}</span></span><button class="icon" data-save aria-label="저장">💾</button>${f ? `<button data-lgdel aria-label="결과 지우기" style="padding:4px 8px">🗑️</button>` : ""}</div>`;
     }).join("") : '<p class="muted">활동 중인 플레이어가 2명 이상이어야 리그를 할 수 있어요.</p>';
     $("lgMatches").querySelectorAll(".match").forEach(row => {
+      const ld = row.querySelector("[data-lgdel]");
+      if (ld) ld.onclick = async () => { const [x, y] = pairs[Number(row.dataset.k)], f = findGame(x, y); if (f && await askDel(`${nickOf(x)} : ${nickOf(y)} 경기 결과를 지울까요?`, "순위표에서도 빠져요.")) remove(`league/${f.id}`, "경기 결과를 지웠어요"); };
       row.querySelector("[data-save]").onclick = async () => {
         const [x, y] = pairs[Number(row.dataset.k)], f = findGame(x, y);
         const ra = row.querySelector('[data-s="a"]').value.trim(), rb = row.querySelector('[data-s="b"]').value.trim();
@@ -982,9 +987,11 @@ This typically indicates that your device does not have a healthy Internet conne
       const d = state.stats[statKey(pt, p.i)], v = d && Array.isArray(d.v) ? d.v : [];
       return `<div class="member" data-idx="${p.i}"><div class="spread">${who(p)}${v.length === 6 ? radarSvg([{ v, color: p.color, fill: p.color }], 70, { labels: false }) : '<span class="muted">아직 없음</span>'}</div>
         <div class="scores" style="grid-template-columns:repeat(3,1fr)">${STAT_AXES.map((ax, k) => `<label>${ax}<input type="number" inputmode="numeric" min="1" max="10" data-k="${k}" value="${v[k] != null ? v[k] : ""}"></label>`).join("")}</div>
-        <div style="text-align:right"><button class="primary" data-save>저장</button></div></div>`;
+        <div style="text-align:right">${d ? '<button data-stdel style="margin-right:6px">🗑️</button>' : ""}<button class="primary" data-save>저장</button></div></div>`;
     }).join("") : '<p class="muted">활동 중인 플레이어가 없어요.</p>';
     $("stMembers").querySelectorAll(".member").forEach(card => {
+      const sd = card.querySelector("[data-stdel]");
+      if (sd) sd.onclick = async () => { const idx = Number(card.dataset.idx); if (await askDel(`${nickOf(allPlayers()[idx])} ${ptName(pt)} 스탯을 지울까요?`, "")) remove(`stats/${statKey(pt, idx)}`, "스탯을 지웠어요"); };
       card.querySelector("[data-save]").onclick = async () => {
         const idx = Number(card.dataset.idx), vals = [];
         for (let k = 0; k < 6; k++) { const raw = card.querySelector(`[data-k="${k}"]`).value.trim(), n = Number(raw); if (raw === "" || !Number.isInteger(n) || n < 1 || n > 10) { toast(`${STAT_AXES[k]}은(는) 1~10점으로 입력하세요`); return; } vals.push(n); }
@@ -1109,6 +1116,26 @@ This typically indicates that your device does not have a healthy Internet conne
       return false;
     }
   }
+  // 기록 지우기 (휴대폰 저장 · 서버 모두)
+  async function remove(path, okMsg) {
+    const [col, id] = path.split("/");
+    if (state.local) { const c = Object.assign({}, state[col]); delete c[id]; state[col] = c; if (localPersist()) toast(okMsg); renderAll(); return true; }
+    if (!state.db) { toast("아직 연결 중이에요. 잠시 후 다시 시도하세요"); return false; }
+    if (!state.canWrite) { toast("지울 권한이 없어요 (매니저에게 편집 권한 요청)"); return false; }
+    try { const d = state.db.doc(path); if (d.del) await d.del(); else if (d.delete) await d.delete(); else await d.set({ deleted: true });
+      const c = Object.assign({}, state[col]); delete c[id]; state[col] = c; toast(okMsg); renderAll(); return true; }
+    catch (e) { toast("지우지 못했어요 — 권한 또는 연결을 확인하세요"); return false; }
+  }
+  function askDel(title, sub) {
+    return new Promise(res => {
+      const bg = document.createElement("div");
+      bg.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px";
+      bg.innerHTML = `<div class="card" style="max-width:360px;width:100%;margin:0"><h3 style="margin-top:0">${esc(title)}</h3><p class="muted">${esc(sub || "")} 지우면 되돌릴 수 없어요.</p><div class="row" style="justify-content:flex-end;gap:8px"><button data-no>취소</button><button class="primary" data-yes style="background:#E5484D;border-color:#E5484D">지우기</button></div></div>`;
+      document.body.appendChild(bg);
+      const done = v => { bg.remove(); res(v); };
+      bg.querySelector("[data-no]").onclick = () => done(false); bg.querySelector("[data-yes]").onclick = () => done(true); bg.onclick = e => { if (e.target === bg) done(false); };
+    });
+  }
   function showBanner(msg) { const b = $("dbBanner"); b.textContent = msg; b.classList.add("show"); }
   function hideBanner() { $("dbBanner").classList.remove("show"); }
 
@@ -1144,7 +1171,7 @@ This typically indicates that your device does not have a healthy Internet conne
   function connectClub(club) {
     cloud.club = club; state.local = false; $("backupCard").classList.add("hidden");
     const base = `ppClubs/${club}`;
-    state.db = { collection: col => ({ onSnapshot: (cb, err) => MC.onCol(`${base}/${col}`, cb, err) }), doc: path => ({ set: body => MC.set(`${base}/${path}`, body) }) };
+    state.db = { collection: col => ({ onSnapshot: (cb, err) => MC.onCol(`${base}/${col}`, cb, err) }), doc: path => ({ set: body => MC.set(`${base}/${path}`, body), del: () => MC.del(`${base}/${path}`) }) };
     MC.onDoc(base, d => { cloud.clubDoc = d; renderCloud(); });
     MC.onDoc(`${base}/members/${cloud.user.uid}`, d => {
       cloud.me = d;

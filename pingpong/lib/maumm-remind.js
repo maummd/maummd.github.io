@@ -114,7 +114,7 @@
 .mrm .row .t{flex:1;min-width:0}.mrm .row .t select{display:block;margin-top:6px;width:auto!important;padding:5px 8px;font-size:14px}.mrm label{display:inline;margin:0}.mrm .f{display:block}.mrm .row .t b{display:block;font-size:15.5px}.mrm .row .t span{font-size:13px;color:#5B6762}
 .mrm .sw{position:relative;width:46px;height:28px;flex:none}.mrm .sw input{opacity:0;width:0;height:0}.mrm .sw i{position:absolute;inset:0;background:#CBD2CC;border-radius:20px;transition:.2s;cursor:pointer}.mrm .sw i:before{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}.mrm .sw input:checked+i{background:var(--mrm,#2F6B5E)}.mrm .sw input:checked+i:before{transform:translateX(18px)}
 .mrm button{font:inherit;cursor:pointer}.mrm .b{background:var(--mrm,#2F6B5E);color:#fff;border:0;border-radius:12px;padding:10px 15px;font-weight:700}.mrm .b.g{background:#EDF2EF;color:#24433B}.mrm .b.r{background:#FBE7E5;color:#A33A30}
-.mrm .ic{border:0;background:#EDF2EF;border-radius:10px;padding:6px 9px;font-size:15px}
+.mrm .ic{border:0;background:#EDF2EF;border-radius:10px;padding:6px 9px;font-size:15px;flex:none}.mrm .row .b{padding:8px 12px;flex:none}
 .mrm select,.mrm input[type=text],.mrm input[type=time],.mrm input[type=date]{font:inherit;font-size:15px;padding:8px 10px;border:1px solid #D3D9D2;border-radius:10px;background:#fff;max-width:100%}
 .mrm .f{display:block;font-size:13px;font-weight:700;color:#4E5B56;margin:12px 0 4px}.mrm .f input[type=text]{width:100%;box-sizing:border-box}
 .mrm .seg{display:flex;gap:6px;flex-wrap:wrap}.mrm .seg button{border:1px solid #D3D9D2;background:#fff;border-radius:999px;padding:7px 13px;font-weight:700;color:#4E5B56}.mrm .seg button.on{background:var(--mrm,#2F6B5E);border-color:var(--mrm,#2F6B5E);color:#fff}
@@ -126,8 +126,10 @@
     if (!bg) { bg = document.createElement('div'); bg.id = 'mrm-bg'; bg.className = 'mrm-bg'; document.body.appendChild(bg); bg.addEventListener('click', (e) => { if (e.target === bg) close(); }); }
     bg.innerHTML = `<div class="mrm" style="--mrm:${esc(O.color || '#2F6B5E')}">${html}</div>`; return bg.firstChild;
   }
-  function close() { const bg = document.getElementById('mrm-bg'); if (bg) bg.remove(); edit = null; }
+  function close() { const bg = document.getElementById('mrm-bg'); if (bg) bg.remove(); edit = null; ask = null; }
   function toast(msg) { (window.MReader && window.MReader.note) ? window.MReader.note(msg) : banner(msg); }
+  const isPast = (it) => it.rep === 'once' && it.date && at(it.date, it.time) <= Date.now();
+  let ask = null; // 지울지 묻는 중인 알림 번호
   function when(it) {
     const tm = it.time || '09:00';
     if (it.rep === 'daily') return '매일 ' + tm;
@@ -147,7 +149,11 @@
     if (edit) return openEdit();
     const nat = !!bridge();
     const srcs = (O.sources || []).map((s) => { const c = S.src[s.key]; return `<div class="row"><div class="t"><b>${esc(s.label)}</b><span>${esc(s.hint || '')}</span><select data-lead="${esc(s.key)}">${(s.leads || [0, 10, 30, 60, 1440]).map((m) => `<option value="${m}"${Number(c.lead) === m ? ' selected' : ''}>${leadText(m)} 알림</option>`).join('')}</select></div>${sw(`data-src="${esc(s.key)}"`, c.on)}</div>`; }).join('');
-    const items = S.items.map((it, i) => `<div class="row"><div class="t"><b>${esc(it.title || '알림')}</b><span>${esc(when(it))}${it.body ? ' · ' + esc(it.body) : ''}</span></div><button class="ic" data-ed="${i}" aria-label="고치기">✏️</button>${sw(`data-it="${i}"`, it.on)}</div>`).join('');
+    const past = S.items.filter(isPast).length;
+    const items = S.items.map((it, i) => ask === i
+      ? `<div class="row" style="background:#FFF4F2;border-color:#F2C9C3"><div class="t"><b>‘${esc(it.title || '알림')}’ 알림을 지울까요?</b><span>지우면 되돌릴 수 없어요</span></div><button class="b g" data-no="1">취소</button><button class="b r" data-del="${i}">지우기</button></div>`
+      : `<div class="row"${isPast(it) ? ' style="opacity:.62"' : ''}><div class="t"><b>${esc(it.title || '알림')}${isPast(it) ? ' <span style="font-size:12px;background:#E7ECE6;border-radius:8px;padding:1px 7px;color:#4E5B56">지남</span>' : ''}</b><span>${esc(when(it))}${it.body ? ' · ' + esc(it.body) : ''}</span></div><button class="ic" data-ed="${i}" aria-label="고치기">✏️</button><button class="ic" data-ask="${i}" aria-label="지우기">🗑️</button>${isPast(it) ? '' : sw(`data-it="${i}"`, it.on)}</div>`).join('')
+      + (past ? `<button class="b r" id="mrm-past" style="width:100%;margin-top:4px">지난 알림 ${past}개 모두 지우기</button>` : '');
     const sh = sheet(`<h3>🔔 ${esc(O.name || '')} 알림</h3>
       <div class="row" style="background:#fff"><div class="t"><b>알림 받기</b><span>${nextText()}</span></div>${sw('id="mrm-all"', S.on)}</div>
       ${srcs ? `<h4>자동 알림 <span class="m">— 앱에 적힌 일정으로 알려 드려요</span></h4>${srcs}` : ''}
@@ -160,7 +166,11 @@
     sh.querySelectorAll('[data-src]').forEach((x) => { x.onchange = () => { S.src[x.dataset.src].on = x.checked; save(); sync(); if (x.checked) askPermission(); open(); }; });
     sh.querySelectorAll('[data-lead]').forEach((x) => { x.onchange = () => { S.src[x.dataset.lead].lead = Number(x.value); save(); sync(); open(); }; });
     sh.querySelectorAll('[data-it]').forEach((x) => { x.onchange = () => { S.items[x.dataset.it].on = x.checked; save(); sync(); if (x.checked) askPermission(); open(); }; });
-    sh.querySelectorAll('[data-ed]').forEach((x) => { x.onclick = () => { edit = { i: Number(x.dataset.ed), it: JSON.parse(JSON.stringify(S.items[x.dataset.ed])) }; openEdit(); }; });
+    sh.querySelectorAll('[data-ask]').forEach((x) => { x.onclick = () => { ask = Number(x.dataset.ask); open(); }; });
+    sh.querySelectorAll('[data-no]').forEach((x) => { x.onclick = () => { ask = null; open(); }; });
+    sh.querySelectorAll('[data-del]').forEach((x) => { x.onclick = () => { const it = S.items[Number(x.dataset.del)]; S.items.splice(Number(x.dataset.del), 1); ask = null; save(); sync(); toast(`‘${it && it.title || '알림'}’을 지웠어요`); open(); }; });
+    const pb = sh.querySelector('#mrm-past'); if (pb) pb.onclick = () => { const n = S.items.filter(isPast).length; S.items = S.items.filter((it) => !isPast(it)); save(); sync(); toast(`지난 알림 ${n}개를 지웠어요`); open(); };
+    sh.querySelectorAll('[data-ed]').forEach((x) => { x.onclick = () => { ask = null; edit = { i: Number(x.dataset.ed), it: JSON.parse(JSON.stringify(S.items[x.dataset.ed])) }; openEdit(); }; });
     sh.querySelector('#mrm-add').onclick = () => { const d = new Date(); edit = { i: -1, it: { id: 'u' + Date.now().toString(36), title: '', body: '', rep: 'weekly', days: [d.getDay()], dom: d.getDate(), date: ymd(d), time: '09:00', on: true } }; openEdit(); };
     sh.querySelector('#mrm-test').onclick = async () => { await askPermission(); const n = bridge(); if (n && n.testNotification) n.testNotification(O.name || '알림', '알림이 이렇게 와요 🔔'); else fire(O.name || '알림', '알림이 이렇게 와요 🔔'); };
     sh.querySelector('#mrm-ics').onclick = exportIcs;
@@ -180,7 +190,7 @@
     sh.querySelectorAll('[data-rep]').forEach((b) => { b.onclick = () => { keep(); it.rep = b.dataset.rep; openEdit(); }; });
     sh.querySelectorAll('[data-day]').forEach((b) => { b.onclick = () => { keep(); const d = Number(b.dataset.day); it.days = (it.days || []).includes(d) ? it.days.filter((x) => x !== d) : [...(it.days || []), d]; openEdit(); }; });
     sh.querySelector('#mrm-c').onclick = () => { edit = null; open(); };
-    const del = sh.querySelector('#mrm-del'); if (del) del.onclick = () => { S.items.splice(edit.i, 1); edit = null; save(); sync(); open(); };
+    const del = sh.querySelector('#mrm-del'); if (del) del.onclick = () => { ask = edit.i; edit = null; open(); };
     sh.querySelector('#mrm-s').onclick = () => {
       keep();
       if (!it.title.trim()) { toast('제목을 적어 주세요'); return; }

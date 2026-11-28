@@ -321,7 +321,7 @@ dl.facts dd .cs-row{margin-top:0}
  <details class="card fold"><summary>내 뜻 메모</summary>
   <p class="note">위기 때 말하기 어려운 것을 미리 적어 절차조력인이나 의료진에게 보여 주는 메모입니다. <span class="tag draft">연구 시안</span>법적 효력이 있는 ‘정신건강 사전선택서’는 아직 현행법에 없고, 연구에서 제안하는 제도(제41조의2 신설안)입니다.</p>
   <div class="grid2" id="willFields"></div>
-  <div class="row"><button class="btn" id="willMake" type="button">메모 만들기</button><button class="btn ghost" id="willCopy" type="button">복사</button><span class="note" id="willMsg" role="status"></span></div>
+  <div class="row"><button class="btn" id="willMake" type="button">메모 만들기</button><button class="btn ghost" id="willCopy" type="button">복사</button><button class="btn ghost" id="willClear" type="button">지우기</button><span class="note" id="willMsg" role="status"></span></div>
   <pre class="out" id="willOut" hidden></pre>
  </details>
 </section>
@@ -523,6 +523,7 @@ willQ.forEach(([k])=>{const t=$('#w-'+k);t.value=will[k]||'';t.addEventListener(
 const willText=()=>'[내 뜻 메모]\n'+willQ.map(([k,l])=>`· ${l}: ${(will[k]||'').trim()||'-'}`).join('\n')+'\n작성일: '+new Date().toLocaleDateString('ko-KR')+'\n※ 본인의 뜻을 전하기 위한 메모로, 법적 효력이 있는 문서는 아닙니다.';
 $('#willMake').onclick=()=>{const o=$('#willOut');o.textContent=willText();o.hidden=false};
 $('#willCopy').onclick=()=>copy(willText(),$('#willMsg'));
+$('#willClear').onclick=()=>{const b=$('#willClear');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='한 번 더 누르면 지워져요';setTimeout(()=>{delete b.dataset.sure;b.textContent='지우기'},4000);return}willQ.forEach(([k])=>{will[k]='';$('#w-'+k).value=''});store.set('will',will);$('#willOut').hidden=true;$('#willMsg').textContent='지웠습니다.';delete b.dataset.sure;b.textContent='지우기'};
 
 /* 실무자 */
 const wc=[
@@ -714,7 +715,8 @@ function drawRecord(){
  <div class="field"><label>7. 다시 재는 감정의 온도</label><div class="therm"><input type="range" id="rA" min="0" max="10" value="6"><b id="rAv">6</b></div></div>
  <div id="rWarn"></div>
  <div class="row"><button class="btn" type="button" id="rSave">기록 저장</button></div>
- <div class="hist" id="rHist">${REC.slice(-5).reverse().map(r=>`<div><span>${esc(r.d)} · ${esc(r.th.slice(0,24))}${r.th.length>24?'…':''}</span><span>${r.b} → ${r.a} ${r.b>r.a?`<span class="drop">▼${r.b-r.a}</span>`:''}</span></div>`).join('')}</div>`;
+ <div class="hist" id="rHist">${REC.map((r,i)=>[r,i]).slice(-30).reverse().map(([r,i])=>`<div><span>${esc(r.d)} · ${esc(r.th.slice(0,24))}${r.th.length>24?'…':''}</span><span>${r.b} → ${r.a} ${r.b>r.a?`<span class="drop">▼${r.b-r.a}</span>`:''} <button type="button" class="btn ghost" data-rdel="${i}" style="padding:2px 8px;min-height:0;font-size:13px">🗑️</button></span></div>`).join('')}</div>
+ ${REC.length?'<div class="row"><button type="button" class="btn ghost" id="rClr" style="color:#9B2C2C">🗑️ 생각 기록 모두 지우기</button></div>':''}`;
  const warn=()=>{const v=Math.max(+$('#rB').value,+$('#rA').value);$('#rWarn').innerHTML=v>=9?`<div class="warn"><b>많이 힘든 상태예요.</b> 기록보다 연결이 먼저예요. <a href="tel:109">109</a> · <a href="tel:15770199">1577-0199</a>에 전화하거나 <a href="#now">마음링크</a>의 안전계획을 펼쳐 주세요.</div>`:''};
  ['B','A'].forEach(k=>{const r=$('#r'+k);r.oninput=()=>{$('#r'+k+'v').textContent=r.value;warn()}});
 }
@@ -732,6 +734,9 @@ $('#playCard').addEventListener('click',e=>{const t=e.target.closest('button');i
  if(t.id==='gAgain'){pick(game);return}
  if(t.id==='copeDone'){P.cope++;gainXP(5);if(P.cope>=5)badge('cope');toastMsg('잘했어요! 작은 행동이 감정을 바꿔요 🌿');drawCope();return}
  if(t.id==='copeAgain'){drawCope();return}
+ if(t.dataset&&t.dataset.rdel!==undefined){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='지울까요?';setTimeout(()=>{if(t.isConnected){delete t.dataset.sure;t.textContent='🗑️'}},4000);return}
+  REC.splice(+t.dataset.rdel,1);store.set('records',REC);toastMsg('기록을 지웠어요');drawRecord();return}
+ if(t.id==='rClr'){if(!t.dataset.sure){t.dataset.sure=1;t.textContent='한 번 더 누르면 모두 지워져요';return}REC.length=0;store.set('records',REC);toastMsg('생각 기록을 모두 지웠어요');drawRecord();return}
  if(t.id==='rSave'){const th=$('#rTh').value.trim();if(!th){toastMsg('떠오른 생각을 적어 주세요');return}
   REC.push({d:new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}),sit:$('#rSit').value.trim(),th,b:+$('#rB').value,a:+$('#rA').value,new:$('#rNew').value.trim()});store.set('records',REC.slice(-100));
   P.record++;gainXP(10);if(P.record>=3)badge('record');toastMsg(+$('#rB').value>+$('#rA').value?`감정 온도가 ${$('#rB').value-$('#rA').value}만큼 내려갔어요 👏`:'기록했어요. 꾸준히 하면 패턴이 보여요');drawRecord();return}

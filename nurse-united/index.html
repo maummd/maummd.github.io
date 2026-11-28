@@ -419,7 +419,7 @@ function tInfo(p){
    <label class="f">담당업무·역할 (직무기술서 요약, 병동 내 역할)</label><textarea data-f="role" placeholder="예: B팀 차지, 감염리더, 신규 프리셉터">${esc(p.role||'')}</textarea>
   </div>
   <div class="card"><h2>면담 사전 설문 ${p.surveyDate?`<span class="muted">${esc(p.surveyDate)}</span>`:''}</h2>
-   ${sv.length?`<dl>${sv.map(x=>`<dt>${esc(x.q)}</dt><dd>${esc(x.a)||'<span class="muted">—</span>'}</dd>`).join('')}</dl>`:'<div class="empty">설문 응답이 없어요</div>'}</div>
+   ${sv.length?`<dl>${sv.map(x=>`<dt>${esc(x.q)}</dt><dd>${esc(x.a)||'<span class="muted">—</span>'}</dd>`).join('')}</dl>`:'<div class="empty">설문 응답이 없어요</div>'}${sv.length?'<button class="btn ghost sm" style="margin-top:8px;color:#B03A2E" data-act="clrSurvey">🗑️ 설문 응답 지우기</button>':''}</div>
   <button class="btn danger" style="width:100%" data-act="delStaff">이 직원 삭제</button>`;
 }
 function tObs(p){
@@ -442,7 +442,7 @@ function tMeet(p){
    <div class="ai muted" id="ai-questions">${esc(aiCache[p.id+'q']||'설문 응답·관찰기록·평가 항목을 바탕으로 연말 평가면담 질문을 추천해요.')}</div></div>
   <div class="card"><h2>평가면담 기록</h2>
    <label class="f">면담일</label><input type="date" data-iv="date" value="${esc(iv.date||today())}">
-   <label class="f">면담 내용 (본인이 말한 성과·어려움·요청, 합의한 목표)</label><textarea data-iv="text" style="min-height:170px">${esc(iv.text||'')}</textarea></div>`;
+   <label class="f">면담 내용 (본인이 말한 성과·어려움·요청, 합의한 목표)</label><textarea data-iv="text" style="min-height:170px">${esc(iv.text||'')}</textarea>${iv.text?'<button class="btn ghost sm" style="margin-top:8px;color:#B03A2E" data-act="clrMeet">🗑️ 면담 기록 지우기</button>':''}</div>`;
 }
 function tEval(p){
   const t=T(p.job), e=p.eval||{}, g=e.grades||{}, b=e.basis||{}, c=calc(p);
@@ -466,7 +466,8 @@ function tEval(p){
    <p class="muted" style="margin-bottom:6px">평가결과 공개 시 본인에게 전달돼요. 격려·발전방향 중심으로.</p>
    <textarea data-nar="feedback" style="min-height:200px">${esc(e.feedback||tplText(OPEN_TPL))}</textarea></div>
   <div class="row" style="margin-bottom:12px"><button class="btn ghost grow" data-ai="narrative">AI 서술의견 초안</button><button class="btn grow" data-act="copyOne">HIS 입력용 복사</button></div>
-  <button class="btn ghost" style="width:100%;margin-bottom:12px" data-act="docPerson">📄 문서 만들기 (PDF · 공유)</button>`;
+  <button class="btn ghost" style="width:100%;margin-bottom:12px" data-act="docPerson">📄 문서 만들기 (PDF · 공유)</button>
+  ${Object.keys(g).length||Object.keys(b).length||e.closed||e.feedback?'<button class="btn ghost" style="width:100%;margin-bottom:12px;color:#B03A2E" data-act="clrEval">🗑️ 이 직원 평가 비우기 (등급 · 근거 · 서술의견)</button>':''}`;
 }
 
 /* ---------- 병동 현황 ---------- */
@@ -575,6 +576,9 @@ function vSettings(){
 
 function modal(html){$('#modal').innerHTML=`<div class="modal" data-act="bg"><div class="sheet">${html}</div></div>`}
 function closeModal(){$('#modal').innerHTML=''}
+// 지우기 전에 한 번 묻기
+let PENDING_DEL=null;
+function askDel(title,sub,fn){PENDING_DEL=fn;modal(`<h3>${esc(title)}</h3><p class="muted">${esc(sub||'')}<br>지우면 되돌릴 수 없어요.</p><div class="row" style="margin-top:12px;justify-content:flex-end;gap:8px"><button class="btn ghost" data-act="closeModal">취소</button><button class="btn danger" data-act="doDel">지우기</button></div>`)}
 
 /* ===================== 이벤트 ===================== */
 document.addEventListener('input',e=>{if(e.target.id==='search'){q=e.target.value.trim();const pos=e.target.selectionStart;render();const s=$('#search');s.focus();s.setSelectionRange(pos,pos)}});
@@ -605,7 +609,7 @@ document.addEventListener('click',async e=>{
   if(d.ai){runAI(d.ai,t);return}
   const p=staff[cur];
   if(d.grade&&p){const ev=p.eval||{},g={...(ev.grades||{})};g[d.grade]=g[d.grade]===d.g?undefined:d.g;if(!g[d.grade])delete g[d.grade];upd(p,{eval:{...ev,grades:g}});const y=scrollY;render();scrollTo(0,y);return}
-  if(d.delobs&&p){upd(p,{obs:(p.obs||[]).filter(o=>o.id!==d.delobs)});render();return}
+  if(d.delobs&&p){const o=(p.obs||[]).find(x=>x.id===d.delobs)||{};askDel('이 관찰 기록을 지울까요?',`${o.date||''} · ${(o.text||'').slice(0,40)}`,()=>{upd(p,{obs:(p.obs||[]).filter(x=>x.id!==d.delobs)});render();toast('기록을 지웠어요')});return}
   if(d.path&&p){const cv=p.career||{},cur=cv.paths&&cv.paths.length?cv.paths:autoPaths(p).slice(0,2).map(x=>x.k);const n=cur.includes(d.path)?cur.filter(x=>x!==d.path):[...cur,d.path];upd(p,{career:{...cv,paths:n.length?n:['_none']}});const y=scrollY;render();scrollTo(0,y);return}
   if(d.addplan&&p){const cv=p.career||{},pl=cv.plan||[];if(pl.some(x=>x.text===d.addplan)){toast('이미 계획에 있어요');return}upd(p,{career:{...cv,plan:[...pl,{id:uid(),text:d.addplan,kind:d.pk||'edu',year:+(d.py||year()+1),status:'계획'}]}});toast('개발 계획에 넣었어요');const y=scrollY;render();scrollTo(0,y);return}
   if(d.planst&&p){const cv=p.career||{},order=['계획','진행','완료'];upd(p,{career:{...cv,plan:(cv.plan||[]).map(x=>x.id===d.planst?{...x,status:order[(order.indexOf(x.status)+1)%3]}:x)}});const y=scrollY;render();scrollTo(0,y);return}
@@ -619,6 +623,10 @@ document.addEventListener('click',async e=>{
     case 'createStaff':{const n=$('#nName').value.trim();if(!n)return;const id='s_'+uid();put(id,{kind:'staff',name:n,job:$('#nJob').value,status:'재직',obs:[]});closeModal();cur=id;tab='info';view='person';render();break}
     case 'closeModal':closeModal();break;
     case 'delStaff':modal(`<h3>${esc(p.name)} 삭제</h3><p class="muted">관찰기록·면담·평가 내용이 모두 삭제돼요.</p><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn ghost" data-act="closeModal">취소</button><button class="btn danger" data-act="confirmDel">삭제</button></div>`);break;
+    case 'clrEval':askDel(`${p.name} 평가를 비울까요?`,'등급 · 평가근거 · 서술의견이 지워져요. 관찰 기록은 남아요.',()=>{upd(p,{eval:{}});render();toast('평가를 비웠어요')});break;
+    case 'clrSurvey':askDel('설문 응답을 지울까요?','면담 사전 설문 응답이 지워져요.',()=>{upd(p,{survey:[],surveyDate:''});render();toast('설문 응답을 지웠어요')});break;
+    case 'clrMeet':askDel('면담 기록을 지울까요?','면담일과 면담 내용이 지워져요.',()=>{upd(p,{interview:{}});render();toast('면담 기록을 지웠어요')});break;
+    case 'doDel':{const f=PENDING_DEL;PENDING_DEL=null;closeModal();if(f)f();break}
     case 'confirmDel':del(cur);closeModal();view='list';render();toast('삭제했어요');break;
     case 'addObs':{const text=$('#oText').value.trim();if(!text){toast('내용을 적어 주세요');return}
       upd(p,{obs:[...(p.obs||[]),{id:uid(),date:$('#oDate').value||today(),item:$('#oItem').value,kind:obsKind,text}]});render();toast('기록했어요');break}

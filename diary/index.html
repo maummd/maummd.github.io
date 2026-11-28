@@ -340,7 +340,9 @@ function vDiary(){
   ${chart}
   <h2>나만의 플레이리스트</h2>
   <div class="form pl">${['힘낼 때','마음 가라앉힐 때','잠들 때'].map((t,i)=>`<label for="p${i}">${t}</label><div class="row"><input id="p${i}" type="text" value="${esc(pl[i]||'')}" placeholder="노래 제목 · 가수"><a class="btn" data-pl="${i}" href="#" target="_blank" rel="noopener">▶</a></div>`).join('')}</div>
-  <h2>지난 기록</h2><div class="log">${log.length?log.slice().reverse().slice(0,20).map((e,ri)=>`<div class="entry">${W[e.w][1]}<div><b>${e.d} · ${W[e.w][0]} · ${e.a}→${e.b}점</b><p class="muted">${esc(e.s||'')}${e.n?' · '+esc(e.n):''}</p></div><button class="btn ghost" data-del="${log.length-1-ri}" aria-label="이 기록 지우기">지우기</button></div>`).join(''):'<p class="muted">아직 기록이 없어요. 위에서 오늘의 날씨를 골라 첫 기록을 저장해 보세요. (예: 11/26 · 구름 조금 · 5→7점 · 고향의 봄)</p>'}</div>
+  <h2>지난 기록</h2><div class="log">${log.length?log.slice().reverse().slice(0,logAll?9999:20).map((e,ri)=>`<div class="entry">${W[e.w][1]}<div><b>${e.d} · ${W[e.w][0]} · ${e.a}→${e.b}점</b><p class="muted">${esc(e.s||'')}${e.n?' · '+esc(e.n):''}</p></div><button class="btn ghost" data-del="${log.length-1-ri}" aria-label="이 기록 지우기">지우기</button></div>`).join(''):'<p class="muted">아직 기록이 없어요. 위에서 오늘의 날씨를 골라 첫 기록을 저장해 보세요. (예: 11/26 · 구름 조금 · 5→7점 · 고향의 봄)</p>'}</div>
+  ${log.length>20&&!logAll?`<button class="btn ghost" type="button" id="logMore" style="width:100%">지난 기록 ${log.length-20}개 더 보기</button>`:''}
+  ${log.length?`<button class="btn ghost" type="button" id="logClr" style="width:100%;margin-top:6px;color:#B03A2E">🗑️ 기록 지우기 (기간 고르기)</button>`:''}
   <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" id="scanDiary">📷 종이 기록 · 활동지 스캔</button><button class="btn" type="button" id="sendMine">📤 플레이리스트 · 기록 보내기</button><button class="btn" type="button" id="impSong" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 노래 목록 불러오기</button><button class="btn" type="button" id="impLog" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 지난 기록 불러오기</button></div>
   <p class="muted" style="font-size:13px">엑셀 · 워드 · PDF · 한글(HWPX) · 사진 · CSV 파일을 읽어요. 넣기 전에 미리 보고 고칠 수 있어요.</p>
   <p class="note">기록은 이 휴대폰(브라우저)에만 저장돼요. 다른 사람에게 보이지 않고, 기기를 바꾸면 따라오지 않아요.</p>`;
@@ -354,7 +356,9 @@ function vDiary(){
   V.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{draft.w=b.dataset.w;V.querySelectorAll('[data-w]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
   ['a','b'].forEach(k=>{const r=document.getElementById('s'+k);r.oninput=()=>{draft[k]=+r.value;document.getElementById('v'+k).textContent=r.value}});
   document.getElementById('df').onsubmit=e=>{e.preventDefault();const t=new Date();const L=store.get('log',[]);L.push({d:fmt(t),iso:`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`,w:draft.w,a:draft.a,b:draft.b,s:document.getElementById('ss').value.trim(),n:document.getElementById('sn').value.trim()});store.set('log',L);vDiary();document.getElementById('saved').textContent='저장했어요'};
-  V.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const L=store.get('log',[]);L.splice(+b.dataset.del,1);store.set('log',L);vDiary()});
+  V.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const L=store.get('log',[]),e=L[+b.dataset.del];if(!e)return;askDel(`${e.d} 기록을 지울까요?`,`${W[e.w][0]} · ${e.a}→${e.b}점${e.s?' · '+e.s:''}`,()=>{const L2=store.get('log',[]);L2.splice(+b.dataset.del,1);store.set('log',L2);vDiary();toast('기록을 지웠어요')})});
+  const lm=document.getElementById('logMore');if(lm)lm.onclick=()=>{logAll=true;vDiary()};
+  const lc=document.getElementById('logClr');if(lc)lc.onclick=()=>logClear();
 }
 let G=null;
 function newGame(){const a=GAME.slice().sort(()=>Math.random()-.5).slice(0,10);G={a,i:0,ok:0,ans:false}}
@@ -448,6 +452,15 @@ async function impLog(){let MR;try{MR=await loadReader()}catch(e){toast(e.messag
         L.push({d:fmt(dd),iso,w:wOf(r.w),a:a==null?(b==null?5:b):a,b:b==null?(a==null?5:a):b,s:r.s||'',n:r.n||''});n++});
       L.sort((x,y)=>String(x.iso||'').localeCompare(String(y.iso||'')));store.set('log',L);vDiary();return `기록 ${n}개를 넣었어요`}});
 }
+// 지우기 전에 한 번 묻기
+let logAll=false;
+function askDel(title,sub,fn,extra){const bg=document.createElement('div');bg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  bg.innerHTML=`<div style="background:#fff;border-radius:18px;padding:20px;max-width:360px;width:100%;color:#222"><p style="margin:0 0 6px;font-weight:700;font-size:17px">${esc(title)}</p><p class="muted" style="margin:0 0 12px">${esc(sub||'')}</p>${extra||''}<p class="muted" style="margin:0 0 14px;font-size:13px">지우면 되돌릴 수 없어요.</p><div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn ghost" type="button" data-no>취소</button><button class="btn" type="button" data-yes style="background:#C0392B;border-color:#C0392B;color:#fff">지우기</button></div></div>`;
+  document.body.appendChild(bg);const done=()=>bg.remove();bg.querySelector('[data-no]').onclick=done;bg.onclick=e=>{if(e.target===bg)done()};bg.querySelector('[data-yes]').onclick=()=>{const r=fn(bg);if(r!==false)done()}}
+function logClear(){const L=store.get('log',[]);const isoOf=e=>e.iso||'';
+  askDel('어떤 기록을 지울까요?',`지금 기록 ${L.length}개`,bg=>{const k=bg.querySelector('input[name=lc]:checked').value,cut=new Date();cut.setDate(cut.getDate()-(k==='30'?30:k==='90'?90:0));const cs=cut.toISOString().slice(0,10);
+    const keep=k==='all'?[]:L.filter(e=>!isoOf(e)||isoOf(e)>=cs);const n=L.length-keep.length;if(!n){toast('지울 기록이 없어요');return false}store.set('log',keep);logAll=false;vDiary();toast(`기록 ${n}개를 지웠어요`)},
+    `<div style="display:grid;gap:8px;margin-bottom:10px">${[['30','30일보다 지난 기록'],['90','90일보다 지난 기록'],['all','모든 기록']].map(([v,l],i)=>`<label style="display:flex;gap:8px;align-items:center"><input type="radio" name="lc" value="${v}"${i?'':' checked'}> ${l}</label>`).join('')}</div>`)}
 function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2200)}
 function backup(){
   const t=new Date(),iso=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;

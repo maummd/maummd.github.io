@@ -463,7 +463,8 @@ function vDuty(){const ds=dutySel||dutyDate(),d=new Date(ds+'T00:00'),C=DC(),L=D
   </div>
   <div class="card"><h2>📷 활동 기록지</h2><p class="muted" style="margin:0 0 8px">종이에 적은 당직 활동 기록 · CBT 교육 활동지를 사진으로 찍으면 글을 채워 이 날 기록에 붙여요.${(L.sheets||[]).length?` <b>${L.sheets.length}장 있음</b>`:''}</p>
    <div class="row" style="gap:8px"><button class="btn ghost grow" data-act="dutyScan">📷 사진으로 넣기</button>${(L.sheets||[]).length?'<button class="btn ghost grow" data-act="dutySheets">🗂️ 보기</button>':''}</div></div>
-  <button class="btn ghost" data-act="dutyShare" style="width:100%;margin-bottom:14px">📤 당직 일정 보내기</button>`}
+  <button class="btn ghost" data-act="dutyShare" style="width:100%;margin-bottom:14px">📤 당직 일정 보내기</button>
+  ${S.lunch.some(x=>x.id==='duty-'+ds)?`<button class="btn ghost" data-deldutyday="${ds}" style="width:100%;margin-bottom:14px;color:#B03A2E">🗑️ 이 날 당직 기록 지우기</button>`:''}`}
 function vHome(){
   const q=myQueue(),rl=myRoles();
   const showRoutine=has('buyer')||has('mid');
@@ -500,7 +501,7 @@ function vDemand(){
   ${has('mid')?reviewReqCard():''}
   ${has('buyer')?acceptedCard():''}
   <div class="card"><h2>내가 낸 수요 <span class="muted">${mine.length}건</span></h2>${mine.length?mine.slice(0,30).map(r=>reqRow(r,true)).join(''):'<div class="empty">아직 낸 수요가 없어요</div>'}</div>
-  ${mgrSurvey&&closed.length?`<div class="card"><h2>마감된 수요조사</h2>${closed.map(sv=>`<div class="ord"><div class="row" style="justify-content:space-between"><span><b>${esc(sv.title)}</b> <span class="muted">${md(sv.due)} 마감 · ${S.requests.filter(r=>r.surveyId===sv.id).length}건</span></span><button class="btn sm ghost" data-svopen="${sv.id}">다시 열기</button></div></div>`).join('')}</div>`:''}`;
+  ${mgrSurvey&&closed.length?`<div class="card"><h2>마감된 수요조사</h2>${closed.map(sv=>`<div class="ord"><div class="row" style="justify-content:space-between"><span><b>${esc(sv.title)}</b> <span class="muted">${md(sv.due)} 마감 · ${S.requests.filter(r=>r.surveyId===sv.id).length}건</span></span><span><button class="btn sm ghost" data-svopen="${sv.id}">다시 열기</button> <button class="btn sm ghost" data-delsv="${sv.id}" aria-label="지우기">🗑️</button></span></div></div>`).join('')}</div>`:''}`;
 }
 function surveyCard(sv,mgr){
   const rs=S.requests.filter(r=>r.surveyId===sv.id);
@@ -519,7 +520,7 @@ function reqRow(r,own){
   return `<div class="ord"><div class="h"><span class="site s-${r.site}">${SN(r.site)}</span>${own?'':esc(r.byName)+' · '}${md(r.at)}<span class="bd ${cls}">${lab}</span>${r.surveyId?`<span class="bd">${esc((S.surveys.find(s=>s.id===r.surveyId)||{}).title||'수요조사')}</span>`:''}</div>
    <div class="n">${esc(r.name)}${r.qty?` · ${esc(r.qty)}`:''}</div>${r.reason?`<div class="muted" style="font-size:12.5px">${esc(r.reason)}</div>`:''}
    ${r.midNote?`<div class="muted" style="font-size:12.5px">검수: ${esc(r.midName||'')} — ${esc(r.midNote)}</div>`:''}
-   ${own&&r.status==='submitted'?`<button class="btn sm ghost" style="margin-top:6px" data-delreq="${r.id}">취소</button>`:''}</div>`;
+   ${own&&r.status==='submitted'?`<button class="btn sm ghost" style="margin-top:6px" data-delreq="${r.id}">취소</button>`:has('admin')?`<button class="btn sm ghost" style="margin-top:6px;color:#B03A2E" data-delreq="${r.id}">🗑️ 지우기</button>`:''}</div>`;
 }
 function reviewReqCard(){const rs=S.requests.filter(r=>r.status==='submitted').sort((a,b)=>a.at.localeCompare(b.at));
   return `<div class="card" style="border-color:var(--warn)"><h2>🔎 수요 검수 <span class="bd w">${rs.length}</span></h2><p class="muted" style="font-size:12.5px">수량 · 필요성을 확인하고 통과 또는 반려해요. 통과한 수요는 구매 담당이 주문서로 만들어요.</p>
@@ -593,6 +594,7 @@ function orderRow(o){
   if(o.stage==='reject'&&(has('buyer')||has('mid')))B(`data-resubmit="${o.id}"`,'고쳐서 다시 올리기','ghost');
   if(['review','final','reject'].includes(o.stage)&&(has('buyer')||has('mid')))B(`data-edit="${o.id}"`,'고치기','ghost');
   B(`data-hist="${o.id}"`,'결재 기록','ghost');
+  if(canDelOrder(o))B(`data-delorder="${o.id}" aria-label="주문 지우기"`,'🗑️','ghost');
   const L1=lastLog(o,'reject');
   return `<div class="ord"><div class="h"><span class="site s-${o.site}">${SN(o.site)}</span>${md(o.date)} · ${esc(o.vendor||'-')}${rc}${appCard(o)?'<span class="bd">원장님 앱카드</span>':''}</div>
    <div class="row" style="justify-content:space-between"><div class="n">${esc(o.name)}${o.spec?` <span class="muted">${esc(o.spec)}</span>`:''} · ${esc(o.qty||'')}</div><span class="money">${won(o.price)}</span></div>
@@ -677,6 +679,7 @@ function vSettings(){
   ${has('final')||adm?payKeyCard():''}
   ${webCard()}
   <div class="card"><h2>🔔 알림 설정</h2><p class="muted" style="margin:0 0 8px">업무 알림(구매 · 당직 · 도시락 · 결재)과 내가 만든 알림을 켜고, 시간 · 요일을 바꿀 수 있어요.${IS_WEB?' 웹에서는 화면이 열려 있을 때 알려 드리고, 📅 캘린더에 넣기로 휴대폰 캘린더 알림도 받을 수 있어요.':''}</p><button class="btn" data-act="remindOpen">알림 설정 열기</button></div>
+  ${cleanCard()}
   ${IS_WEB?'':(isMgr()?notiCard(L.noti):staffNotiCard())}
   ${isMgr()?`<div class="card"><h2>기관 · 결제 정보 ${adm?'':'<span class="bd">관리자만 수정</span>'}</h2>
    <label class="f">기관 이름</label><input data-org="name" value="${esc(orgName())}" ${dis}>
@@ -719,6 +722,25 @@ function bizValid(n){const d=String(n).replace(/\D/g,'').split('').map(Number);i
 /* ===================== 입력 창 ===================== */
 function modal(h){$('#modal').innerHTML=`<div class="modal" data-bg="1"><div class="sheet">${h}</div></div>`}
 function closeModal(){$('#modal').innerHTML='';render()}
+// 지우기 전에 한 번 묻기
+let PENDING_DEL=null;
+function askDel(title,sub,fn){PENDING_DEL=fn;modal(`<h3>${esc(title)}</h3><p class="muted">${esc(sub||'')}<br>지우면 되돌릴 수 없어요.</p><div class="row" style="margin-top:12px;justify-content:flex-end;gap:8px"><button class="btn ghost" data-act="closeModal">취소</button><button class="btn danger" data-dodel="1">지우기</button></div>`)}
+const canDelOrder=o=>has('admin')||(has('buyer')&&['review','reject'].includes(o.stage));
+function cleanCard(){
+  const mgr=has('admin')||has('mid')||has('buyer');if(!mgr)return '';
+  const opt=`<select id="clnAge" style="width:100%;margin:6px 0 10px"><option value="3">3개월보다 지난 것</option><option value="6" selected>6개월보다 지난 것</option><option value="12">1년보다 지난 것</option><option value="0">오늘 이전 전부</option></select>`;
+  const rows=[has('admin')?['orders','🛒 완료된 주문 (완료 · 반려)']:null,['surveys','📝 마감된 수요조사'],['lunch','🍱 지난 도시락 날짜 기록'],has('admin')||has('mid')||has('buyer')?['duty','🗓️ 지난 당직 기록']:null].filter(Boolean);
+  return `<div class="card"><h2>🗑️ 지난 기록 정리</h2><p class="muted" style="margin:0">오래된 기록을 한꺼번에 지워요. 지출 내역(📊)에 쓰인 주문을 지우면 그 달 합계에서도 빠져요.</p>${opt}
+   ${rows.map(([k,l])=>`<label class="row" style="gap:8px;margin:4px 0"><input type="checkbox" data-cln="${k}" style="width:20px;height:20px"> ${l}</label>`).join('')}
+   <button class="btn danger" data-act="cleanOld" style="width:100%;margin-top:8px">고른 기록 지우기</button></div>`}
+function cleanTargets(kinds,months){
+  const cut=new Date();if(months>0)cut.setMonth(cut.getMonth()-months);const cs=ymd(cut),t=today();const old=d=>d&&d<(months>0?cs:t);
+  const out={orders:[],surveys:[],lunch:[],duty:[]};
+  if(kinds.includes('orders'))out.orders=S.orders.filter(o=>['done','reject'].includes(o.stage)&&old(String(o.date||o.at||'').slice(0,10)));
+  if(kinds.includes('surveys'))out.surveys=S.surveys.filter(x=>!x.open&&old(String(x.due||x.at||'').slice(0,10)));
+  if(kinds.includes('lunch'))out.lunch=S.lunch.filter(x=>x.id.startsWith('d-')&&old(x.date));
+  if(kinds.includes('duty'))out.duty=S.lunch.filter(x=>/^duty-\d/.test(x.id)&&old(x.date));
+  return out}
 function fillDatalist(){const names=[...new Set([...ITEMS().map(i=>i.name),...S.orders.map(o=>o.name),...S.requests.map(r=>r.name)])];$('#dlItems').innerHTML=names.map(n=>`<option value="${esc(n)}">`).join('')}
 function siteSel(v,id='fSite'){const E=Object.entries(SITES);if(v&&!SITES[v]&&SITE_ALL[v])E.push([v,SITE_ALL[v]+' (숨김)']);return `<select id="${id}">${E.map(([k,l])=>`<option value="${k}" ${v===k?'selected':''}>${l}</option>`).join('')}</select>`}
 const IS_MOBILE=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
@@ -750,7 +772,7 @@ function orderForm(o={},title='주문서 작성'){
    <label class="f">결제 묶음 이름 (같이 결제할 주문끼리 · 선택)</label><input id="fGroup" value="${esc(o.payGroup||'')}">
    <label class="f">메모</label><input id="fNote" value="${esc(o.note||'')}">
    <div id="fWarn" style="margin-top:8px"></div>
-   <div class="row" style="margin-top:12px;justify-content:flex-end">${o.id?`<button class="btn danger" data-delorder="${o.id}">삭제</button><span class="grow"></span>`:''}<button class="btn ghost" data-act="closeModal">취소</button><button class="btn" data-saveorder="${o.id||''}">저장</button></div>`);
+   <div class="row" style="margin-top:12px;justify-content:flex-end">${o.id&&canDelOrder(o)?`<button class="btn danger" data-delorder="${o.id}">삭제</button><span class="grow"></span>`:''}<button class="btn ghost" data-act="closeModal">취소</button><button class="btn" data-saveorder="${o.id||''}">저장</button></div>`);
   window._draft=o;
   const warn=()=>{const p=+$('#fPrice').value||0,g=$('#fGroup').value.trim(),others=S.orders.filter(x=>x.id!==o.id&&x.date===$('#fDate').value&&g&&x.payGroup===g).reduce((a,x)=>a+(+x.price||0),0),m=[];
     if(p>=SET().approveItem||(g&&others+p>=SET().approveOrder))m.push('<div class="alert w">💳 원장님 앱카드 결제 대상이에요</div>');
@@ -1550,7 +1572,7 @@ document.addEventListener('click',async e=>{
   if(d.buy){const i=ITEMS().find(x=>x.id===d.buy);if(S.requests.some(r=>['submitted','accepted'].includes(r.status)&&r.name===i.name&&r.site===i.site)){toast('이미 수요로 올라가 있어요');return}addReq(i.site,i.name,/제과제빵/.test(i.cat)?'제과제빵 담당에게 수량 확인':'','재고 점검');toast('수요로 올렸어요 — 중간관리자 검수로 넘어가요');re();return}
   if(d.orderItem){const i=ITEMS().find(x=>x.id===d.orderItem);orderForm({site:i.site,name:i.name});return}
   if(d.newreqSv!==undefined){reqForm({surveyId:d.newreqSv});return}
-  if(d.delreq){S.requests=S.requests.filter(x=>x.id!==d.delreq);re();toast('취소했어요');return}
+  if(d.delreq){const r=S.requests.find(x=>x.id===d.delreq)||{};askDel(r.status==='submitted'&&r.by===AUTH.uid?'이 수요를 취소할까요?':'이 수요 기록을 지울까요?',`${r.name||''}${r.qty?' · '+r.qty:''}`,()=>{S.requests=S.requests.filter(x=>x.id!==d.delreq);save();toast('지웠어요')});return}
   if(d.svclose){S.surveys.find(s=>s.id===d.svclose).open=false;re();toast('수요조사를 마감했어요');return}
   if(d.svopen){S.surveys.find(s=>s.id===d.svopen).open=true;re();return}
   if(d.svshare){const s=S.surveys.find(x=>x.id===d.svshare);share(`[${orgName()}] 📝 ${s.title}\n${s.due?md(s.due)+'까지 ':''}필요한 물품을 ‘마음 살림’ 앱 → 수요 탭에서 내 주세요.${s.note?'\n'+s.note:''}\n${WEB_URL}${has('admin')?`\n처음이면 가입 후 참여 코드 ${O().joinCode} 를 넣어 주세요.`:''}`);return}
@@ -1581,7 +1603,10 @@ document.addEventListener('click',async e=>{
   if(d.reorder){const o=ord(d.reorder);o.reordered=true;save();orderForm({site:o.site,name:o.name,spec:o.spec,qty:o.qty,vendor:o.vendor,url:o.url,note:'재주문 · 교환 ('+(o.issue||'')+')'},'재주문서');return}
   if(d.hist){histView(ord(d.hist));return}
   if(d.edit){orderForm(ord(d.edit),'주문서 고치기');window._resubmit=false;return}
-  if(d.delorder){S.orders=S.orders.filter(x=>x.id!==d.delorder);save();closeModal();toast('삭제했어요');return}
+  if(d.delorder){const o=S.orders.find(x=>x.id===d.delorder)||{};askDel('이 주문을 지울까요?',`${SN(o.site)} · ${o.name||''} ${o.price?won(o.price):''}`,()=>{S.orders=S.orders.filter(x=>x.id!==d.delorder);save();toast('주문을 지웠어요')});return}
+  if(d.dodel){const f=PENDING_DEL;PENDING_DEL=null;$('#modal').innerHTML='';if(f)f();render();return}
+  if(d.delsv){const sv=S.surveys.find(x=>x.id===d.delsv)||{};askDel(`‘${sv.title||''}’ 수요조사를 지울까요?`,'수요조사만 지워지고, 이미 낸 수요는 남아요.',()=>{S.surveys=S.surveys.filter(x=>x.id!==d.delsv);save();toast('수요조사를 지웠어요')});return}
+  if(d.deldutyday){const ds=d.deldutyday;askDel(`${md(ds)} 당직 기록을 지울까요?`,'체크 · 당직자 · 인원 · 현금 준비 · 활동 기록지가 지워져요. 시간표는 남아요.',()=>{S.lunch=S.lunch.filter(x=>x.id!=='duty-'+ds);save();toast('당직 기록을 지웠어요')});return}
   if(d.saveorder!==undefined){
     const name=$('#fName').value.trim(),price=$('#fPrice').value;
     if(!name){toast('구매 품목을 적어 주세요');return}
@@ -1687,6 +1712,13 @@ document.addEventListener('click',async e=>{
         onSave:rec=>{const L=DL(ds);putDuty({...L,sheets:[...(L.sheets||[]),{id:rec.id,name:rec.name,date:rec.date,fields:rec.fields,items:rec.items,total:rec.total,band:rec.band,memo:rec.memo,by:myName()}].slice(-30)});render()},
         history:dutyHist(ds)});break}
     case 'dutySheets':{if(window.MScan)MScan.history(dutyHist(dutySel||dutyDate()));break}
+    case 'cleanOld':{const kinds=[...document.querySelectorAll('[data-cln]')].filter(x=>x.checked).map(x=>x.dataset.cln),months=+$('#clnAge').value;
+      if(!kinds.length){toast('지울 기록 종류를 골라 주세요');break}
+      const T=cleanTargets(kinds,months),n={orders:T.orders.length,surveys:T.surveys.length,lunch:T.lunch.length,duty:T.duty.length},all=n.orders+n.surveys+n.lunch+n.duty;
+      if(!all){toast('그 기간에 지울 기록이 없어요');break}
+      askDel(`기록 ${all}개를 지울까요?`,[n.orders?`완료 · 반려 주문 ${n.orders}개`:'',n.surveys?`마감 수요조사 ${n.surveys}개`:'',n.lunch?`도시락 날짜 ${n.lunch}개`:'',n.duty?`당직 기록 ${n.duty}개`:''].filter(Boolean).join(' · '),()=>{
+        const ids=x=>new Set(x.map(y=>y.id));const o=ids(T.orders),sv=ids(T.surveys),l=ids([...T.lunch,...T.duty]);
+        S.orders=S.orders.filter(x=>!o.has(x.id));S.surveys=S.surveys.filter(x=>!sv.has(x.id));S.lunch=S.lunch.filter(x=>!l.has(x.id));save();toast(`기록 ${all}개를 지웠어요`)});break}
     case 'remindOpen':if(window.MRemind)MRemind.open();else toast('알림 도구를 불러오지 못했어요');break;
     case 'dutyShare':{const ds=dutySel||dutyDate(),d=new Date(ds+'T00:00'),C=DC(),L=DL(ds),c=dutyCash(ds);
       sendMenu({title:'당직 일정 보내기',subject:`${d.getMonth()+1}/${d.getDate()} ${DOWN[d.getDay()]}요일 당직`,text:`[${orgName()}] ${d.getMonth()+1}/${d.getDate()}(${DOWN[d.getDay()]}) 당직${L.who?` · ${L.who}`:''}\n${C.schedule.map(x=>`${x.t} ${x.w}`).join('\n')}\n\n💵 지원금 ${c.n}명 × ${wonC(c.per)} = ${wonC(c.total)}${c.bills?` (${c.bills})`:''}`});break}
