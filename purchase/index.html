@@ -302,7 +302,7 @@ function save(){
   for(const col of ['requests','orders','surveys','lunch']){const errs=e=>{console.error(e);if(col==='lunch'){LUNCH_ERR=(e&&e.code)||'error';render()}toast('⚠️ 서버에 저장하지 못했어요 — 다시 로그인하면 사라져요')};
     const base=BASE[col]||{},cur=S[col]||[],ids=new Set(cur.map(x=>x.id));
     cur.forEach(x=>{const j=JSON.stringify(x);if(base[x.id]!==j){base[x.id]=j;const {id,...d}=x;ST.put(ORG,col,id,d).catch(errs)}});
-    Object.keys(base).forEach(id=>{if(!ids.has(id)){delete base[id];ST.del(ORG,col,id).catch(errs)}});
+    Object.keys(base).forEach(id=>{if(!ids.has(id)){delete base[id];ST.del(ORG,col,id).catch(e=>{console.error(e);toast(e&&e.code==='permission-denied'?'⚠️ 서버가 지우기를 막았어요 — Firebase 규칙이 게시됐는지 확인해 주세요':'⚠️ 지우지 못했어요 — 연결을 확인해 주세요');render()})}});
     BASE[col]=base;
   }
   if(S.org){const patch={};BASE.org=BASE.org||{};['name','settings','items','routine','checks','stock'].forEach(f=>{const j=JSON.stringify(S.org[f]??null);if(BASE.org[f]!==j){BASE.org[f]=j;patch[f]=S.org[f]}});
