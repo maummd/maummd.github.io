@@ -153,6 +153,8 @@ input:disabled{background:#F2F3F0;color:var(--sub)}
 <div class="toast" id="toast"></div>
 <div id="modal"></div>
 <datalist id="dlItems"></datalist>
+<script src="lib/maumm-remind.js"></script>
+<script src="lib/maumm-scan.js"></script>
 <script>(()=>{var Ef=()=>{};var Af=function(n){let e=[],t=0;for(let r=0;r<n.length;r++){let i=n.charCodeAt(r);i<128?e[t++]=i:i<2048?(e[t++]=i>>6|192,e[t++]=i&63|128):(i&64512)===55296&&r+1<n.length&&(n.charCodeAt(r+1)&64512)===56320?(i=65536+((i&1023)<<10)+(n.charCodeAt(++r)&1023),e[t++]=i>>18|240,e[t++]=i>>12&63|128,e[t++]=i>>6&63|128,e[t++]=i&63|128):(e[t++]=i>>12|224,e[t++]=i>>6&63|128,e[t++]=i&63|128)}return e},$y=function(n){let e=[],t=0,r=0;for(;t<n.length;){let i=n[t++];if(i<128)e[r++]=String.fromCharCode(i);else if(i>191&&i<224){let s=n[t++];e[r++]=String.fromCharCode((i&31)<<6|s&63)}else if(i>239&&i<365){let s=n[t++],o=n[t++],c=n[t++],u=((i&7)<<18|(s&63)<<12|(o&63)<<6|c&63)-65536;e[r++]=String.fromCharCode(55296+(u>>10)),e[r++]=String.fromCharCode(56320+(u&1023))}else{let s=n[t++],o=n[t++];e[r++]=String.fromCharCode((i&15)<<12|(s&63)<<6|o&63)}}return e.join("")},Sf={byteToCharMap_:null,charToByteMap_:null,byteToCharMapWebSafe_:null,charToByteMapWebSafe_:null,ENCODED_VALS_BASE:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",get ENCODED_VALS(){return this.ENCODED_VALS_BASE+"+/="},get ENCODED_VALS_WEBSAFE(){return this.ENCODED_VALS_BASE+"-_."},HAS_NATIVE_SUPPORT:typeof atob=="function",encodeByteArray(n,e){if(!Array.isArray(n))throw Error("encodeByteArray takes an array as a parameter");this.init_();let t=e?this.byteToCharMapWebSafe_:this.byteToCharMap_,r=[];for(let i=0;i<n.length;i+=3){let s=n[i],o=i+1<n.length,c=o?n[i+1]:0,u=i+2<n.length,h=u?n[i+2]:0,f=s>>2,m=(s&3)<<4|c>>4,g=(c&15)<<2|h>>6,b=h&63;u||(b=64,o||(g=64)),r.push(t[f],t[m],t[g],t[b])}return r.join("")},encodeString(n,e){return this.HAS_NATIVE_SUPPORT&&!e?btoa(n):this.encodeByteArray(Af(n),e)},decodeString(n,e){return this.HAS_NATIVE_SUPPORT&&!e?atob(n):$y(this.decodeStringToByteArray(n,e))},decodeStringToByteArray(n,e){this.init_();let t=e?this.charToByteMapWebSafe_:this.charToByteMap_,r=[];for(let i=0;i<n.length;){let s=t[n.charAt(i++)],c=i<n.length?t[n.charAt(i)]:0;++i;let h=i<n.length?t[n.charAt(i)]:64;++i;let m=i<n.length?t[n.charAt(i)]:64;if(++i,s==null||c==null||h==null||m==null)throw new Ec;let g=s<<2|c>>4;if(r.push(g),h!==64){let b=c<<4&240|h>>2;if(r.push(b),m!==64){let C=h<<6&192|m;r.push(C)}}}return r},init_(){if(!this.byteToCharMap_){this.byteToCharMap_={},this.charToByteMap_={},this.byteToCharMapWebSafe_={},this.charToByteMapWebSafe_={};for(let n=0;n<this.ENCODED_VALS.length;n++)this.byteToCharMap_[n]=this.ENCODED_VALS.charAt(n),this.charToByteMap_[this.byteToCharMap_[n]]=n,this.byteToCharMapWebSafe_[n]=this.ENCODED_VALS_WEBSAFE.charAt(n),this.charToByteMapWebSafe_[this.byteToCharMapWebSafe_[n]]=n,n>=this.ENCODED_VALS_BASE.length&&(this.charToByteMap_[this.ENCODED_VALS_WEBSAFE.charAt(n)]=n,this.charToByteMapWebSafe_[this.ENCODED_VALS.charAt(n)]=n)}}},Ec=class extends Error{constructor(){super(...arguments),this.name="DecodeBase64StringError"}},Ky=function(n){let e=Af(n);return Sf.encodeByteArray(e,!0)},bc=function(n){return Ky(n).replace(/\./g,"")},Ns=function(n){try{return Sf.decodeString(n,!0)}catch(e){console.error("base64Decode failed: ",e)}return null};function Ac(){if(typeof self<"u")return self;if(typeof window<"u")return window;if(typeof global<"u")return global;throw new Error("Unable to locate global object.")}var Wy=()=>Ac().__FIREBASE_DEFAULTS__,Hy=()=>{if(typeof process>"u"||typeof process.env>"u")return;let n=process.env.__FIREBASE_DEFAULTS__;if(n)return JSON.parse(n)},Qy=()=>{if(typeof document>"u")return;let n;try{n=document.cookie.match(/__FIREBASE_DEFAULTS__=([^;]+)/)}catch{return}let e=n&&Ns(n[1]);return e&&JSON.parse(e)},Os=()=>{try{return Ef()||Wy()||Hy()||Qy()}catch(n){console.info(`Unable to get __FIREBASE_DEFAULTS__ due to: ${n}`);return}},Rf=n=>{var e,t;return(t=(e=Os())===null||e===void 0?void 0:e.emulatorHosts)===null||t===void 0?void 0:t[n]};var Sc=()=>{var n;return(n=Os())===null||n===void 0?void 0:n.config},Rc=n=>{var e;return(e=Os())===null||e===void 0?void 0:e[`_${n}`]};var Ds=class{constructor(){this.reject=()=>{},this.resolve=()=>{},this.promise=new Promise((e,t)=>{this.resolve=e,this.reject=t})}wrapCallback(e){return(t,r)=>{t?this.reject(t):this.resolve(r),typeof e=="function"&&(this.promise.catch(()=>{}),e.length===1?e(t):e(t,r))}}};function Pt(n){try{return(n.startsWith("http://")||n.startsWith("https://")?new URL(n).hostname:n).endsWith(".cloudworkstations.dev")}catch{return!1}}async function Vs(n){return(await fetch(n,{credentials:"include"})).ok}var si={};function Jy(){let n={prod:[],emulator:[]};for(let e of Object.keys(si))si[e]?n.emulator.push(e):n.prod.push(e);return n}function Yy(n){let e=document.getElementById(n),t=!1;return e||(e=document.createElement("div"),e.setAttribute("id",n),t=!0),{created:t,element:e}}var Tf=!1;function Pc(n,e){if(typeof window>"u"||typeof document>"u"||!Pt(window.location.host)||si[n]===e||si[n]||Tf)return;si[n]=e;function t(g){return`__firebase__banner__${g}`}let r="__firebase__banner",s=Jy().prod.length>0;function o(){let g=document.getElementById(r);g&&g.remove()}function c(g){g.style.display="flex",g.style.background="#7faaf0",g.style.position="fixed",g.style.bottom="5px",g.style.left="5px",g.style.padding=".5em",g.style.borderRadius="5px",g.style.alignItems="center"}function u(g,b){g.setAttribute("width","24"),g.setAttribute("id",b),g.setAttribute("height","24"),g.setAttribute("viewBox","0 0 24 24"),g.setAttribute("fill","none"),g.style.marginLeft="-6px"}function h(){let g=document.createElement("span");return g.style.cursor="pointer",g.style.marginLeft="16px",g.style.fontSize="24px",g.innerHTML=" &times;",g.onclick=()=>{Tf=!0,o()},g}function f(g,b){g.setAttribute("id",b),g.innerText="Learn more",g.href="https://firebase.google.com/docs/studio/preview-apps#preview-backend",g.setAttribute("target","__blank"),g.style.paddingLeft="5px",g.style.textDecoration="underline"}function m(){let g=Yy(r),b=t("text"),C=document.getElementById(b)||document.createElement("span"),N=t("learnmore"),k=document.getElementById(N)||document.createElement("a"),B=t("preprendIcon"),F=document.getElementById(B)||document.createElementNS("http://www.w3.org/2000/svg","svg");if(g.created){let L=g.element;c(L),f(k,N);let K=h();u(F,B),L.append(F,C,k,K),document.body.appendChild(L)}s?(C.innerText="Preview backend disconnected.",F.innerHTML=`<g clip-path="url(#clip0_6013_33858)">
 <path d="M4.8 17.6L12 5.6L19.2 17.6H4.8ZM6.91667 16.4H17.0833L12 7.93333L6.91667 16.4ZM12 15.6C12.1667 15.6 12.3056 15.5444 12.4167 15.4333C12.5389 15.3111 12.6 15.1667 12.6 15C12.6 14.8333 12.5389 14.6944 12.4167 14.5833C12.3056 14.4611 12.1667 14.4 12 14.4C11.8333 14.4 11.6889 14.4611 11.5667 14.5833C11.4556 14.6944 11.4 14.8333 11.4 15C11.4 15.1667 11.4556 15.3111 11.5667 15.4333C11.6889 15.5444 11.8333 15.6 12 15.6ZM11.4 13.6H12.6V10.4H11.4V13.6Z" fill="#212121"/>
 </g>
@@ -372,6 +374,7 @@ function render(){syncSites();
   renderNav();
   const V={duty:vDuty,lunch:vLunch,home:vHome,demand:vDemand,check:vCheck,order:vOrder,report:vReport,settings:vSettings,auth:vAuth,setup:vSetup,gone:vGone}[view]||vHome;
   $('#app').innerHTML=V();
+  remindTick();
   fillDatalist();
 }
 function hdr(t,sub){return `<header><span class="logo">🛒</span><h1>${t}${sub?`<small>${sub}</small>`:''}</h1></header>`}
@@ -458,6 +461,8 @@ function vDuty(){const ds=dutySel||dutyDate(),d=new Date(ds+'T00:00'),C=DC(),L=D
     <button class="btn" data-act="dutySave" style="width:100%;margin-top:8px">시간표 저장</button>`
    :`<div class="tl">${C.schedule.map((x,i)=>`<label class="tl-row ${i===curIdx?'now':''} ${L.done&&L.done[i]?'done':''}"><input type="checkbox" data-dutydone="${i}" ${L.done&&L.done[i]?'checked':''}><span class="tl-t">${esc(x.t)}</span><span class="tl-w">${esc(x.w)}${x.pay?` <span class="bd">💵 ${wonC(c.total)}</span>`:''}${i===curIdx?' <span class="bd e">지금</span>':''}</span></label>`).join('')}</div>`}
   </div>
+  <div class="card"><h2>📷 활동 기록지</h2><p class="muted" style="margin:0 0 8px">종이에 적은 당직 활동 기록 · CBT 교육 활동지를 사진으로 찍으면 글을 채워 이 날 기록에 붙여요.${(L.sheets||[]).length?` <b>${L.sheets.length}장 있음</b>`:''}</p>
+   <div class="row" style="gap:8px"><button class="btn ghost grow" data-act="dutyScan">📷 사진으로 넣기</button>${(L.sheets||[]).length?'<button class="btn ghost grow" data-act="dutySheets">🗂️ 보기</button>':''}</div></div>
   <button class="btn ghost" data-act="dutyShare" style="width:100%;margin-bottom:14px">📤 당직 일정 보내기</button>`}
 function vHome(){
   const q=myQueue(),rl=myRoles();
@@ -671,6 +676,7 @@ function vSettings(){
   ${adm?membersCard():''}
   ${has('final')||adm?payKeyCard():''}
   ${webCard()}
+  <div class="card"><h2>🔔 알림 설정</h2><p class="muted" style="margin:0 0 8px">업무 알림(구매 · 당직 · 도시락 · 결재)과 내가 만든 알림을 켜고, 시간 · 요일을 바꿀 수 있어요.${IS_WEB?' 웹에서는 화면이 열려 있을 때 알려 드리고, 📅 캘린더에 넣기로 휴대폰 캘린더 알림도 받을 수 있어요.':''}</p><button class="btn" data-act="remindOpen">알림 설정 열기</button></div>
   ${IS_WEB?'':(isMgr()?notiCard(L.noti):staffNotiCard())}
   ${isMgr()?`<div class="card"><h2>기관 · 결제 정보 ${adm?'':'<span class="bd">관리자만 수정</span>'}</h2>
    <label class="f">기관 이름</label><input data-org="name" value="${esc(orgName())}" ${dis}>
@@ -1386,7 +1392,20 @@ function buildReminders(){
       k++}}
   return out.sort((a,b)=>a.at-b.at).slice(0,60);
 }
-let _syncT;function syncReminders(){clearTimeout(_syncT);_syncT=setTimeout(()=>{try{if(window.AdminAndroid&&AdminAndroid.setReminders)AdminAndroid.setReminders(JSON.stringify(buildReminders()))}catch(e){}},400)}
+let _syncT;function syncReminders(){if(remindOn&&window.MRemind){MRemind.sync();return}clearTimeout(_syncT);_syncT=setTimeout(()=>{try{if(window.AdminAndroid&&AdminAndroid.setReminders)AdminAndroid.setReminders(JSON.stringify(buildReminders()))}catch(e){}},400)}
+// 공용 알림 도구(lib/maumm-remind.js): 업무 알림(위 buildReminders)과 내가 만든 알림을 한 화면에서 켜고 조정해요
+let remindOn=false;
+function remindTick(){
+  if(!window.MRemind||!S.me)return;
+  if(remindOn){MRemind.sync();return}
+  remindOn=true;
+  MRemind.init({app:'purchase',name:'마음 살림',color:'#2F5D50',
+    presets:[{id:'receipt',title:'🧾 영수증 · 지출 정리',body:'이번 주 영수증과 지출 내역을 정리해요',rep:'weekly',days:[5],time:'16:30'},
+      {id:'month',title:'📊 월말 마감',body:'이번 달 구매 · 지출 보고서를 확인해요',rep:'monthly',dom:25,time:'10:00'}],
+    sources:[{key:'work',label:'업무 알림',hint:isMgr()?'구매 · 당직 지원금 · 도시락 · 결재 차례 (시각 · 종류는 설정 아래 세부 설정에서)':'수요조사 마감 전날',leads:[0],lead:0,on:true,get:()=>buildReminders()}]});
+}
+const DUTY_SHEET={id:'duty',name:'토요일 활동 기록지',icon:'🗓️',kind:'text',fields:[{label:'개별활동',aliases:['개별 활동']},{label:'문화활동',aliases:['문화 활동']},{label:'CBT 교육',aliases:['CBT교육','CBT','교육']},{label:'회진 · 특이사항',aliases:['회진','특이사항','특이 사항']}]};
+function dutyHist(ds){return {title:`${md(ds)} 당직 활동 기록지`,load:()=>(DL(ds).sheets||[]).map(r=>({...r,kind:r.items?'scale':'text'})),remove:r=>{const L=DL(ds);putDuty({...L,sheets:(L.sheets||[]).filter(x=>x.id!==r.id)});render()}}}
 
 /* ===================== 문서 ===================== */
 const DOC_CSS=`@page{size:A4;margin:15mm}*{box-sizing:border-box}body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;color:#22302C;font-size:10.5pt;line-height:1.55;margin:0}
@@ -1663,6 +1682,12 @@ document.addEventListener('click',async e=>{
       const sch=lines.map(l=>{const pay=/\*\s*$/.test(l);l=l.replace(/\*\s*$/,'').trim();const m=l.match(/^(\d{1,2}:\d{2}\s*(?:[~\-–]\s*(?:\d{1,2}:\d{2})?)?)\s*(.*)$/);return m?{t:m[1].replace(/\s+/g,'').replace(/[-–]/,'~'),w:m[2]||'',...(pay?{pay:true}:{})}:{t:'',w:l,...(pay?{pay:true}:{})}});
       if(!sch.length){toast('시간표를 한 줄 이상 적어 주세요');break}
       putDuty({...DC(),id:'duty',schedule:sch,per:Math.max(0,+$('#dutyPer').value||0),day:+$('#dutyDay').value,prep:($('#dutyPrep').value||'').split('\n').map(x=>x.trim()).filter(Boolean)});dutyEdit=false;render();toast('시간표를 저장했어요');break}
+    case 'dutyScan':{if(!window.MScan){toast('스캔 도구를 불러오지 못했어요');break}const ds=dutySel||dutyDate();
+      MScan.open({app:'purchase',color:'#2F5D50',forms:[DUTY_SHEET,'thought','free'],doneMsg:'이 날 기록에 붙였어요',
+        onSave:rec=>{const L=DL(ds);putDuty({...L,sheets:[...(L.sheets||[]),{id:rec.id,name:rec.name,date:rec.date,fields:rec.fields,items:rec.items,total:rec.total,band:rec.band,memo:rec.memo,by:myName()}].slice(-30)});render()},
+        history:dutyHist(ds)});break}
+    case 'dutySheets':{if(window.MScan)MScan.history(dutyHist(dutySel||dutyDate()));break}
+    case 'remindOpen':if(window.MRemind)MRemind.open();else toast('알림 도구를 불러오지 못했어요');break;
     case 'dutyShare':{const ds=dutySel||dutyDate(),d=new Date(ds+'T00:00'),C=DC(),L=DL(ds),c=dutyCash(ds);
       sendMenu({title:'당직 일정 보내기',subject:`${d.getMonth()+1}/${d.getDate()} ${DOWN[d.getDay()]}요일 당직`,text:`[${orgName()}] ${d.getMonth()+1}/${d.getDate()}(${DOWN[d.getDay()]}) 당직${L.who?` · ${L.who}`:''}\n${C.schedule.map(x=>`${x.t} ${x.w}`).join('\n')}\n\n💵 지원금 ${c.n}명 × ${wonC(c.per)} = ${wonC(c.total)}${c.bills?` (${c.bills})`:''}`});break}
     case 'addSite':{const v=($('#newSite')||{}).value||'';if(!v.trim()){toast('이름을 넣어 주세요');break}if(siteByName(v)&&SITES[siteByName(v)]){toast('같은 이름이 있어요');break}addSite(v);toast('장소를 추가했어요');break}

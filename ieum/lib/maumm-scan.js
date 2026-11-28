@@ -179,10 +179,22 @@
     const M = window.MReader, ls = String(text).split('\n').map((s) => s.trim()).filter(Boolean), out = {};
     if (form.free || form.fields.length === 1) { out[form.fields[0].label] = ls.join('\n'); return out; }
     const heads = [];
+    const nzs = (x) => String(x || '').replace(/[\s·:：()\[\]]/g, '').toLowerCase();
     ls.forEach((l, i) => {
       if (i < 3 && M.similar(l, form.name) > 0.6) return;
-      const head = l.split(/[:：]/)[0].replace(/^[\d①-⑳().\s]+/, '').slice(0, 14);
-      form.fields.forEach((f, j) => { const names = [f.label.replace(/\s*\(.*\)/, ''), ...(f.aliases || [])]; const v = Math.max(...names.map((x) => (head.startsWith(x) ? 1 : M.similar(head.slice(0, x.length + 2), x)))); if (v > 0.62 && !heads.some((h) => h.j === j)) heads.push({ i, j, v, rest: l.includes(':') || l.includes('：') ? l.split(/[:：]/).slice(1).join(':').trim() : l.slice(names.find((x) => head.startsWith(x)) ? names.find((x) => head.startsWith(x)).length : head.length).replace(/^[\s:：)-]+/, '').replace(/^[(（][^)）]*[)）]\s*/, '') }); });
+      const head = l.split(/[:：]/)[0].replace(/^[\d①-⑳().\s]+/, '').slice(0, 14), short = nzs(l).length <= 12;
+      form.fields.forEach((f, j) => {
+        if (heads.some((h) => h.j === j || h.i === i)) return;
+        const names = [f.label.replace(/\s*\(.*\)/, ''), ...(f.aliases || [])];
+        let v = 0, nm = '';
+        names.forEach((x) => { const sc = nzs(head).startsWith(nzs(x)) ? 1 : (short && nzs(x).length >= 2 && nzs(l).includes(nzs(x))) ? 0.9 : M.similar(head.slice(0, x.length + 2), x); if (sc > v) { v = sc; nm = x; } });
+        if (v <= 0.62) return;
+        let rest;
+        if (/[:：]/.test(l)) rest = l.split(/[:：]/).slice(1).join(':').trim();
+        else if (short) rest = '';
+        else { const toks = l.trim().split(/\s+/); rest = toks.slice(Math.max(1, nm.split(/\s+/).length)).join(' '); }
+        heads.push({ i, j, v, rest: rest.replace(/^[(（][^)）]*[)）]\s*/, '') });
+      });
     });
     heads.sort((a, b) => a.i - b.i);
     form.fields.forEach((f) => { out[f.label] = ''; });

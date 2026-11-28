@@ -79,8 +79,17 @@
       for (let i = 0, p = 0; i < a.length; i += 4, p++) { const r = a[i], gg = a[i + 1], b = a[i + 2]; const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b); gray[p] = (mx - mn > 60 && mx < 235) ? Math.min(0.299 * r + 0.587 * gg + 0.114 * b, 70) : 0.299 * r + 0.587 * gg + 0.114 * b; }
       const cs = 32, cw = Math.ceil(W / cs), chh = Math.ceil(H / cs), bgv = new Float32Array(cw * chh);
       for (let cy = 0; cy < chh; cy++) for (let cx = 0; cx < cw; cx++) { let mx = 0; for (let y = cy * cs; y < Math.min(H, cy * cs + cs); y += 4) for (let x = cx * cs; x < Math.min(W, cx * cs + cs); x += 4) { const v = gray[y * W + x]; if (v > mx) mx = v; } bgv[cy * cw + cx] = Math.max(mx, 90); }
-      const bin = new Uint8Array(W * H);
-      for (let y = 0, p = 0; y < H; y++) for (let x = 0; x < W; x++, p++) { const v = gray[p] / bgv[Math.floor(y / cs) * cw + Math.floor(x / cs)]; const o = v < 0.62 ? 0 : v > 0.82 ? 255 : Math.round((v - 0.62) / 0.2 * 255); a[p * 4] = a[p * 4 + 1] = a[p * 4 + 2] = o; bin[p] = o < 128 ? 1 : 0; }
+      const bin = new Uint8Array(W * H), dk = new Uint8Array(W * H);
+      for (let y = 0, p = 0; y < H; y++) for (let x = 0; x < W; x++, p++) { const v = gray[p] / bgv[Math.floor(y / cs) * cw + Math.floor(x / cs)]; const o = v < 0.62 ? 0 : v > 0.82 ? 255 : Math.round((v - 0.62) / 0.2 * 255); a[p * 4] = a[p * 4 + 1] = a[p * 4 + 2] = o; bin[p] = o < 128 ? 1 : 0; dk[p] = o < 215 ? 1 : 0; }
+      // 인쇄된 긴 가로줄 · 세로줄(밑줄 · 표 테두리)은 글자로 잘못 읽히니 지워요
+      const clear = new Uint8Array(W * H), minH = Math.max(160, W * 0.18), minV = Math.max(160, H * 0.12);
+      // 진한 점이 (틈 3칸까지 허용하고) 길게 이어지면서, 위아래로는 얇은(6칸 이하) 것만 인쇄된 줄로 봐요
+      const thinH = (y, x) => { let t = 0; for (let k = -6; k <= 6; k++) { const yy = y + k; if (yy >= 0 && yy < H && dk[yy * W + x]) t++; } return t <= 6; };
+      const thinV = (y, x) => { let t = 0; for (let k = -6; k <= 6; k++) { const xx = x + k; if (xx >= 0 && xx < W && dk[y * W + xx]) t++; } return t <= 6; };
+      const mark = (q, dx, dy) => { for (let k = -2; k <= 2; k++) { const r = q + k * (dy * W + dx); if (r >= 0 && r < W * H && dk[r]) clear[r] = 1; } };
+      for (let y = 0; y < H; y++) { let st = -1, gap = 0; for (let x = 0; x <= W; x++) { const on = x < W && dk[y * W + x] && thinH(y, x); if (on) { if (st < 0) st = x; gap = 0; } else if (st >= 0 && ++gap > 3) { const en = x - gap; if (en - st >= minH) for (let i = st; i <= en; i++) mark(y * W + i, 0, 1); st = -1; gap = 0; } } }
+      for (let x = 0; x < W; x++) { let st = -1, gap = 0; for (let y = 0; y <= H; y++) { const on = y < H && dk[y * W + x] && thinV(y, x); if (on) { if (st < 0) st = y; gap = 0; } else if (st >= 0 && ++gap > 3) { const en = y - gap; if (en - st >= minV) for (let i = st; i <= en; i++) mark(i * W + x, 1, 0); st = -1; gap = 0; } } }
+      for (let p = 0; p < W * H; p++) if (clear[p]) { bin[p] = 0; a[p * 4] = a[p * 4 + 1] = a[p * 4 + 2] = 255; }
       g.putImageData(d, 0, 0);
       const th = document.createElement('canvas'), tk = Math.min(1, 520 / Math.max(img.width, img.height)); th.width = Math.round(img.width * tk); th.height = Math.round(img.height * tk); th.getContext('2d').drawImage(img, 0, 0, th.width, th.height);
       return { cv, bin, W, H, thumb: th.toDataURL('image/jpeg', 0.6) };
@@ -99,10 +108,21 @@
     const n = form.items.length, k = form.max - form.min + 1, M = window.MReader;
     const its = items.map((i) => ({ s: i.s, x: i.x, w: i.w, cy: -i.y, h: i.h }));
     // 1) 문항 줄 찾기: 번호(1. ① 1) 등)나 문항 글과 닮은 줄
-    const rows = Array(n).fill(null);
+    const rows = Array(n).fill(null), cand = [];
     for (let q = 1; q <= n; q++) {
       const c = its.filter((i) => numOf(i.s) === q && i.x < P.W * 0.4).sort((a, b) => a.x - b.x);
+      cand[q - 1] = c;
       if (c.length) rows[q - 1] = { cy: c[0].cy, h: c[0].h, x: c[0].x };
+    }
+    // 문항 줄은 고르게 떨어져 있어요: 간격에서 크게 벗어난 번호(제목 속 숫자 등)는 버리고, 맞는 후보로 바꿔요
+    const ks = rows.map((r, q) => r ? q : -1).filter((q) => q >= 0);
+    if (ks.length >= 3) {
+      const steps = []; for (let i = 0; i < ks.length; i++) for (let j = i + 1; j < ks.length; j++) steps.push((rows[ks[j]].cy - rows[ks[i]].cy) / (ks[j] - ks[i]));
+      const step = median(steps);
+      if (step > 0) {
+        const off = median(ks.map((q) => rows[q].cy - q * step));
+        rows.forEach((r, q) => { const want = off + q * step; const best = (cand[q] || []).filter((i) => Math.abs(i.cy - want) < step * 0.45).sort((a, b) => Math.abs(a.cy - want) - Math.abs(b.cy - want))[0]; rows[q] = best ? { cy: best.cy, h: best.h, x: best.x } : null; });
+      }
     }
     const lines = []; its.slice().sort((a, b) => a.cy - b.cy).forEach((i) => { const l = lines.find((L) => Math.abs(L.cy - i.cy) < Math.max(L.h, i.h) * 0.6); if (l) { l.s += ' ' + i.s; l.items.push(i); } else lines.push({ cy: i.cy, h: i.h, s: i.s, items: [i] }); });
     form.items.forEach((t, q) => { if (rows[q]) return; let best = null, bs = 0.42; lines.forEach((L) => { const v = M.similar(L.s.replace(/^[\d①-⑳().\s]+/, '').slice(0, t.length + 6), t); if (v > bs) { bs = v; best = L; } }); if (best) rows[q] = { cy: best.cy, h: best.h, x: best.items[0].x }; });
@@ -113,10 +133,22 @@
     // 2) 선택지 칸 찾기: 칸마다 인쇄된 숫자(0 1 2 3)나 선택지 이름(전혀 아님 …)
     const vals = Array.from({ length: k }, (_, j) => form.min + j), colX = Array(k).fill(null);
     const byVal = vals.map(() => []);
-    rows.forEach((r) => { if (!r) return; its.filter((i) => Math.abs(i.cy - r.cy) < lh * 0.9 && /^\d$/.test(i.s.trim()) && i.x > P.W * 0.3).forEach((i) => { const v = Number(i.s.trim()); const j = vals.indexOf(v); if (j >= 0) byVal[j].push(i.x + i.w / 2); }); });
+    const keys = (form.keys || vals.map(String)).map((x) => String(x).toUpperCase());
+    const top = Math.min(...rows.filter(Boolean).map((r) => r.cy)) - lh * 6;
+    rows.forEach((r) => { if (!r) return; its.filter((i) => Math.abs(i.cy - r.cy) < lh * 0.9 && i.x > P.W * 0.3).forEach((i) => { const j = keys.indexOf(i.s.trim().toUpperCase()); if (j >= 0) byVal[j].push(i.x + i.w / 2); }); });
     byVal.forEach((l, j) => { if (l.length >= 2) colX[j] = median(l); });
+    if (form.keys) its.filter((i) => i.cy > top && i.cy < (rows.find(Boolean) || { cy: 0 }).cy && i.x > P.W * 0.3).forEach((i) => { const j = keys.indexOf(i.s.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')); if (j >= 0 && colX[j] == null) colX[j] = i.x + i.w / 2; });
     if (colX.filter((x) => x != null).length < k && form.opts) {
       form.opts.forEach((o, j) => { if (colX[j] != null) return; let best = null, bs = 0.55; its.forEach((i) => { const v = M.similar(i.s, o); if (v > bs && i.x > P.W * 0.25) { bs = v; best = i; } }); if (best) colX[j] = best.x + best.w / 2; });
+    }
+    if (colX.filter((x) => x != null).length < 2) {
+      // 글자를 못 읽어도, 칸마다 인쇄된 표시(숫자 · 동그라미 · 네모)가 줄마다 같은 자리에 있으니 그 자리를 모아요
+      const xs = [], nr = rows.filter(Boolean).length;
+      rows.forEach((r) => { if (!r) return; its.filter((i) => Math.abs(i.cy - r.cy) < lh * 0.9 && i.x > P.W * 0.3 && i.s.trim().length <= 2).forEach((i) => xs.push(i.x + i.w / 2)); });
+      xs.sort((a, b) => a - b); const cl = [];
+      xs.forEach((x) => { const c = cl[cl.length - 1]; if (c && x - c[c.length - 1] < lh * 1.1) c.push(x); else cl.push([x]); });
+      const good = cl.filter((c) => c.length >= Math.max(2, nr * 0.3)).map(median);
+      if (good.length >= k) good.slice(-k).forEach((x, j) => { colX[j] = x; });
     }
     const got = colX.map((x, j) => x != null ? j : -1).filter((j) => j >= 0);
     if (got.length >= 2) { const j0 = got[0], j1 = got[got.length - 1], step = (colX[j1] - colX[j0]) / (j1 - j0); colX.forEach((x, j) => { if (x == null) colX[j] = colX[j0] + step * (j - j0); }); }
@@ -147,10 +179,22 @@
     const M = window.MReader, ls = String(text).split('\n').map((s) => s.trim()).filter(Boolean), out = {};
     if (form.free || form.fields.length === 1) { out[form.fields[0].label] = ls.join('\n'); return out; }
     const heads = [];
+    const nzs = (x) => String(x || '').replace(/[\s·:：()\[\]]/g, '').toLowerCase();
     ls.forEach((l, i) => {
       if (i < 3 && M.similar(l, form.name) > 0.6) return;
-      const head = l.split(/[:：]/)[0].replace(/^[\d①-⑳().\s]+/, '').slice(0, 14);
-      form.fields.forEach((f, j) => { const names = [f.label.replace(/\s*\(.*\)/, ''), ...(f.aliases || [])]; const v = Math.max(...names.map((x) => (head.startsWith(x) ? 1 : M.similar(head.slice(0, x.length + 2), x)))); if (v > 0.62 && !heads.some((h) => h.j === j)) heads.push({ i, j, v, rest: l.includes(':') || l.includes('：') ? l.split(/[:：]/).slice(1).join(':').trim() : l.slice(names.find((x) => head.startsWith(x)) ? names.find((x) => head.startsWith(x)).length : head.length).replace(/^[\s:：)-]+/, '').replace(/^[(（][^)）]*[)）]\s*/, '') }); });
+      const head = l.split(/[:：]/)[0].replace(/^[\d①-⑳().\s]+/, '').slice(0, 14), short = nzs(l).length <= 12;
+      form.fields.forEach((f, j) => {
+        if (heads.some((h) => h.j === j || h.i === i)) return;
+        const names = [f.label.replace(/\s*\(.*\)/, ''), ...(f.aliases || [])];
+        let v = 0, nm = '';
+        names.forEach((x) => { const sc = nzs(head).startsWith(nzs(x)) ? 1 : (short && nzs(x).length >= 2 && nzs(l).includes(nzs(x))) ? 0.9 : M.similar(head.slice(0, x.length + 2), x); if (sc > v) { v = sc; nm = x; } });
+        if (v <= 0.62) return;
+        let rest;
+        if (/[:：]/.test(l)) rest = l.split(/[:：]/).slice(1).join(':').trim();
+        else if (short) rest = '';
+        else { const toks = l.trim().split(/\s+/); rest = toks.slice(Math.max(1, nm.split(/\s+/).length)).join(' '); }
+        heads.push({ i, j, v, rest: rest.replace(/^[(（][^)）]*[)）]\s*/, '') });
+      });
     });
     heads.sort((a, b) => a.i - b.i);
     form.fields.forEach((f) => { out[f.label] = ''; });
@@ -160,17 +204,18 @@
   }
   const bandOf = (form, t) => { const b = (form.bands || []).find(([a, z]) => t >= a && t <= z); return b ? b[2] : ''; };
 
+  function findDate(t) { const m = String(t || '').match(/(20\d\d)\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})/); if (!m) return ''; const mo = Number(m[2]), da = Number(m[3]); return mo >= 1 && mo <= 12 && da >= 1 && da <= 31 ? `${m[1]}-${String(mo).padStart(2, '0')}-${String(da).padStart(2, '0')}` : ''; }
   async function recognize(form, file, progress) {
     const M = await loadReader();
     if (/pdf$/i.test(file.name) || file.type === 'application/pdf') {
       progress('PDF를 읽는 중…'); const R = await M.read(file, progress);
-      return { text: R.text, ans: form.kind === 'scale' ? readScaleText(form, R.text) : null, fields: form.kind === 'text' ? readText(form, R.text) : null };
+      return { text: R.text, date: findDate(R.text), ans: form.kind === 'scale' ? readScaleText(form, R.text) : null, fields: form.kind === 'text' ? readText(form, R.text) : null };
     }
     progress('사진을 다듬는 중…'); const P = await toCanvas(file);
     progress('글자를 읽는 중… (처음에는 30초쯤 걸려요)');
     const items = await M.ocrCanvas(P.cv, (m) => progress(typeof m === 'string' ? m : '글자를 읽는 중…'));
     const text = (M.rowsFromItems(items) || []).map((r) => r.filter(Boolean).join(' ')).join('\n');
-    return { text, thumb: P.thumb, ans: form.kind === 'scale' ? readScale(form, items, P) : null, fields: form.kind === 'text' ? readText(form, text) : null };
+    return { text, date: findDate(text), thumb: P.thumb, ans: form.kind === 'scale' ? readScale(form, items, P) : null, fields: form.kind === 'text' ? readText(form, text) : null };
   }
 
   // ---- 화면: 사진 고르기 → 인식 → 확인 ----
@@ -199,7 +244,7 @@
   function review(opt, form, r) {
     const ans = form.kind === 'scale' ? (r.ans || form.items.map(() => ({ v: null, u: false }))).map((a) => ({ v: a.v, u: !!a.u && !r.manual })) : null;
     const fields = form.kind === 'text' ? Object.assign(Object.fromEntries(form.fields.map((f) => [f.label, ''])), r.fields || {}) : null;
-    const st = { date: opt.date || today(), who: opt.who && opt.who.length === 1 ? opt.who[0].id : (opt.whoId || ''), memo: '' };
+    const st = { date: opt.date || r.date || today(), who: opt.who && opt.who.length === 1 ? opt.who[0].id : (opt.whoId || ''), memo: '' };
     const vals = Array.from({ length: form.kind === 'scale' ? form.max - form.min + 1 : 0 }, (_, j) => form.min + j);
     const draw = () => {
       const filled = ans ? ans.filter((a) => a.v != null).length : 0, total = ans ? ans.reduce((s, a) => s + (a.v || 0), 0) : 0;
@@ -209,14 +254,14 @@
       const sh = sheet(`<h3>${form.icon || '📋'} ${esc(form.name)} 확인</h3>
         ${r.manual ? '<p class="m">점수를 눌러 넣어 주세요.</p>' : `<p class="m">${ans ? (unsure ? `<b style="color:#9A7B12">노란 문항 ${unsure}개</b>는 사진과 비교해 확인해 주세요.` : '인식이 끝났어요. 사진과 한 번 비교해 주세요.') : '칸별로 나눴어요. 틀린 글자는 고쳐 주세요.'}</p>`}
         ${r.thumb ? `<details><summary class="m" style="cursor:pointer">📷 찍은 사진 보기</summary><img class="img" src="${r.thumb}" alt=""></details>` : ''}
-        ${opt.bare ? '' : `<div style="display:flex;gap:8px;flex-wrap:wrap">${who}<label class="f">날짜<input type="date" id="ms-d" value="${esc(st.date)}"></label></div>`}
-        ${ans ? `${form.period ? `<p class="m">${esc(form.period)} · ${vals.map((v, j) => `${v} ${esc((form.opts || [])[j] || '')}`).join(' · ')}</p>` : ''}${form.items.map((t, q) => `<div class="q${ans[q].u ? ' u' : ''}"><p>${q + 1}. ${esc(t)}${ans[q].u ? ' <small>확인</small>' : ''}</p><div class="ch">${vals.map((v, j) => `<button data-q="${q}" data-v="${v}" class="${ans[q].v === v ? 'on' : ''}">${v}${form.opts && form.opts[j] && vals.length <= 5 ? `<br><span style="font-weight:500;font-size:11px">${esc(form.opts[j])}</span>` : ''}</button>`).join('')}</div></div>`).join('')}
+        ${opt.bare && !who ? '' : `<div style="display:flex;gap:8px;flex-wrap:wrap">${who}${opt.bare ? '' : `<label class="f">날짜<input type="date" id="ms-d" value="${esc(st.date)}"></label>`}</div>`}
+        ${ans ? `${form.period && !form.keys ? `<p class="m">${esc(form.period)} · ${vals.map((v, j) => `${v} ${esc((form.opts || [])[j] || '')}`).join(' · ')}</p>` : ''}${form.items.map((t, q) => `<div class="q${ans[q].u ? ' u' : ''}"><p>${q + 1}. ${esc(t)}${ans[q].u ? ' <small>확인</small>' : ''}</p><div class="ch">${vals.map((v, j) => `<button data-q="${q}" data-v="${v}" class="${ans[q].v === v ? 'on' : ''}">${form.keys ? esc(form.keys[j]) : v}${form.opts && form.opts[j] && vals.length <= 5 ? `<br><span style="font-weight:500;font-size:11px">${esc(form.opts[j])}</span>` : ''}</button>`).join('')}</div></div>`).join('')}
           ${flag ? `<div class="alert">⚠️ ${esc(opt.selfUse ? CRISIS_SELF : CRISIS_PRO)}</div>` : ''}
           ${form.note ? `<div class="note">${esc(form.note)}</div>` : ''}` : ''}
         ${fields ? form.fields.map((f, j) => `<label class="f">${esc(f.label)}<textarea data-fl="${j}" rows="${form.free ? 8 : 3}">${esc(fields[f.label])}</textarea></label>`).join('') : ''}
         ${r.text && ans ? `<details><summary class="m" style="cursor:pointer">읽은 글자 전체</summary><pre style="white-space:pre-wrap;font-size:12.5px;background:#F7F8F5;padding:8px;border-radius:10px">${esc(r.text)}</pre></details>` : ''}
         ${opt.bare ? '' : `<label class="f">메모 (안 써도 돼요)<input type="text" id="ms-memo" value="${esc(st.memo)}" maxlength="200"></label>`}
-        <div class="tot">${ans ? `<span>총점</span><b>${total}</b><span class="m">${filled < form.items.length ? `${form.items.length - filled}문항 남음` : esc(bandOf(form, total) || (form.items.length ? '평균 ' + (total / form.items.length).toFixed(1) : ''))}</span>` : ''}<span style="flex:1"></span><button class="b g" id="ms-again">다시 찍기</button><button class="b" id="ms-ok">${esc(opt.applyLabel || '저장')}</button></div>`);
+        <div class="tot">${ans && form.noTotal ? `<span class="m">${filled}/${form.items.length} 문항</span>` : ''}${ans && !form.noTotal ? `<span>총점</span><b>${total}</b><span class="m">${filled < form.items.length ? `${form.items.length - filled}문항 남음` : esc(bandOf(form, total) || (form.items.length ? '평균 ' + (total / form.items.length).toFixed(1) : ''))}</span>` : ''}<span style="flex:1"></span><button class="b g" id="ms-again">다시 찍기</button><button class="b" id="ms-ok">${esc(opt.applyLabel || '저장')}</button></div>`);
       const keep = () => { const dd = sh.querySelector('#ms-d'); if (dd) st.date = dd.value || st.date; const w = sh.querySelector('#ms-who'); if (w) st.who = w.value; const mm = sh.querySelector('#ms-memo'); if (mm) st.memo = mm.value; sh.querySelectorAll('[data-fl]').forEach((t) => { fields[form.fields[t.dataset.fl].label] = t.value; }); };
       sh.querySelectorAll('[data-q]').forEach((b) => { b.onclick = () => { keep(); const q = Number(b.dataset.q), v = Number(b.dataset.v); ans[q].v = ans[q].v === v ? null : v; ans[q].u = false; const top = sh.scrollTop; draw(); document.querySelector('#ms-bg .ms').scrollTop = top; }; });
       sh.querySelector('#ms-again').onclick = () => scan(opt);
