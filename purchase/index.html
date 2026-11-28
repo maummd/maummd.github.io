@@ -689,7 +689,7 @@ function vSettings(){
    <h3>배송지</h3>${Object.entries(SITES).map(([k,l])=>`<label class="f">${l}</label><div class="row"><input class="grow" data-addr="${k}" value="${esc(st.addr[k]||'')}" placeholder="배송 주소" ${dis}><button class="btn sm ghost" data-copyaddr="${k}">복사</button></div>`).join('')}</div>
   <div class="card"><h2>문서</h2><button class="btn ghost" data-act="printHandover">📄 인수인계서 만들기</button>${adm?' <button class="btn ghost" data-act="backup">전체 기록 내려받기</button>':''}</div>`:''}
   <div class="card"><h2>계정</h2><div class="row"><button class="btn ghost grow" data-act="leave">기관 연결 끊기</button>${ST.mode==='firebase'?'<button class="btn ghost grow" data-act="logout">로그아웃</button>':''}</div></div>
-  <p class="muted" style="text-align:center;margin:6px 0 14px">마음 살림 v3.5 · maumm.org</p>`;
+  <p class="muted" style="text-align:center;margin:6px 0 14px">마음 살림 v3.6 · maumm.org</p>`;
 }
 function membersCard(){const ms=S.members.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   return `<div class="card"><h2>구성원 · 결재 라인 <span class="bd">${ms.length}명</span></h2>
