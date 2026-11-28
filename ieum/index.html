@@ -206,6 +206,36 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
 .call:active{background:var(--sea2)}
 .go[href^="tel:"] b::before{content:"☎ ";font-weight:400}
 </style>
+<style>
+/* 전화 버튼 · 안내 창 다듬기 */
+.calls.two{gap:12px;margin:22px 0}
+.calls.two .call{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:148px;padding:18px 12px 14px;border-radius:14px;border:1.5px solid #D8B9A8;background:linear-gradient(180deg,#FFFBF3,#FBF3E6);box-shadow:0 2px 0 #E7D7C2,0 8px 18px rgba(90,50,30,.06);transition:transform .12s,box-shadow .12s}
+.calls.two .call:active{transform:translateY(2px);box-shadow:0 0 0 #E7D7C2}
+.calls.two .call b{font-size:34px;line-height:1.1;color:var(--hot)}
+.calls.two .call span{font-size:14.5px;color:var(--ink);margin-top:6px}
+.calls.two .call::after{content:"전화하기";margin-top:12px;padding:5px 14px;border-radius:99px;background:var(--hot);color:#FFF8EE;font-size:12.5px;letter-spacing:.08em}
+@media(max-width:380px){.calls.two .call{min-height:132px}.calls.two .call b{font-size:28px}}
+.sheetbg{background:rgba(42,35,32,.42);align-items:center;padding:20px;opacity:0;transition:opacity .15s}.sheetbg.on{opacity:1}
+.sheetbox{max-width:400px;border-radius:18px;padding:26px 22px 18px;background:#FFFBF3;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.callsheet{text-align:center}
+.cs-t{margin:0;font:600 13px "Noto Serif KR",serif;letter-spacing:.12em;color:var(--hot)}
+.cs-q{border:0;margin:6px 0 12px;padding:0;font:700 22px "Gowun Batang",serif}
+.cs-d{list-style:none;padding:12px 14px;margin:0 0 16px;text-align:left;background:var(--sea2);border-radius:10px;font-size:15px;line-height:1.7}
+.cs-d li::before{content:"· ";color:var(--mut)}
+.cs-call{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:12px;background:var(--hot);color:#FFF8EE !important;text-decoration:none;font:700 20px "Noto Serif KR",serif;box-shadow:0 3px 0 #6E1F15}
+.cs-call:active{transform:translateY(2px);box-shadow:none}.cs-call span{font-size:22px}
+.cs-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.cs-alt{display:flex;align-items:center;justify-content:center;min-height:46px;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);text-decoration:none;font:600 14px "Noto Serif KR",serif;cursor:pointer}
+.cs-close{margin-top:12px;background:none;border:0;color:var(--mut);font:400 14px "Noto Serif KR",serif;cursor:pointer;padding:6px 12px}
+.card{border-radius:10px}details.fold{border-radius:10px}.go{border-radius:10px}.chip{border-radius:99px;padding:8px 18px}
+#region input{border-radius:10px}
+</style>
+<style>
+.calls.two{grid-auto-rows:1fr}
+.calls.two .call b{white-space:nowrap}
+.calls.two .call b.long{font-size:clamp(22px,6.4vw,30px);letter-spacing:-.02em;padding:4px 0}
+.calls.two .call span{white-space:nowrap}
+</style>
 </head>
 <body>
 <header>
@@ -226,8 +256,8 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
  <div class="calls two">
   <a class="call hot" href="tel:119" data-confirm="119"><b>119</b><span>다쳤어요 · 약 먹음</span></a>
   <a class="call hot" href="tel:112" data-confirm="112"><b>112</b><span>위험한 곳에 있어요</span></a>
-  <a class="call hot" href="tel:109"><b>109</b><span>이야기하고 싶어요</span></a>
-  <a class="call hot" href="tel:15770199"><b>1577-0199</b><span>정신건강 위기 상담</span></a>
+  <a class="call hot" href="tel:109" data-confirm="109"><b>109</b><span>이야기하고 싶어요</span></a>
+  <a class="call hot" href="tel:15770199" data-confirm="15770199"><b class="long">1577-0199</b><span>정신건강 위기 상담</span></a>
  </div>
 
  <div class="card" id="region">
@@ -749,17 +779,25 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-send]');if
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const map=q=>`https://map.naver.com/p/search/${encodeURIComponent(q)}`;
-/* 119 · 112: 한 번 확인 (위기 때는 바로 걸기) */
-document.addEventListener('click',e=>{const a=e.target.closest('a[data-confirm]');if(!a||a.dataset.ok)return;e.preventDefault();const n=a.dataset.confirm;
+/* 네 번호 모두: 안내 창을 먼저 띄우고, 창 안에서 전화 */
+const INFO={
+ '119':{t:'119 · 응급 구조',q:'지금 생명이 위험한가요?',d:['다쳤거나 피가 멈추지 않을 때','약 · 물질을 먹었을 때','숨쉬기 어렵거나 의식이 흐릴 때'],alt:['상담이 필요해요 → 109','109']},
+ '112':{t:'112 · 경찰',q:'지금 위험한 곳에 있나요?',d:['다리 · 옥상 · 선로처럼 위험한 장소에 있을 때','누군가 해칠 위험이 있을 때','사람이 사라져 찾아야 할 때'],alt:['상담이 필요해요 → 109','109']},
+ '109':{t:'109 · 자살예방상담',q:'이야기하고 싶을 때',d:['24시간 · 무료 · 익명으로 말해도 돼요','죽고 싶은 마음, 곁의 사람이 걱정될 때','전화가 어려우면 카카오톡 채널 ‘마들랜’에서 글로'],alt:['지금 생명이 위험해요 → 119','119']},
+ '15770199':{t:'1577-0199 · 정신건강 위기상담',q:'정신건강 위기 상담',d:['24시간 · 거는 곳의 지역 정신건강복지센터로 이어져요','혼란 · 환각 · 심한 불안처럼 정신과적 위기일 때','방문 · 병원 연계가 필요할 때'],alt:['지금 생명이 위험해요 → 119','119']}};
+const fmt=n=>n.replace(/^(\d{4})(\d{4})$/,'$1-$2');
+document.addEventListener('click',e=>{const a=e.target.closest('a[data-confirm]');if(!a||a.dataset.ok)return;e.preventDefault();const n=a.dataset.confirm,I=INFO[n];
  const bg=document.createElement('div');bg.className='sheetbg';
- bg.innerHTML=`<div class="sheetbox" role="dialog" aria-label="${n} 확인"><h3>지금 생명이 위험한가요?</h3><p>${n==='119'?'다쳤거나 약 · 물질을 먹었거나 숨쉬기 어렵다면':'위험한 장소에 있거나 누군가 해칠 위험이 있다면'} 바로 거세요.</p>
-  <div class="row"><a class="btn" href="tel:${n}" data-ok="1" style="flex:1;text-align:center;font-size:20px;padding:14px">네, ${n}에 전화</a></div>
-  <div class="row"><button class="btn ghost" type="button" data-x="talk" style="flex:1">아니요, 상담이 필요해요 (109)</button></div>
-  <div class="row"><button class="btn ghost" type="button" data-x="region" style="flex:1">지역 센터 · 병원 찾기</button><button class="btn ghost" type="button" data-x="close">닫기</button></div></div>`;
- document.body.appendChild(bg);
+ bg.innerHTML=`<div class="sheetbox callsheet" role="dialog" aria-label="${I.t}">
+  <p class="cs-t">${I.t}</p><h3 class="cs-q">${I.q}</h3>
+  <ul class="cs-d">${I.d.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <a class="cs-call" href="tel:${n}" data-ok="1"><span>☎</span> ${fmt(n)} 전화하기</a>
+  <div class="cs-row"><a class="cs-alt" href="tel:${I.alt[1]}" data-ok="1">${I.alt[0]}</a><button class="cs-alt" type="button" data-x="region">동네 도움 찾기</button></div>
+  <button class="cs-close" type="button" data-x="close">닫기</button></div>`;
+ document.body.appendChild(bg);requestAnimationFrame(()=>bg.classList.add('on'));
  bg.addEventListener('click',ev=>{const b=ev.target.closest('[data-x],[data-ok]');if(ev.target===bg){bg.remove();return}if(!b)return;
-  if(b.dataset.ok){setTimeout(()=>bg.remove(),300);return}
-  bg.remove();if(b.dataset.x==='talk')location.href='tel:109';if(b.dataset.x==='region'){$('#region').scrollIntoView({behavior:'smooth'});$('#rg-where').focus()}})});
+  if(b.dataset.ok){setTimeout(()=>bg.remove(),400);return}
+  bg.remove();if(b.dataset.x==='region'){$('#region').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('#rg-where').focus(),400)}})});
 /* 우리 동네 도움 찾기: 고르는 즉시 결과 */
 const pick=(id)=>{const b=document.querySelector(`#${id} .chip[aria-pressed=true]`);return b?b.dataset.v:''};
 ['rg-age','rg-sit'].forEach(id=>$('#'+id).addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;$('#'+id).querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===b));show()}));
