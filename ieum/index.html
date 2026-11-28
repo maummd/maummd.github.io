@@ -18,7 +18,7 @@
    IDEA: 섬(島)과 육지를 잇는 다리 — 고립된 사람이 단계마다 끊기지 않고 건너가는 길.
    PICTURE: 첫 화면은 그대로 쓰는 위기 연결판. 머리의 섬·다리 그림, 단계 표시는 다리의 교각.
    COLOUR and TYPE: 깊은 바다색 #0f4c5c, 모래색 바탕, 산호색 #e0533d는 위기 버튼에만. IBM Plex Sans KR + Noto Sans KR.
-   LAYOUT: 상단 탭 4개(긴급연결 / 마음재활 / 마음쉼터 / 마음지기)와 탭 안 차례, 한 열 중심. */
+   LAYOUT: 상단 탭 4개(마음링크 / 마음재활 / 마음쉼터 / 마음지기)와 탭 안 차례, 한 열 중심. */
 :root{color-scheme:light dark;--bg:light-dark(#f5f0e7,#0c1a1f);--panel:light-dark(#fffdf9,#13262d);--ink:light-dark(#14262c,#e7efed);--mut:light-dark(#4f6267,#a5b8b9);--sea:light-dark(#0f4c5c,#5fb3c4);--sea2:light-dark(#d9e9ea,#1a3a43);--hot:#e0533d;--line:light-dark(#ddd3c4,#27434b);--ok:light-dark(#1d6b4f,#7fd0a8)}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
@@ -214,7 +214,7 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
   <div><h1>마음 이음</h1><p>곁에서 마음을 잇는 안내서</p></div>
  </div>
  <nav aria-label="메뉴">
-  <a href="#now">긴급연결</a><a href="#edu">마음재활</a><a href="#rest">마음쉼터</a><a href="#policy">마음지기</a>
+  <a href="#now">마음링크</a><a href="#edu">마음재활</a><a href="#rest">마음쉼터</a><a href="#policy">마음지기</a>
  </nav>
  <div class="subnav" id="subnav" aria-label="차례"></div>
 </header>
@@ -425,7 +425,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 async function copy(text,msg){try{await navigator.clipboard.writeText(text);msg.textContent='복사했습니다.'}catch(e){msg.textContent='복사가 막혀 있습니다. 글을 길게 눌러 복사해 주세요.'}}
 
 /* 라우팅 */
-const GROUPS={now:{t:'긴급연결',s:[['now','']]},edu:{t:'마음재활 · 교육',s:[['family','보호자 교실'],['rehab','재활정원'],['play','마음 연습']]},rest:{t:'마음쉼터 · 예약',s:[['garden','남해 쉼터']]},policy:{t:'마음지기 · 정책',s:[['rights','입원과 내 권리'],['assist','절차조력'],['worker','실무자'],['law','법 체계']]}};
+const GROUPS={now:{t:'마음링크',s:[['now','']]},edu:{t:'마음재활 · 교육',s:[['family','보호자 교실'],['rehab','재활정원'],['play','마음 연습']]},rest:{t:'마음쉼터 · 예약',s:[['garden','남해 쉼터']]},policy:{t:'마음지기 · 정책',s:[['rights','입원과 내 권리'],['assist','절차조력'],['worker','실무자'],['law','법 체계']]}};
 const views=Object.values(GROUPS).flatMap(g=>g.s.map(x=>x[0]));
 function route(){let [g,sub]=location.hash.slice(1).split('/');
  if(!GROUPS[g]){const k=Object.keys(GROUPS).find(k=>GROUPS[k].s.some(x=>x[0]===g));sub=g;g=k||'now'}
@@ -466,7 +466,7 @@ const stages=[
  {n:'이송',s:'병원 도착',items:[['입원 근거가 무엇인지 묻기','응급입원(제50조)인지, 다른 유형인지'],['통보받을 보호의무자가 누구인지 확인',''],['내 뜻 메모를 보여 주기','아래에서 미리 작성']]},
  {n:'응급입원',s:'3일 이내',items:[['절차조력서비스 안내를 받았는지 확인','제38조의2 제3항'],['전문의 진단 결과와 계속 입원 여부 듣기','제50조 제4항·제5항'],['통신·면회가 필요하면 요청','제38조의2 제2항 제4호']]},
  {n:'계속입원·심사',s:'2주·심사',items:[['입원 유형과 기간, 심사 일정 확인',''],['입원적합성심사·퇴원등 심사에서 의견 전달','조력인이 동석해 보조'],['필요하면 퇴원등·처우개선 심사 또는 인신보호 구제청구','제55조, 인신보호법']]},
- {n:'퇴원·이후',s:'사후관리',items:[['퇴원 사실 통보에 동의할지 정하기','제52조'],['제공된 정보의 삭제·파기를 원하는지 정하기','자살예방법 제12조의2'],['안전계획을 다시 쓰고 연락할 사람 정하기','긴급연결 탭']]}];
+ {n:'퇴원·이후',s:'사후관리',items:[['퇴원 사실 통보에 동의할지 정하기','제52조'],['제공된 정보의 삭제·파기를 원하는지 정하기','자살예방법 제12조의2'],['안전계획을 다시 쓰고 연락할 사람 정하기','마음링크 탭']]}];
 let st=store.get('stage',0);const done=store.get('done',{});
 function drawStage(){
  $('#bridge').innerHTML=stages.map((x,i)=>`<button class="pier" type="button" data-i="${i}" aria-pressed="${i===st}"><i>${i+1}</i>${x.n}<small>${x.s}</small></button>`).join('');
@@ -677,7 +677,7 @@ function drawRecord(){
  <div id="rWarn"></div>
  <div class="row"><button class="btn" type="button" id="rSave">기록 저장</button></div>
  <div class="hist" id="rHist">${REC.slice(-5).reverse().map(r=>`<div><span>${esc(r.d)} · ${esc(r.th.slice(0,24))}${r.th.length>24?'…':''}</span><span>${r.b} → ${r.a} ${r.b>r.a?`<span class="drop">▼${r.b-r.a}</span>`:''}</span></div>`).join('')}</div>`;
- const warn=()=>{const v=Math.max(+$('#rB').value,+$('#rA').value);$('#rWarn').innerHTML=v>=9?`<div class="warn"><b>많이 힘든 상태예요.</b> 기록보다 연결이 먼저예요. <a href="tel:109">109</a> · <a href="tel:15770199">1577-0199</a>에 전화하거나 <a href="#now">긴급연결</a>의 안전계획을 펼쳐 주세요.</div>`:''};
+ const warn=()=>{const v=Math.max(+$('#rB').value,+$('#rA').value);$('#rWarn').innerHTML=v>=9?`<div class="warn"><b>많이 힘든 상태예요.</b> 기록보다 연결이 먼저예요. <a href="tel:109">109</a> · <a href="tel:15770199">1577-0199</a>에 전화하거나 <a href="#now">마음링크</a>의 안전계획을 펼쳐 주세요.</div>`:''};
  ['B','A'].forEach(k=>{const r=$('#r'+k);r.oninput=()=>{$('#r'+k+'v').textContent=r.value;warn()}});
 }
 $('.games').addEventListener('click',e=>{const b=e.target.closest('.game');if(b)pick(b.dataset.game)});
