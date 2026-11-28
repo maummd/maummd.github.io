@@ -125,6 +125,8 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}img{max-width:100%}[hidden]
 <main id="view"></main>
 </div>
 
+<script src="lib/maumm-remind.js"></script>
+<script src="lib/maumm-scan.js"></script>
 <script>(()=>{var af=()=>{};var lf=function(n){let e=[],t=0;for(let r=0;r<n.length;r++){let i=n.charCodeAt(r);i<128?e[t++]=i:i<2048?(e[t++]=i>>6|192,e[t++]=i&63|128):(i&64512)===55296&&r+1<n.length&&(n.charCodeAt(r+1)&64512)===56320?(i=65536+((i&1023)<<10)+(n.charCodeAt(++r)&1023),e[t++]=i>>18|240,e[t++]=i>>12&63|128,e[t++]=i>>6&63|128,e[t++]=i&63|128):(e[t++]=i>>12|224,e[t++]=i>>6&63|128,e[t++]=i&63|128)}return e},Ry=function(n){let e=[],t=0,r=0;for(;t<n.length;){let i=n[t++];if(i<128)e[r++]=String.fromCharCode(i);else if(i>191&&i<224){let s=n[t++];e[r++]=String.fromCharCode((i&31)<<6|s&63)}else if(i>239&&i<365){let s=n[t++],o=n[t++],c=n[t++],u=((i&7)<<18|(s&63)<<12|(o&63)<<6|c&63)-65536;e[r++]=String.fromCharCode(55296+(u>>10)),e[r++]=String.fromCharCode(56320+(u&1023))}else{let s=n[t++],o=n[t++];e[r++]=String.fromCharCode((i&15)<<12|(s&63)<<6|o&63)}}return e.join("")},hf={byteToCharMap_:null,charToByteMap_:null,byteToCharMapWebSafe_:null,charToByteMapWebSafe_:null,ENCODED_VALS_BASE:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",get ENCODED_VALS(){return this.ENCODED_VALS_BASE+"+/="},get ENCODED_VALS_WEBSAFE(){return this.ENCODED_VALS_BASE+"-_."},HAS_NATIVE_SUPPORT:typeof atob=="function",encodeByteArray(n,e){if(!Array.isArray(n))throw Error("encodeByteArray takes an array as a parameter");this.init_();let t=e?this.byteToCharMapWebSafe_:this.byteToCharMap_,r=[];for(let i=0;i<n.length;i+=3){let s=n[i],o=i+1<n.length,c=o?n[i+1]:0,u=i+2<n.length,h=u?n[i+2]:0,f=s>>2,m=(s&3)<<4|c>>4,g=(c&15)<<2|h>>6,S=h&63;u||(S=64,o||(g=64)),r.push(t[f],t[m],t[g],t[S])}return r.join("")},encodeString(n,e){return this.HAS_NATIVE_SUPPORT&&!e?btoa(n):this.encodeByteArray(lf(n),e)},decodeString(n,e){return this.HAS_NATIVE_SUPPORT&&!e?atob(n):Ry(this.decodeStringToByteArray(n,e))},decodeStringToByteArray(n,e){this.init_();let t=e?this.charToByteMapWebSafe_:this.charToByteMap_,r=[];for(let i=0;i<n.length;){let s=t[n.charAt(i++)],c=i<n.length?t[n.charAt(i)]:0;++i;let h=i<n.length?t[n.charAt(i)]:64;++i;let m=i<n.length?t[n.charAt(i)]:64;if(++i,s==null||c==null||h==null||m==null)throw new dc;let g=s<<2|c>>4;if(r.push(g),h!==64){let S=c<<4&240|h>>2;if(r.push(S),m!==64){let C=h<<6&192|m;r.push(C)}}}return r},init_(){if(!this.byteToCharMap_){this.byteToCharMap_={},this.charToByteMap_={},this.byteToCharMapWebSafe_={},this.charToByteMapWebSafe_={};for(let n=0;n<this.ENCODED_VALS.length;n++)this.byteToCharMap_[n]=this.ENCODED_VALS.charAt(n),this.charToByteMap_[this.byteToCharMap_[n]]=n,this.byteToCharMapWebSafe_[n]=this.ENCODED_VALS_WEBSAFE.charAt(n),this.charToByteMapWebSafe_[this.byteToCharMapWebSafe_[n]]=n,n>=this.ENCODED_VALS_BASE.length&&(this.charToByteMap_[this.ENCODED_VALS_WEBSAFE.charAt(n)]=n,this.charToByteMapWebSafe_[this.ENCODED_VALS.charAt(n)]=n)}}},dc=class extends Error{constructor(){super(...arguments),this.name="DecodeBase64StringError"}},Py=function(n){let e=lf(n);return hf.encodeByteArray(e,!0)},pc=function(n){return Py(n).replace(/\./g,"")},As=function(n){try{return hf.decodeString(n,!0)}catch(e){console.error("base64Decode failed: ",e)}return null};function mc(){if(typeof self<"u")return self;if(typeof window<"u")return window;if(typeof global<"u")return global;throw new Error("Unable to locate global object.")}var Cy=()=>mc().__FIREBASE_DEFAULTS__,ky=()=>{if(typeof process>"u"||typeof process.env>"u")return;let n=process.env.__FIREBASE_DEFAULTS__;if(n)return JSON.parse(n)},Dy=()=>{if(typeof document>"u")return;let n;try{n=document.cookie.match(/__FIREBASE_DEFAULTS__=([^;]+)/)}catch{return}let e=n&&As(n[1]);return e&&JSON.parse(e)},bs=()=>{try{return af()||Cy()||ky()||Dy()}catch(n){console.info(`Unable to get __FIREBASE_DEFAULTS__ due to: ${n}`);return}},df=n=>{var e,t;return(t=(e=bs())===null||e===void 0?void 0:e.emulatorHosts)===null||t===void 0?void 0:t[n]};var gc=()=>{var n;return(n=bs())===null||n===void 0?void 0:n.config},_c=n=>{var e;return(e=bs())===null||e===void 0?void 0:e[`_${n}`]};var Ts=class{constructor(){this.reject=()=>{},this.resolve=()=>{},this.promise=new Promise((e,t)=>{this.resolve=e,this.reject=t})}wrapCallback(e){return(t,r)=>{t?this.reject(t):this.resolve(r),typeof e=="function"&&(this.promise.catch(()=>{}),e.length===1?e(t):e(t,r))}}};function Rt(n){try{return(n.startsWith("http://")||n.startsWith("https://")?new URL(n).hostname:n).endsWith(".cloudworkstations.dev")}catch{return!1}}async function Ss(n){return(await fetch(n,{credentials:"include"})).ok}var ei={};function Ny(){let n={prod:[],emulator:[]};for(let e of Object.keys(ei))ei[e]?n.emulator.push(e):n.prod.push(e);return n}function Oy(n){let e=document.getElementById(n),t=!1;return e||(e=document.createElement("div"),e.setAttribute("id",n),t=!0),{created:t,element:e}}var cf=!1;function yc(n,e){if(typeof window>"u"||typeof document>"u"||!Rt(window.location.host)||ei[n]===e||ei[n]||cf)return;ei[n]=e;function t(g){return`__firebase__banner__${g}`}let r="__firebase__banner",s=Ny().prod.length>0;function o(){let g=document.getElementById(r);g&&g.remove()}function c(g){g.style.display="flex",g.style.background="#7faaf0",g.style.position="fixed",g.style.bottom="5px",g.style.left="5px",g.style.padding=".5em",g.style.borderRadius="5px",g.style.alignItems="center"}function u(g,S){g.setAttribute("width","24"),g.setAttribute("id",S),g.setAttribute("height","24"),g.setAttribute("viewBox","0 0 24 24"),g.setAttribute("fill","none"),g.style.marginLeft="-6px"}function h(){let g=document.createElement("span");return g.style.cursor="pointer",g.style.marginLeft="16px",g.style.fontSize="24px",g.innerHTML=" &times;",g.onclick=()=>{cf=!0,o()},g}function f(g,S){g.setAttribute("id",S),g.innerText="Learn more",g.href="https://firebase.google.com/docs/studio/preview-apps#preview-backend",g.setAttribute("target","__blank"),g.style.paddingLeft="5px",g.style.textDecoration="underline"}function m(){let g=Oy(r),S=t("text"),C=document.getElementById(S)||document.createElement("span"),N=t("learnmore"),k=document.getElementById(N)||document.createElement("a"),j=t("preprendIcon"),U=document.getElementById(j)||document.createElementNS("http://www.w3.org/2000/svg","svg");if(g.created){let F=g.element;c(F),f(k,N);let W=h();u(U,j),F.append(U,C,k,W),document.body.appendChild(F)}s?(C.innerText="Preview backend disconnected.",U.innerHTML=`<g clip-path="url(#clip0_6013_33858)">
 <path d="M4.8 17.6L12 5.6L19.2 17.6H4.8ZM6.91667 16.4H17.0833L12 7.93333L6.91667 16.4ZM12 15.6C12.1667 15.6 12.3056 15.5444 12.4167 15.4333C12.5389 15.3111 12.6 15.1667 12.6 15C12.6 14.8333 12.5389 14.6944 12.4167 14.5833C12.3056 14.4611 12.1667 14.4 12 14.4C11.8333 14.4 11.6889 14.4611 11.5667 14.5833C11.4556 14.6944 11.4 14.8333 11.4 15C11.4 15.1667 11.4556 15.3111 11.5667 15.4333C11.6889 15.5444 11.8333 15.6 12 15.6ZM11.4 13.6H12.6V10.4H11.4V13.6Z" fill="#212121"/>
 </g>
@@ -339,13 +341,14 @@ function vDiary(){
   <h2>나만의 플레이리스트</h2>
   <div class="form pl">${['힘낼 때','마음 가라앉힐 때','잠들 때'].map((t,i)=>`<label for="p${i}">${t}</label><div class="row"><input id="p${i}" type="text" value="${esc(pl[i]||'')}" placeholder="노래 제목 · 가수"><a class="btn" data-pl="${i}" href="#" target="_blank" rel="noopener">▶</a></div>`).join('')}</div>
   <h2>지난 기록</h2><div class="log">${log.length?log.slice().reverse().slice(0,20).map((e,ri)=>`<div class="entry">${W[e.w][1]}<div><b>${e.d} · ${W[e.w][0]} · ${e.a}→${e.b}점</b><p class="muted">${esc(e.s||'')}${e.n?' · '+esc(e.n):''}</p></div><button class="btn ghost" data-del="${log.length-1-ri}" aria-label="이 기록 지우기">지우기</button></div>`).join(''):'<p class="muted">아직 기록이 없어요. 위에서 오늘의 날씨를 골라 첫 기록을 저장해 보세요. (예: 11/26 · 구름 조금 · 5→7점 · 고향의 봄)</p>'}</div>
-  <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" id="sendMine">📤 플레이리스트 · 기록 보내기</button><button class="btn" type="button" id="impSong" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 노래 목록 불러오기</button><button class="btn" type="button" id="impLog" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 지난 기록 불러오기</button></div>
+  <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" id="scanDiary">📷 종이 기록 · 활동지 스캔</button><button class="btn" type="button" id="sendMine">📤 플레이리스트 · 기록 보내기</button><button class="btn" type="button" id="impSong" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 노래 목록 불러오기</button><button class="btn" type="button" id="impLog" style="background:#fff;color:var(--ink);border:1px solid var(--line)">📥 지난 기록 불러오기</button></div>
   <p class="muted" style="font-size:13px">엑셀 · 워드 · PDF · 한글(HWPX) · 사진 · CSV 파일을 읽어요. 넣기 전에 미리 보고 고칠 수 있어요.</p>
   <p class="note">기록은 이 휴대폰(브라우저)에만 저장돼요. 다른 사람에게 보이지 않고, 기기를 바꾸면 따라오지 않아요.</p>`;
   document.getElementById('sendMine').onclick=async()=>{const pl=store.get('pl',['','','']),L=store.get('log',[]).slice(-5);
     const txt=`🎵 나의 마음 플레이리스트\n${PL_NAMES.map((t,i)=>`· ${t}: ${pl[i]||'-'}`).join('\n')}${L.length?`\n\n📔 최근 마음 기록\n${L.map(e=>`· ${e.d} ${W[e.w]?W[e.w][0]:''} ${e.a}→${e.b}점${e.s?' ♪ '+e.s:''}${e.n?' — '+e.n:''}`).join('\n')}`:''}`;
     try{(await loadReader()).send({title:'플레이리스트 · 기록 보내기',subject:'나의 마음 다이어리',text:txt})}catch(e){toast(e.message)}};
   document.getElementById('impSong').onclick=impSongs;document.getElementById('impLog').onclick=impLog;
+  document.getElementById('scanDiary').onclick=scanDiary;
   const plLink=()=>document.querySelectorAll('[data-pl]').forEach(a=>{const v=document.getElementById('p'+a.dataset.pl).value.trim();a.href=v?yt(v+' 가사'):'https://www.youtube.com'});plLink();
   V.querySelectorAll('.pl input').forEach(inp=>inp.addEventListener('input',()=>{store.set('pl',[0,1,2].map(i=>document.getElementById('p'+i).value));plLink()}));
   V.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{draft.w=b.dataset.w;V.querySelectorAll('[data-w]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
@@ -381,6 +384,8 @@ function vSetup(){
   <p><b>회원</b> · 휴대폰에 설치한 ‘마음 다이어리’ 앱의 ‘내 다이어리’에 매일 마음 날씨와 점수, 들은 노래를 적어요.</p>
   <p class="muted">회원 이름이나 진단 같은 개인정보는 이 앱에 적지 않아요. 노래는 저작권 때문에 가사를 싣지 않고 유튜브·스포티파이로 연결해요.</p></div>
   ${acctHtml()}
+  <h2>알림</h2>
+  <div class="form"><p class="muted">회기 날 · 마음 날씨 기록 · 노래 듣기 알림을 켜고 요일과 시간을 바꿀 수 있어요.</p><div class="row"><button class="btn" type="button" id="remindBtn">🔔 알림 설정</button></div></div>
   <h2>기록 백업</h2>
   <div class="form"><p class="muted">${MC.on&&MC.user?'기록은 서버에도 저장돼요. 따로 보관하고 싶으면 백업 파일을 만들어 두세요.':'다이어리 기록은 이 휴대폰에만 저장돼요. 휴대폰을 바꾸거나 앱을 지우기 전에 백업 파일을 만들어 두세요.'} 백업 파일에는 마음 기록이 들어 있으니 본인만 볼 수 있는 곳에 보관하세요.</p>
   <div class="row"><button class="btn" type="button" id="bk">백업 파일 만들기</button><label class="btn ghost" style="cursor:pointer">백업 불러오기<input type="file" id="rs" accept=".json,application/json" hidden></label></div>
@@ -388,6 +393,7 @@ function vSetup(){
   <p class="note">마음 다이어리 · maumm.org</p>`;
   document.getElementById('sf').onsubmit=e=>{e.preventDefault();cfg.start=document.getElementById('st').value||cfg.start;store.set('cfg',cfg);document.getElementById('ok').textContent='저장했어요'};
   document.getElementById('bk').onclick=backup;
+  document.getElementById('remindBtn').onclick=()=>{if(window.MRemind)MRemind.open();else toast('알림 도구를 불러오지 못했어요')};
   let pending=null;
   document.getElementById('rs').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
     try{const o=JSON.parse(await f.text());if(o.app!=='maum-diary'||!o.data)throw 0;pending=o.data;
@@ -410,6 +416,27 @@ async function impSongs(){let MR;try{MR=await loadReader()}catch(e){toast(e.mess
 }
 const wOf=v=>{v=String(v||'');const k=Object.keys(W).find(k=>W[k][0]===v||k===v);return k||(/맑|해|좋/.test(v)?'sun':/조금|구름 조/.test(v)?'part':/흐|구름/.test(v)?'cloud':/천둥|번개|폭풍/.test(v)?'storm':/비|우울|눈물/.test(v)?'rain':/안개|멍/.test(v)?'fog':'part')};
 const score=v=>{const n=Math.round(Number(String(v||'').replace(/[^\d.]/g,'')));return Number.isFinite(n)&&String(v).trim()!==''?Math.max(0,Math.min(10,n)):null};
+// ---------- 종이 기록 · 활동지 스캔 (공용 도구 lib/maumm-scan.js) ----------
+const MOOD_FORM={id:'mood',name:'마음 날씨 기록지',icon:'🌤️',kind:'text',fields:[{label:'마음 날씨',aliases:['날씨','기분']},{label:'듣기 전 점수',aliases:['듣기 전','전 점수']},{label:'들은 뒤 점수',aliases:['들은 뒤','후 점수','들은 후']},{label:'들은 노래',aliases:['노래','곡']},{label:'한 줄 메모',aliases:['메모','생각','느낌']}]};
+function scanDiary(){
+  if(!window.MScan){toast('스캔 도구를 불러오지 못했어요');return}
+  MScan.open({app:'diary',color:'#E8743B',selfUse:true,forms:[MOOD_FORM,'thought','free','phq9','gad7'],doneMsg:'저장했어요',
+    onSave:rec=>{
+      if(rec.form==='mood'){const f=rec.fields,iso=rec.date,a=score(f['듣기 전 점수']),b=score(f['들은 뒤 점수']),L=store.get('log',[]),dd=new Date(iso+'T00:00');
+        L.push({d:fmt(dd),iso,w:wOf(f['마음 날씨']),a:a==null?(b==null?5:b):a,b:b==null?(a==null?5:a):b,s:(f['들은 노래']||'').trim(),n:((f['한 줄 메모']||'')+(rec.memo?' '+rec.memo:'')).trim()});
+        L.sort((x,y)=>String(x.iso||'').localeCompare(String(y.iso||'')));store.set('log',L);if(typeof cloudPush==='function')cloudPush();vDiary();return}
+      const l=store.get('scans',[]);l.push(rec);store.set('scans',l.slice(-200))},
+    history:{title:'스캔한 활동지 · 검사지',load:()=>store.get('scans',[]),remove:r=>store.set('scans',store.get('scans',[]).filter(x=>x.id!==r.id))}});
+}
+// ---------- 알림 (공용 도구 lib/maumm-remind.js) ----------
+function remindInit(){
+  if(!window.MRemind)return;
+  MRemind.init({app:'diary',name:'나의 마음 다이어리',color:'#E8743B',
+    presets:[{id:'mood',title:'🌤️ 오늘의 마음 날씨',body:'마음 날씨와 점수, 들은 노래를 적어 볼까요?',rep:'daily',time:'21:00'},
+      {id:'song',title:'🎵 노래 한 곡',body:'플레이리스트에서 한 곡 들어 봐요',rep:'daily',time:'12:30'}],
+    sources:[{key:'sess',label:'회기 날',hint:'1회기 날짜부터 매주 같은 요일 (오전 9시 기준)',leads:[0,180,1440],lead:1440,on:true,
+      get:()=>S.map((x,i)=>{const d=dateOf(i+1);d.setHours(9,0,0,0);return {id:'s'+(i+1),at:d.getTime(),title:`🎶 ${i+1}회기 · ${x[0]}`,body:x[6]&&x[6][0]?'♪ '+x[6][0]:''}})}]});
+}
 async function impLog(){let MR;try{MR=await loadReader()}catch(e){toast(e.message);return}
   MR.importWizard({title:'지난 기록 불러오기',applyLabel:'기록에 넣기',toast,
     hint:'날짜 · 점수(0~10)가 있는 줄을 기록에 더해요. 같은 날짜 · 같은 노래 기록이 이미 있으면 건너뛰어요. 날씨 칸이 없으면 ‘구름 조금’으로 넣어요.',
@@ -433,6 +460,7 @@ const VIEWS={plan:vPlan,session:vSession,diary:vDiary,game:vGame,setup:()=>{vSet
 function route(){const v=(location.hash||'#plan').slice(1);const k=VIEWS[v]?v:'plan';document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.v===k)&&a.setAttribute('aria-current','page'));VIEWS[k]();window.scrollTo(0,0)}
 V.addEventListener('click',e=>{const o=e.target.closest('[data-open],[data-go]');if(!o)return;cfg.sel=+(o.dataset.open||o.dataset.go);store.set('cfg',cfg);if(location.hash==='#session')vSession();else location.hash='session'});
 addEventListener('hashchange',route);route();
+remindInit();addEventListener('hashchange',()=>{if(window.MRemind)MRemind.sync()});
 </script>
 
 <div class="toast" id="toast" role="status"></div>

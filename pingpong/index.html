@@ -188,11 +188,12 @@
       <p class="muted" id="exInfo"></p>
       <p class="muted" id="exJudge"></p>
     </div>
-    <div class="card"><h3 style="margin-top:0">이 단계 승급 기준</h3><ul id="exCrit" style="margin:0;padding-left:20px;font-size:14px;line-height:1.7"></ul></div>
+    <div class="card"><h3 style="margin-top:0">이 단계 승급 기준</h3><ul id="exCrit" style="margin:0;padding-left:20px;font-size:14px;line-height:1.7"></ul>
+      <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px"><button id="scanSheet">📷 경기 기록지 · 활동지 스캔</button><button id="sheetList">🗂️ 제출한 기록지</button></div></div>
     <div id="exMembers"></div>
     <div class="card">
       <div class="spread"><h2 style="margin:0">📊 육각형 스탯</h2><select id="stPoint"></select></div>
-      <div style="text-align:right;margin:6px 0"><button id="impStat">📥 스탯 기록 불러오기</button></div>
+      <div style="text-align:right;margin:6px 0;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"><button id="scanStat">📷 스탯 기록지 스캔</button><button id="impStat">📥 스탯 기록 불러오기</button></div>
       <p class="muted">6개 항목을 1~10점으로 매겨요. 시작 진단과 단계 심사 때마다 기록하면 플레이어 탭에서 성장 변화를 육각형으로 볼 수 있어요.</p>
       <div id="stMembers"></div>
     </div>
@@ -215,7 +216,7 @@
   <!-- 플레이어 -->
   <section id="v-players" class="view hidden">
     <div class="card">
-      <div class="spread"><h2 style="margin:0">플레이어</h2><div class="row" style="gap:6px"><button id="impPl">📥 명단</button><button id="pEdit">✏️ 편집</button></div></div>
+      <div class="spread"><h2 style="margin:0">플레이어</h2><div class="row" style="gap:6px"><button id="remindBtn">🔔 알림</button><button id="impPl">📥 명단</button><button id="pEdit">✏️ 편집</button></div></div>
       <p class="muted">등급은 승급 심사 결과로, XP는 출석으로 올라가요.</p>
       <div id="pCards"></div>
     </div>
@@ -294,6 +295,8 @@
 </nav>
 <div class="toast" id="toast"></div>
 
+<script src="lib/maumm-remind.js"></script>
+<script src="lib/maumm-scan.js"></script>
 <script>(()=>{var af=()=>{};var lf=function(n){let e=[],t=0;for(let r=0;r<n.length;r++){let i=n.charCodeAt(r);i<128?e[t++]=i:i<2048?(e[t++]=i>>6|192,e[t++]=i&63|128):(i&64512)===55296&&r+1<n.length&&(n.charCodeAt(r+1)&64512)===56320?(i=65536+((i&1023)<<10)+(n.charCodeAt(++r)&1023),e[t++]=i>>18|240,e[t++]=i>>12&63|128,e[t++]=i>>6&63|128,e[t++]=i&63|128):(e[t++]=i>>12|224,e[t++]=i>>6&63|128,e[t++]=i&63|128)}return e},Ry=function(n){let e=[],t=0,r=0;for(;t<n.length;){let i=n[t++];if(i<128)e[r++]=String.fromCharCode(i);else if(i>191&&i<224){let s=n[t++];e[r++]=String.fromCharCode((i&31)<<6|s&63)}else if(i>239&&i<365){let s=n[t++],o=n[t++],c=n[t++],u=((i&7)<<18|(s&63)<<12|(o&63)<<6|c&63)-65536;e[r++]=String.fromCharCode(55296+(u>>10)),e[r++]=String.fromCharCode(56320+(u&1023))}else{let s=n[t++],o=n[t++];e[r++]=String.fromCharCode((i&15)<<12|(s&63)<<6|o&63)}}return e.join("")},hf={byteToCharMap_:null,charToByteMap_:null,byteToCharMapWebSafe_:null,charToByteMapWebSafe_:null,ENCODED_VALS_BASE:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",get ENCODED_VALS(){return this.ENCODED_VALS_BASE+"+/="},get ENCODED_VALS_WEBSAFE(){return this.ENCODED_VALS_BASE+"-_."},HAS_NATIVE_SUPPORT:typeof atob=="function",encodeByteArray(n,e){if(!Array.isArray(n))throw Error("encodeByteArray takes an array as a parameter");this.init_();let t=e?this.byteToCharMapWebSafe_:this.byteToCharMap_,r=[];for(let i=0;i<n.length;i+=3){let s=n[i],o=i+1<n.length,c=o?n[i+1]:0,u=i+2<n.length,h=u?n[i+2]:0,f=s>>2,m=(s&3)<<4|c>>4,g=(c&15)<<2|h>>6,S=h&63;u||(S=64,o||(g=64)),r.push(t[f],t[m],t[g],t[S])}return r.join("")},encodeString(n,e){return this.HAS_NATIVE_SUPPORT&&!e?btoa(n):this.encodeByteArray(lf(n),e)},decodeString(n,e){return this.HAS_NATIVE_SUPPORT&&!e?atob(n):Ry(this.decodeStringToByteArray(n,e))},decodeStringToByteArray(n,e){this.init_();let t=e?this.charToByteMapWebSafe_:this.charToByteMap_,r=[];for(let i=0;i<n.length;){let s=t[n.charAt(i++)],c=i<n.length?t[n.charAt(i)]:0;++i;let h=i<n.length?t[n.charAt(i)]:64;++i;let m=i<n.length?t[n.charAt(i)]:64;if(++i,s==null||c==null||h==null||m==null)throw new dc;let g=s<<2|c>>4;if(r.push(g),h!==64){let S=c<<4&240|h>>2;if(r.push(S),m!==64){let C=h<<6&192|m;r.push(C)}}}return r},init_(){if(!this.byteToCharMap_){this.byteToCharMap_={},this.charToByteMap_={},this.byteToCharMapWebSafe_={},this.charToByteMapWebSafe_={};for(let n=0;n<this.ENCODED_VALS.length;n++)this.byteToCharMap_[n]=this.ENCODED_VALS.charAt(n),this.charToByteMap_[this.byteToCharMap_[n]]=n,this.byteToCharMapWebSafe_[n]=this.ENCODED_VALS_WEBSAFE.charAt(n),this.charToByteMapWebSafe_[this.byteToCharMapWebSafe_[n]]=n,n>=this.ENCODED_VALS_BASE.length&&(this.charToByteMap_[this.ENCODED_VALS_WEBSAFE.charAt(n)]=n,this.charToByteMapWebSafe_[this.ENCODED_VALS.charAt(n)]=n)}}},dc=class extends Error{constructor(){super(...arguments),this.name="DecodeBase64StringError"}},Py=function(n){let e=lf(n);return hf.encodeByteArray(e,!0)},pc=function(n){return Py(n).replace(/\./g,"")},As=function(n){try{return hf.decodeString(n,!0)}catch(e){console.error("base64Decode failed: ",e)}return null};function mc(){if(typeof self<"u")return self;if(typeof window<"u")return window;if(typeof global<"u")return global;throw new Error("Unable to locate global object.")}var Cy=()=>mc().__FIREBASE_DEFAULTS__,ky=()=>{if(typeof process>"u"||typeof process.env>"u")return;let n=process.env.__FIREBASE_DEFAULTS__;if(n)return JSON.parse(n)},Dy=()=>{if(typeof document>"u")return;let n;try{n=document.cookie.match(/__FIREBASE_DEFAULTS__=([^;]+)/)}catch{return}let e=n&&As(n[1]);return e&&JSON.parse(e)},bs=()=>{try{return af()||Cy()||ky()||Dy()}catch(n){console.info(`Unable to get __FIREBASE_DEFAULTS__ due to: ${n}`);return}},df=n=>{var e,t;return(t=(e=bs())===null||e===void 0?void 0:e.emulatorHosts)===null||t===void 0?void 0:t[n]};var gc=()=>{var n;return(n=bs())===null||n===void 0?void 0:n.config},_c=n=>{var e;return(e=bs())===null||e===void 0?void 0:e[`_${n}`]};var Ts=class{constructor(){this.reject=()=>{},this.resolve=()=>{},this.promise=new Promise((e,t)=>{this.resolve=e,this.reject=t})}wrapCallback(e){return(t,r)=>{t?this.reject(t):this.resolve(r),typeof e=="function"&&(this.promise.catch(()=>{}),e.length===1?e(t):e(t,r))}}};function Rt(n){try{return(n.startsWith("http://")||n.startsWith("https://")?new URL(n).hostname:n).endsWith(".cloudworkstations.dev")}catch{return!1}}async function Ss(n){return(await fetch(n,{credentials:"include"})).ok}var ei={};function Ny(){let n={prod:[],emulator:[]};for(let e of Object.keys(ei))ei[e]?n.emulator.push(e):n.prod.push(e);return n}function Oy(n){let e=document.getElementById(n),t=!1;return e||(e=document.createElement("div"),e.setAttribute("id",n),t=!0),{created:t,element:e}}var cf=!1;function yc(n,e){if(typeof window>"u"||typeof document>"u"||!Rt(window.location.host)||ei[n]===e||ei[n]||cf)return;ei[n]=e;function t(g){return`__firebase__banner__${g}`}let r="__firebase__banner",s=Ny().prod.length>0;function o(){let g=document.getElementById(r);g&&g.remove()}function c(g){g.style.display="flex",g.style.background="#7faaf0",g.style.position="fixed",g.style.bottom="5px",g.style.left="5px",g.style.padding=".5em",g.style.borderRadius="5px",g.style.alignItems="center"}function u(g,S){g.setAttribute("width","24"),g.setAttribute("id",S),g.setAttribute("height","24"),g.setAttribute("viewBox","0 0 24 24"),g.setAttribute("fill","none"),g.style.marginLeft="-6px"}function h(){let g=document.createElement("span");return g.style.cursor="pointer",g.style.marginLeft="16px",g.style.fontSize="24px",g.innerHTML=" &times;",g.onclick=()=>{cf=!0,o()},g}function f(g,S){g.setAttribute("id",S),g.innerText="Learn more",g.href="https://firebase.google.com/docs/studio/preview-apps#preview-backend",g.setAttribute("target","__blank"),g.style.paddingLeft="5px",g.style.textDecoration="underline"}function m(){let g=Oy(r),S=t("text"),C=document.getElementById(S)||document.createElement("span"),N=t("learnmore"),k=document.getElementById(N)||document.createElement("a"),j=t("preprendIcon"),U=document.getElementById(j)||document.createElementNS("http://www.w3.org/2000/svg","svg");if(g.created){let F=g.element;c(F),f(k,N);let W=h();u(U,j),F.append(U,C,k,W),document.body.appendChild(F)}s?(C.innerText="Preview backend disconnected.",U.innerHTML=`<g clip-path="url(#clip0_6013_33858)">
 <path d="M4.8 17.6L12 5.6L19.2 17.6H4.8ZM6.91667 16.4H17.0833L12 7.93333L6.91667 16.4ZM12 15.6C12.1667 15.6 12.3056 15.5444 12.4167 15.4333C12.5389 15.3111 12.6 15.1667 12.6 15C12.6 14.8333 12.5389 14.6944 12.4167 14.5833C12.3056 14.4611 12.1667 14.4 12 14.4C11.8333 14.4 11.6889 14.4611 11.5667 14.5833C11.4556 14.6944 11.4 14.8333 11.4 15C11.4 15.1667 11.4556 15.3111 11.5667 15.4333C11.6889 15.5444 11.8333 15.6 12 15.6ZM11.4 13.6H12.6V10.4H11.4V13.6Z" fill="#212121"/>
 </g>
@@ -743,14 +746,16 @@ This typically indicates that your device does not have a healthy Internet conne
     $("exMembers").innerHTML = players().map(p => {
       const sc = state.scores[`s${st.n}-${p.i}`] || {};
       const rate = attendCount(p.id, st) / 24, j = judge(sc, rate);
-      return `<div class="member" data-idx="${p.i}"><div class="spread">${who(p)}<span class="muted">출석 ${Math.round(rate * 100)}%</span></div>
+      const nSheet = Array.isArray(sc.sheets) ? sc.sheets.length : 0;
+      return `<div class="member" data-idx="${p.i}"><div class="spread">${who(p)}<span class="muted">${nSheet ? `📝 기록지 ${nSheet} · ` : ""}출석 ${Math.round(rate * 100)}%</span></div>
         <div class="scores">${SCORE_FIELDS.map(([k, label, max]) => `<label>${label} (${max})<input type="number" inputmode="numeric" min="0" max="${max}" data-k="${k}" value="${typeof sc[k] === "number" ? sc[k] : ""}"></label>`).join("")}</div>
         <input type="text" data-k="memo" placeholder="메모 (선택)" value="${esc(sc.memo || "")}" style="width:100%;margin-bottom:8px">
         <div class="spread"><span>합계 <b>${j.total == null ? "-" : j.total}</b>점 · <span class="result ${j.cls}">${esc(j.text)}</span></span><button class="primary" data-save>저장</button></div></div>`;
     }).join("");
     $("exMembers").querySelectorAll(".member").forEach(card => {
       card.querySelector("[data-save]").onclick = async () => {
-        const idx = Number(card.dataset.idx), body = { stage: st.n, pid: pidOf(idx), savedAt: new Date().toISOString() };
+        const idx = Number(card.dataset.idx), prev = state.scores[`s${st.n}-${idx}`] || {}, body = { stage: st.n, pid: pidOf(idx), savedAt: new Date().toISOString() };
+        if (Array.isArray(prev.sheets)) body.sheets = prev.sheets;
         for (const [k, label, max] of SCORE_FIELDS) {
           const raw = card.querySelector(`[data-k="${k}"]`).value.trim();
           if (raw === "") continue;
@@ -1299,6 +1304,50 @@ This typically indicates that your device does not have a healthy Internet conne
     const txt = `🏓 마음비타민 탁구 ${date} 출석\n${pres.length ? `출석 ${pres.length}명: ${pres.map(nickOf).join(", ")}` : "아직 저장된 출석이 없어요"}`;
     try { (await loadReader()).send({ title: "출석 보내기", subject: `탁구 출석 ${date}`, text: txt }); } catch (e) { toast(e.message); } };
   $("impPl").onclick = impPlayers; $("impAtt").onclick = impAttendance; $("impStat").onclick = impStats;
+
+  // ---------- 검사지 · 활동지 스캔 (공용 도구 lib/maumm-scan.js) ----------
+  const ppWho = () => players().map(p => ({ id: String(p.i), name: nickOf(p) }));
+  const MATCH_FORM = { id: "pp-match", name: "경기 기록지", icon: "🏓", kind: "text", fields: [{ label: "경기 · 상대", aliases: ["경기", "상대", "날짜"] }, { label: "점수", aliases: ["스코어", "결과"] }, { label: "잘된 점", aliases: ["잘한 점", "좋았던 점"] }, { label: "아쉬운 점", aliases: ["보완할 점", "개선할 점"] }, { label: "다음 목표", aliases: ["목표", "다음에"] }] };
+  $("scanStat").onclick = () => {
+    if (!window.MScan) return toast("스캔 도구를 불러오지 못했어요");
+    const pt = Number($("stPoint").value) || 0;
+    MScan.scan({ app: "pingpong", color: "#8B5CFF", bare: true, who: ppWho(), whoLabel: "플레이어", title: `스탯 기록지 (${ptName(pt)})`, applyLabel: "스탯 저장", doneMsg: "스탯을 저장했어요",
+      form: { id: "pp-stat", name: "육각형 스탯 기록지", icon: "📊", kind: "scale", min: 1, max: 10, items: STAT_AXES, noTotal: true },
+      onDone: async rec => { const i = Number(rec.who.id); await save(`stats/${statKey(pt, i)}`, { point: pt, pid: pidOf(i), v: rec.items, savedAt: new Date().toISOString() }, `${rec.who.name} 스탯을 저장했어요`); renderAll(); } });
+  };
+  const stNow = () => STAGES[Number($("exStage").value) - 1];
+  $("scanSheet").onclick = () => {
+    if (!window.MScan) return toast("스캔 도구를 불러오지 못했어요");
+    const st = stNow();
+    MScan.open({ app: "pingpong", color: "#8B5CFF", forms: [MATCH_FORM, "free"], who: ppWho(), whoLabel: "플레이어", doneMsg: "기록지를 저장했어요",
+      onSave: async rec => { const i = Number(rec.who && rec.who.id); if (!rec.who) throw new Error("플레이어를 골라 주세요"); const key = `s${st.n}-${i}`, prev = state.scores[key] || {};
+        const sheets = (Array.isArray(prev.sheets) ? prev.sheets : []).concat([{ id: rec.id, name: rec.name, date: rec.date, fields: rec.fields, items: rec.items, total: rec.total, memo: rec.memo }]).slice(-20);
+        await save(`scores/${key}`, { ...prev, stage: st.n, pid: pidOf(i), sheets, savedAt: new Date().toISOString() }, `${rec.who.name} 기록지를 저장했어요`); renderAll(); },
+      history: { title: "제출한 기록지", load: sheetRecs, remove: sheetDel } });
+  };
+  function sheetRecs() { const st = stNow(); return players().flatMap(p => ((state.scores[`s${st.n}-${p.i}`] || {}).sheets || []).map(r => ({ ...r, kind: r.items ? "scale" : "text", who: { id: String(p.i), name: nickOf(p) } }))); }
+  async function sheetDel(r) { const st = stNow(), key = `s${st.n}-${r.who.id}`, prev = state.scores[key] || {}; await save(`scores/${key}`, { ...prev, sheets: (prev.sheets || []).filter(x => x.id !== r.id) }, "지웠어요"); renderAll(); }
+  $("sheetList").onclick = () => { if (window.MScan) MScan.history({ title: `${stNow().name} 기록지`, load: sheetRecs, remove: sheetDel }); };
+
+  // ---------- 알림 (공용 도구 lib/maumm-remind.js) ----------
+  let remindOn = false;
+  function remindTick() {
+    if (!window.MRemind) return;
+    if (remindOn) { MRemind.sync(); return; }
+    remindOn = true;
+    MRemind.init({ app: "pingpong", name: "마음비타민 탁구", color: "#8B5CFF",
+      presets: [{ id: "train", title: "🏓 탁구 훈련 날", body: "라켓 · 운동화 · 물 챙기기", rep: "weekly", days: [2, 4], time: "18:00" },
+        { id: "att", title: "출석 체크", body: "오늘 출석을 저장해 주세요", rep: "weekly", days: [2, 4], time: "20:30" },
+        { id: "league", title: "월례 리그", body: "이번 달 리그 경기 준비", rep: "monthly", dom: 25, time: "10:00" }],
+      sources: [{ key: "exam", label: "승급 심사 주간", hint: "단계마다 심사 주간 월요일", leads: [0, 1440, 10080], lead: 1440, on: true,
+        get: () => STAGES.map(st => ({ id: "ex" + st.n, at: new Date(weekStart(st.w[1]) + "T09:00").getTime(), title: `${st.name} 승급 심사 주간`, body: "출석 80% · 승급 기준을 확인해요" })) },
+        { key: "season", label: "시즌 시작", hint: "1주차 월요일", leads: [0, 1440, 10080], lead: 1440, on: true,
+        get: () => [{ id: "start", at: new Date(START + "T09:00").getTime(), title: "🏓 새 시즌 시작", body: "수준 진단 · 그립 · 준비 자세" }] }] });
+  }
+  $("remindBtn").onclick = () => { if (window.MRemind) MRemind.open(); else toast("알림 도구를 불러오지 못했어요"); };
+  const _renderAll = renderAll;
+  renderAll = function () { _renderAll(); remindTick(); };
+  remindTick();
 })();
 </script>
 </body>

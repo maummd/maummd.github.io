@@ -30,6 +30,7 @@ header{background:var(--sea);color:#f5f0e7;padding:18px max(5vw,16px) 0}
 header .top{display:flex;align-items:center;gap:16px;max-width:1100px;margin:auto}
 header svg{flex:none;width:92px;height:52px}
 header p{margin:2px 0 0;color:#cfe3e5;font-size:14px}
+.bell{display:flex;flex-direction:column;align-items:center;gap:0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:14px;padding:6px 10px;font:500 12px "Noto Sans KR",sans-serif;cursor:pointer;line-height:1.2}.bell{font-size:20px}.bell span{font-size:11.5px}
 nav{display:flex;gap:4px;overflow-x:auto;max-width:1100px;margin:14px auto 0;scrollbar-width:none}
 nav a{flex:none;color:#e8f1f1;text-decoration:none;padding:12px 16px;border-radius:10px 10px 0 0;font-weight:500;font-size:15px}
 nav a[aria-current]{background:var(--bg);color:var(--ink);font-weight:700}
@@ -245,7 +246,8 @@ dl.facts dd .cs-row{margin-top:0}
 <header>
  <div class="top">
   <svg viewBox="0 0 92 52" aria-hidden="true"><ellipse cx="14" cy="40" rx="13" ry="6" fill="#e9d9b9"/><path d="M6 40c2-9 6-14 9-14s6 6 7 14z" fill="#7fb7a3"/><ellipse cx="80" cy="40" rx="12" ry="6" fill="#e9d9b9"/><path d="M73 40c2-8 5-12 7-12s5 5 6 12z" fill="#7fb7a3"/><path d="M18 34Q47 10 76 34" fill="none" stroke="#f5f0e7" stroke-width="3"/><path d="M18 34H76" stroke="#f5f0e7" stroke-width="2"/><g stroke="#f5f0e7" stroke-width="1.5"><path d="M30 34V23M40 34V18M50 34V18M60 34V23"/></g><path d="M0 47h92" stroke="#5fb3c4" stroke-width="2" stroke-dasharray="6 5"/></svg>
-  <div><h1>마음 이음</h1><p>곁에서 마음을 잇는 안내서</p></div>
+  <div style="flex:1"><h1>마음 이음</h1><p>곁에서 마음을 잇는 안내서</p></div>
+  <button type="button" id="bellBtn" class="bell" aria-label="알림 설정">🔔<span>알림</span></button>
  </div>
  <nav aria-label="메뉴">
   <a href="#now">마음링크</a><a href="#edu">마음재활</a><a href="#rest">마음쉼터</a><a href="#policy">마음지기</a>
@@ -384,6 +386,8 @@ dl.facts dd .cs-row{margin-top:0}
   <button class="game" type="button" data-game="record"><span>🌡️</span><b>생각 기록</b><small>감정 온도 낮추기 연습</small></button>
  </div>
  <div class="card" id="playCard" aria-live="polite"></div>
+ <div class="card"><h3 style="margin-top:0">📷 종이 활동지 스캔</h3><p class="note" style="margin:4px 0 10px">종이에 적은 생각 기록지 · 마음 연습 활동지 · 자가 점검표를 사진으로 찍으면 글과 점수를 채워요. 이 휴대폰에만 저장돼요.</p>
+  <div class="row" style="margin-top:0"><button type="button" class="btn" id="scanBtn">📷 사진으로 넣기</button><button type="button" class="btn ghost" id="scanList">🗂️ 내 활동지</button></div></div>
  <p class="note">연습은 치료를 대신하지 않아요. 힘들면 109 · 1577-0199.</p>
 </section>
 
@@ -837,6 +841,25 @@ document.addEventListener('click',e=>{const a=e.target.closest('a[href^="tel:"]'
  const n=a.getAttribute('href').slice(4).replace(/^(\d{4})(\d{4})$/,'$1-$2');const bg=document.createElement('div');bg.className='sheetbg';
  bg.innerHTML=`<div class="sheetbox" style="text-align:center"><p class="note">이 기기에서는 바로 걸 수 없어요. 휴대폰으로 걸어 주세요.</p><div style="font:700 48px 'Noto Serif KR',serif;color:var(--hot);margin:10px 0">${n}</div><button class="btn ghost" type="button">닫기</button></div>`;
  document.body.appendChild(bg);bg.onclick=ev=>{if(ev.target===bg||ev.target.tagName==='BUTTON')bg.remove()}},true);
+}
+</script>
+<script src="lib/maumm-remind.js"></script>
+<script src="lib/maumm-scan.js"></script>
+<script>
+{
+/* 알림 · 종이 활동지 스캔 (공용 도구 lib/maumm-remind.js · lib/maumm-scan.js) — 이 휴대폰에만 저장돼요 */
+const get=(k,d)=>{try{const v=localStorage.getItem('ieum.'+k);return v?JSON.parse(v):d}catch(e){return d}},put=(k,v)=>{try{localStorage.setItem('ieum.'+k,JSON.stringify(v))}catch(e){}};
+if(window.MRemind)MRemind.init({app:'ieum',name:'마음 이음',color:'#0f4c5c',
+ presets:[{id:'me',title:'🌙 나를 돌보는 시간',body:'오늘 하루 수고했어요. 나를 위한 10분을 가져 봐요',rep:'daily',time:'21:00'},
+  {id:'hello',title:'💬 안부 한마디',body:'"오늘 어땠어?" 짧게 물어봐 주세요',rep:'daily',time:'19:00'},
+  {id:'med',title:'💊 약 챙기기',body:'가족의 약 · 진료 일정을 확인해요',rep:'daily',time:'08:30'},
+  {id:'class',title:'📖 보호자 교실 한 장',body:'이번 주 한 장을 읽고 퀴즈를 풀어 봐요',rep:'weekly',days:[6],time:'10:00'},
+  {id:'practice',title:'🍀 마음 연습',body:'생각 기록 · 대처 카드로 5분 연습',rep:'weekly',days:[3],time:'20:00'}]});
+const bell=document.getElementById('bellBtn');if(bell)bell.onclick=()=>{if(window.MRemind)MRemind.open()};
+const PRACTICE={id:'practice',name:'마음 연습 활동지',icon:'🍀',kind:'text',fields:[{label:'상황',aliases:['언제','있었던 일']},{label:'내 마음',aliases:['감정','기분','느낌']},{label:'해 본 대처',aliases:['대처','한 일','해 본 것']},{label:'다음에 해 볼 것',aliases:['다음에','다음','계획']}]};
+const hist={title:'내 활동지 · 점검표',load:()=>get('scans',[]),remove:r=>put('scans',get('scans',[]).filter(x=>x.id!==r.id))};
+const sb=document.getElementById('scanBtn');if(sb)sb.onclick=()=>{if(!window.MScan)return;MScan.open({app:'ieum',color:'#0f4c5c',selfUse:true,forms:['thought',PRACTICE,'phq9','gad7','free'],doneMsg:'이 휴대폰에 저장했어요',onSave:rec=>{const l=get('scans',[]);l.push(rec);put('scans',l.slice(-200))},history:hist})};
+const sl=document.getElementById('scanList');if(sl)sl.onclick=()=>{if(window.MScan)MScan.history(hist)};
 }
 </script>
 </body>

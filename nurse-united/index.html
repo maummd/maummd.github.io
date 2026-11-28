@@ -165,6 +165,8 @@ nav button.on{color:var(--brand);font-weight:800}
 <div class="toast" id="toast"></div>
 <div id="modal"></div>
 
+<script src="lib/maumm-remind.js"></script>
+<script src="lib/maumm-scan.js"></script>
 <script>(()=>{var cf=()=>{};var hf=function(n){let e=[],t=0;for(let r=0;r<n.length;r++){let i=n.charCodeAt(r);i<128?e[t++]=i:i<2048?(e[t++]=i>>6|192,e[t++]=i&63|128):(i&64512)===55296&&r+1<n.length&&(n.charCodeAt(r+1)&64512)===56320?(i=65536+((i&1023)<<10)+(n.charCodeAt(++r)&1023),e[t++]=i>>18|240,e[t++]=i>>12&63|128,e[t++]=i>>6&63|128,e[t++]=i&63|128):(e[t++]=i>>12|224,e[t++]=i>>6&63|128,e[t++]=i&63|128)}return e},Dy=function(n){let e=[],t=0,r=0;for(;t<n.length;){let i=n[t++];if(i<128)e[r++]=String.fromCharCode(i);else if(i>191&&i<224){let s=n[t++];e[r++]=String.fromCharCode((i&31)<<6|s&63)}else if(i>239&&i<365){let s=n[t++],o=n[t++],c=n[t++],u=((i&7)<<18|(s&63)<<12|(o&63)<<6|c&63)-65536;e[r++]=String.fromCharCode(55296+(u>>10)),e[r++]=String.fromCharCode(56320+(u&1023))}else{let s=n[t++],o=n[t++];e[r++]=String.fromCharCode((i&15)<<12|(s&63)<<6|o&63)}}return e.join("")},df={byteToCharMap_:null,charToByteMap_:null,byteToCharMapWebSafe_:null,charToByteMapWebSafe_:null,ENCODED_VALS_BASE:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",get ENCODED_VALS(){return this.ENCODED_VALS_BASE+"+/="},get ENCODED_VALS_WEBSAFE(){return this.ENCODED_VALS_BASE+"-_."},HAS_NATIVE_SUPPORT:typeof atob=="function",encodeByteArray(n,e){if(!Array.isArray(n))throw Error("encodeByteArray takes an array as a parameter");this.init_();let t=e?this.byteToCharMapWebSafe_:this.byteToCharMap_,r=[];for(let i=0;i<n.length;i+=3){let s=n[i],o=i+1<n.length,c=o?n[i+1]:0,u=i+2<n.length,h=u?n[i+2]:0,f=s>>2,m=(s&3)<<4|c>>4,g=(c&15)<<2|h>>6,A=h&63;u||(A=64,o||(g=64)),r.push(t[f],t[m],t[g],t[A])}return r.join("")},encodeString(n,e){return this.HAS_NATIVE_SUPPORT&&!e?btoa(n):this.encodeByteArray(hf(n),e)},decodeString(n,e){return this.HAS_NATIVE_SUPPORT&&!e?atob(n):Dy(this.decodeStringToByteArray(n,e))},decodeStringToByteArray(n,e){this.init_();let t=e?this.charToByteMapWebSafe_:this.charToByteMap_,r=[];for(let i=0;i<n.length;){let s=t[n.charAt(i++)],c=i<n.length?t[n.charAt(i)]:0;++i;let h=i<n.length?t[n.charAt(i)]:64;++i;let m=i<n.length?t[n.charAt(i)]:64;if(++i,s==null||c==null||h==null||m==null)throw new hc;let g=s<<2|c>>4;if(r.push(g),h!==64){let A=c<<4&240|h>>2;if(r.push(A),m!==64){let C=h<<6&192|m;r.push(C)}}}return r},init_(){if(!this.byteToCharMap_){this.byteToCharMap_={},this.charToByteMap_={},this.byteToCharMapWebSafe_={},this.charToByteMapWebSafe_={};for(let n=0;n<this.ENCODED_VALS.length;n++)this.byteToCharMap_[n]=this.ENCODED_VALS.charAt(n),this.charToByteMap_[this.byteToCharMap_[n]]=n,this.byteToCharMapWebSafe_[n]=this.ENCODED_VALS_WEBSAFE.charAt(n),this.charToByteMapWebSafe_[this.byteToCharMapWebSafe_[n]]=n,n>=this.ENCODED_VALS_BASE.length&&(this.charToByteMap_[this.ENCODED_VALS_WEBSAFE.charAt(n)]=n,this.charToByteMapWebSafe_[this.ENCODED_VALS.charAt(n)]=n)}}},hc=class extends Error{constructor(){super(...arguments),this.name="DecodeBase64StringError"}},ky=function(n){let e=hf(n);return df.encodeByteArray(e,!0)},fc=function(n){return ky(n).replace(/\./g,"")},Ss=function(n){try{return df.decodeString(n,!0)}catch(e){console.error("base64Decode failed: ",e)}return null};function pc(){if(typeof self<"u")return self;if(typeof window<"u")return window;if(typeof global<"u")return global;throw new Error("Unable to locate global object.")}var Ny=()=>pc().__FIREBASE_DEFAULTS__,Oy=()=>{if(typeof process>"u"||typeof process.env>"u")return;let n=process.env.__FIREBASE_DEFAULTS__;if(n)return JSON.parse(n)},Vy=()=>{if(typeof document>"u")return;let n;try{n=document.cookie.match(/__FIREBASE_DEFAULTS__=([^;]+)/)}catch{return}let e=n&&Ss(n[1]);return e&&JSON.parse(e)},Rs=()=>{try{return cf()||Ny()||Oy()||Vy()}catch(n){console.info(`Unable to get __FIREBASE_DEFAULTS__ due to: ${n}`);return}},ff=n=>{var e,t;return(t=(e=Rs())===null||e===void 0?void 0:e.emulatorHosts)===null||t===void 0?void 0:t[n]};var mc=()=>{var n;return(n=Rs())===null||n===void 0?void 0:n.config},gc=n=>{var e;return(e=Rs())===null||e===void 0?void 0:e[`_${n}`]};var bs=class{constructor(){this.reject=()=>{},this.resolve=()=>{},this.promise=new Promise((e,t)=>{this.resolve=e,this.reject=t})}wrapCallback(e){return(t,r)=>{t?this.reject(t):this.resolve(r),typeof e=="function"&&(this.promise.catch(()=>{}),e.length===1?e(t):e(t,r))}}};function Rt(n){try{return(n.startsWith("http://")||n.startsWith("https://")?new URL(n).hostname:n).endsWith(".cloudworkstations.dev")}catch{return!1}}async function Ps(n){return(await fetch(n,{credentials:"include"})).ok}var ti={};function xy(){let n={prod:[],emulator:[]};for(let e of Object.keys(ti))ti[e]?n.emulator.push(e):n.prod.push(e);return n}function Ly(n){let e=document.getElementById(n),t=!1;return e||(e=document.createElement("div"),e.setAttribute("id",n),t=!0),{created:t,element:e}}var uf=!1;function _c(n,e){if(typeof window>"u"||typeof document>"u"||!Rt(window.location.host)||ti[n]===e||ti[n]||uf)return;ti[n]=e;function t(g){return`__firebase__banner__${g}`}let r="__firebase__banner",s=xy().prod.length>0;function o(){let g=document.getElementById(r);g&&g.remove()}function c(g){g.style.display="flex",g.style.background="#7faaf0",g.style.position="fixed",g.style.bottom="5px",g.style.left="5px",g.style.padding=".5em",g.style.borderRadius="5px",g.style.alignItems="center"}function u(g,A){g.setAttribute("width","24"),g.setAttribute("id",A),g.setAttribute("height","24"),g.setAttribute("viewBox","0 0 24 24"),g.setAttribute("fill","none"),g.style.marginLeft="-6px"}function h(){let g=document.createElement("span");return g.style.cursor="pointer",g.style.marginLeft="16px",g.style.fontSize="24px",g.innerHTML=" &times;",g.onclick=()=>{uf=!0,o()},g}function f(g,A){g.setAttribute("id",A),g.innerText="Learn more",g.href="https://firebase.google.com/docs/studio/preview-apps#preview-backend",g.setAttribute("target","__blank"),g.style.paddingLeft="5px",g.style.textDecoration="underline"}function m(){let g=Ly(r),A=t("text"),C=document.getElementById(A)||document.createElement("span"),k=t("learnmore"),D=document.getElementById(k)||document.createElement("a"),j=t("preprendIcon"),U=document.getElementById(j)||document.createElementNS("http://www.w3.org/2000/svg","svg");if(g.created){let F=g.element;c(F),f(D,k);let K=h();u(U,j),F.append(U,C,D,K),document.body.appendChild(F)}s?(C.innerText="Preview backend disconnected.",U.innerHTML=`<g clip-path="url(#clip0_6013_33858)">
 <path d="M4.8 17.6L12 5.6L19.2 17.6H4.8ZM6.91667 16.4H17.0833L12 7.93333L6.91667 16.4ZM12 15.6C12.1667 15.6 12.3056 15.5444 12.4167 15.4333C12.5389 15.3111 12.6 15.1667 12.6 15C12.6 14.8333 12.5389 14.6944 12.4167 14.5833C12.3056 14.4611 12.1667 14.4 12 14.4C11.8333 14.4 11.6889 14.4611 11.5667 14.5833C11.4556 14.6944 11.4 14.8333 11.4 15C11.4 15.1667 11.4556 15.3111 11.5667 15.4333C11.6889 15.5444 11.8333 15.6 12 15.6ZM11.4 13.6H12.6V10.4H11.4V13.6Z" fill="#212121"/>
 </g>
@@ -323,6 +325,21 @@ const fmt=v=>v==null?'-':(Math.round(v*10)/10).toFixed(1);
 const active=()=>Object.values(staff).filter(p=>!exclusion(p));
 const sorted=arr=>arr.sort((a,b)=>(a.name||'').localeCompare(b.name||'','ko'));
 
+/* ===================== 알림 (공용 도구 lib/maumm-remind.js) ===================== */
+let remindOn=false;
+function nextDays(n){const out=[],d=new Date();for(let i=0;i<n;i++){out.push(new Date(d));d.setDate(d.getDate()+1)}return out}
+function remindTick(){
+  if(!window.MRemind||!profile)return;
+  if(remindOn){MRemind.sync();return}
+  remindOn=true;
+  MRemind.init({app:'nu',name:'Nurse United',color:'#2D6CDF',
+    presets:[{id:'obs',title:'관찰 기록 남기기',body:'이번 주에 본 우수 사례 · 개선 필요 사례를 남겨 주세요',rep:'weekly',days:[5],time:'16:00'},
+      {id:'meet',title:'면담 점검',body:'이번 달 면담 · 설문 내용을 확인해 주세요',rep:'monthly',dom:25,time:'10:00'},
+      {id:'backup',title:'백업 파일 만들기',body:'설정 → 백업 파일 만들기',rep:'monthly',dom:1,time:'09:00'}],
+    sources:[{key:'eval',label:'인사평가 일정',hint:'평가개시일 · 연말 기록 점검(12/1)',leads:[0,1440,10080],lead:1440,on:true,get:()=>{const y=year(),L=[{id:'start'+y,at:new Date(evalStart()+'T09:00').getTime(),title:'인사평가 시작',body:'평가개시일이에요'},{id:'dec'+y,at:new Date(y+'-12-01T09:00').getTime(),title:'관찰 기록 점검',body:'기록이 부족한 직원이 없는지 확인해 주세요 (최근 실적 편중 주의)'}];return L.filter(e=>e.at)}},
+      {key:'thin',label:'관찰 기록 부족',hint:'올해 기록 3건 미만 직원이 있으면 매달 1일 · 15일',leads:[0],lead:0,on:false,get:()=>{const n=active().filter(p=>(p.obs||[]).filter(x=>x.date&&x.date.startsWith(String(year()))).length<3).length;if(!n)return[];const ld=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');return nextDays(40).filter(d=>d.getDate()===1||d.getDate()===15).map(d=>({id:'thin'+ld(d),at:new Date(ld(d)+'T09:00').getTime(),title:'관찰 기록 부족',body:`올해 기록이 3건 미만인 직원 ${n}명`}))}}]});
+}
+
 /* ===================== 렌더 ===================== */
 function render(){
   pendingRender=false;
@@ -333,6 +350,7 @@ function render(){
   if(locked){$('#nav').style.display='none';$('#app').innerHTML=vLock();return}
   if(!profile){$('#nav').style.display='none';$('#app').innerHTML=vOnboard();return}
   $('#nav').style.display='flex';
+  remindTick();
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(view==='person'?'list':view)));
   $('#app').innerHTML=view==='list'?vList():view==='person'?vPerson():view==='dash'?vDash():view==='rules'?vRules():vSettings();
   decorate();
@@ -412,7 +430,7 @@ function tObs(p){
    <div class="row" style="margin-bottom:8px"><input type="date" id="oDate" value="${today()}" style="width:44%"><select id="oItem" class="grow">${its.map(i=>`<option value="${i.k}">${esc(i.name)}</option>`).join('')}</select></div>
    <div class="seg" style="margin-bottom:8px"><button data-kind="good" class="g ${obsKind==='good'?'on':''}">👍 우수 사례</button><button data-kind="dev" class="w ${obsKind==='dev'?'on':''}">🌱 개선 필요</button></div>
    <textarea id="oText" placeholder="날짜·상황·행동·결과를 사실 중심으로 (예: 이브닝 신환 5명 중 2명을 자원해 받아 동료 업무 분담, 21시 전 입원 정리 완료)"></textarea>
-   <div style="text-align:right;margin-top:8px"><button class="btn" data-act="addObs">기록</button></div></div>
+   <div class="row" style="justify-content:space-between;margin-top:8px">${window.MScan?'<button class="btn ghost" data-act="scanObs">📷 종이 기록 사진으로</button>':'<span></span>'}<button class="btn" data-act="addObs">기록</button></div></div>
   <div class="card"><h2>월별 기록 분포 <span class="muted">${year()}년</span></h2>
    <div style="display:flex;gap:3px;align-items:flex-end;height:46px">${months.map((n,i)=>`<div style="flex:1;text-align:center"><div style="height:${n/mx*30}px;background:var(--brand2);border-radius:3px 3px 0 0;min-height:${n?3:0}px"></div><div style="font-size:10px;color:var(--sub)">${i+1}</div></div>`).join('')}</div>
    ${oc?`<div class="alert w" style="margin:8px 0 0">${esc(oc.msg)}</div>`:''}</div>
@@ -435,7 +453,8 @@ function tEval(p){
    <div class="grades">${GRADES.map(([gr,lab,pt])=>`<button data-grade="${i.k}" data-g="${gr}" class="${g[i.k]===gr?'on':''}">${gr}<small>${pt}</small></button>`).join('')}</div>
    <textarea class="basis" data-basis="${i.k}" placeholder="평가근거 (관찰 사실)">${esc(b[i.k]||'')}</textarea></div>`).join('')}</div>`;
   const extreme=c.total!=null&&(c.total>=100||c.total<=70);
-  return `<div class="notice">평가원칙(제7조): ${PRINCIPLES.join(' · ')}</div>
+  const scanBtn=window.MScan?`<button class="btn ghost" style="width:100%;margin-bottom:12px" data-act="scanEval">📷 종이 평가표 스캔 → 등급 넣기</button>`:'';
+  return scanBtn+`<div class="notice">평가원칙(제7조): ${PRINCIPLES.join(' · ')}</div>
   ${block('업적평가',t.perf,c.perf)}${block('역량평가',t.comp,c.comp)}
   <div class="card"><h2>점수 <button class="btn ghost sm" data-ai="basis">AI 근거 정리</button></h2>
    <table><tr><th>업적평가</th><td class="n">${fmt(c.perf)}</td><th>× ${t.perfW??50}%</th></tr><tr><th>역량평가</th><td class="n">${fmt(c.comp)}</td><th>× ${100-(t.perfW??50)}%</th></tr><tr><th><b>종합(1차)</b></th><td class="n"><b>${fmt(c.total)}</b></td><th></th></tr></table>
@@ -527,6 +546,7 @@ function vSettings(){
    <label class="f">1차 평가자</label><input data-pf="name" value="${esc(profile.name)}">
    <div class="row"><div class="grow"><label class="f">평가연도</label><input type="number" data-pf="year" value="${year()}"></div><div class="grow"><label class="f">평가개시일</label><input type="date" data-pf="evalStart" value="${evalStart()}"></div></div>
    <label class="f">권고 평균 점수</label><input type="number" data-cf="target" value="${config.target||85}"></div>
+  <div class="card"><h2>🔔 알림</h2><p class="muted" style="margin-bottom:8px">관찰 기록 · 면담 점검 · 평가 일정 · 백업 알림을 켜고 요일과 시간을 바꿀 수 있어요. 알림에는 직원 이름이 나오지 않아요.</p><button class="btn" data-act="remind">알림 설정</button></div>
   <div class="card"><h2>📥 파일에서 불러오기</h2>
    <p class="muted" style="margin-bottom:8px"><b>엑셀 · 워드 · PDF · 한글(HWPX) · 사진 · CSV</b> 모두 돼요. 표의 머리글(성명 · 직급 · 입사일 …)을 보고 칸을 자동으로 맞추고, 넣기 전에 미리 보고 고칠 수 있어요.</p>
    <div class="row" style="gap:8px"><button class="btn grow" data-act="impStaff">👥 직원 명단</button><button class="btn ghost grow" data-act="impObs">📝 관찰 기록 · 평가 자료</button></div></div>
@@ -605,6 +625,12 @@ document.addEventListener('click',async e=>{
     case 'copyOne':copy(hisText(p));break;
     case 'impStaff':importStaffFile();break;
     case 'impObs':importObsFile();break;
+    case 'scanObs':MScan.scan({app:'nu',color:'#2D6CDF',bare:true,title:'관찰 기록',applyLabel:'기록 칸에 넣기',doneMsg:'넣었어요 — 항목을 고르고 [기록]을 눌러 주세요',form:{id:'nu-obs',name:'관찰 기록지',icon:'👀',kind:'text',free:true,fields:[{label:'내용',aliases:[]}]},onDone:rec=>{const t=$('#oText');if(t)t.value=(t.value.trim()?t.value.trim()+'\n':'')+rec.fields['내용'].trim()}});break;
+    case 'scanEval':{const t=T(p.job),its=[...t.perf,...t.comp];
+      MScan.scan({app:'nu',color:'#2D6CDF',bare:true,title:'평가표',applyLabel:'등급 넣기',doneMsg:'등급을 넣었어요 — 평가근거도 확인해 주세요',
+        form:{id:'nu-eval-'+p.job,name:'인사평가표 ('+(t.label||'')+')',icon:'⭐',kind:'scale',min:1,max:5,keys:GRADES.map(g=>g[0]),opts:GRADES.map(g=>g[1]),items:its.map(i=>i.name),noTotal:true},
+        onDone:rec=>{const ev=p.eval||{},g={...(ev.grades||{})};rec.items.forEach((v,i)=>{if(v)g[its[i].k]=GRADES[v-1][0]});upd(p,{eval:{...ev,grades:g}});render()}});break}
+    case 'remind':if(window.MRemind)MRemind.open();break;
     case 'copyAll':copy(sorted(active()).map(hisText).join('\n\n────────\n\n'));break;
     case 'saveTpl':{const k=d.k,old=(config.templates||DEFAULT_TEMPLATES)[k];const perf=parseItems($('#tPerf').value,old.perf),comp=parseItems($('#tComp').value,old.comp);
       if(!perf.length||!comp.length){toast('항목을 하나 이상 넣어 주세요');return}

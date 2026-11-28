@@ -202,7 +202,7 @@
       let cur = null; const lh = l.bbox.y1 - l.bbox.y0;
       l.words.forEach((wd) => {
         if (wd.confidence < 20 && !/[가-힣0-9]/.test(wd.text)) return;
-        if (cur && wd.bbox.x0 - cur.x1 < lh * 0.55) { cur.s += wd.text; cur.x1 = wd.bbox.x1; }
+        if (cur && wd.bbox.x0 - cur.x1 < lh * 0.55) { cur.s += (wd.bbox.x0 - cur.x1 > lh * 0.32 ? ' ' : '') + wd.text; cur.x1 = wd.bbox.x1; }
         else { if (cur) items.push(cur); cur = { s: wd.text, x: wd.bbox.x0, x1: wd.bbox.x1, y: -(l.bbox.y0 + l.bbox.y1) / 2, h: lh }; }
       });
       if (cur) items.push(cur);
@@ -348,7 +348,7 @@
 
   // ---------- 보내기: 문자 · 카카오톡 · 이메일 · 다른 앱(링크) · 복사 ----------
   // send({title, text, subject, num, email, link})
-  const bridge = () => ['AdminAndroid', 'NUAndroid', 'DiaryAndroid', 'NativeDoc', 'PPAndroid'].map((k) => window[k]).find((b) => b && b.sendTo);
+  const bridge = () => ['AdminAndroid', 'NUAndroid', 'DiaryAndroid', 'NativeDoc', 'PPAndroid', 'IeumAndroid'].map((k) => window[k]).find((b) => b && b.sendTo);
   async function copyText(t) {
     const b = ['AdminAndroid', 'NUAndroid', 'DiaryAndroid', 'NativeDoc'].map((k) => window[k]).find((x) => x && x.copyText);
     try { if (b && b.copyText(t)) return true; } catch (e) { }
@@ -373,5 +373,5 @@
       note((await copyText(txt)) ? (k === 'kakao' ? '복사했어요 — 카카오톡에 붙여 넣어 주세요' : '복사했어요 — 붙여 넣어 보내세요') : '복사하지 못했어요');
     }; });
   }
-  window.MReader = { send, copyText, read, importWizard, rowsFromItems, similar, closest, toDate, pickFile, close, ocrCanvas };
+  window.MReader = { note, send, copyText, read, importWizard, rowsFromItems, similar, closest, toDate, pickFile, close, ocrCanvas };
 })();
