@@ -1,6 +1,6 @@
 {
  "name": "나의 마음 다이어리",
- "short_name": "마음다이어리",
+ "short_name": "나마다",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
