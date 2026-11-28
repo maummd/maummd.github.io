@@ -198,6 +198,14 @@ details.fold{padding:0}details.fold>summary{list-style:none;cursor:pointer;paddi
 details.fold>*:not(summary){margin-left:20px;margin-right:20px}details.fold[open]{padding-bottom:16px}
 details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut);font-size:14.5px}
 </style>
+<style>
+/* 전화 버튼: 네 개 모두 같은 모양, '전화하기' 표시 */
+.calls.two .call.hot{border:1.5px solid var(--hot);background:var(--panel)}
+.calls.two .call.hot b{color:var(--hot)}
+.calls.two .call::after{content:"전화하기 ›";display:block;margin-top:8px;font-size:13px;font-weight:700;color:var(--hot);letter-spacing:.05em}
+.call:active{background:var(--sea2)}
+.go[href^="tel:"] b::before{content:"☎ ";font-weight:400}
+</style>
 </head>
 <body>
 <header>
@@ -218,8 +226,8 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
  <div class="calls two">
   <a class="call hot" href="tel:119" data-confirm="119"><b>119</b><span>다쳤어요 · 약 먹음</span></a>
   <a class="call hot" href="tel:112" data-confirm="112"><b>112</b><span>위험한 곳에 있어요</span></a>
-  <a class="call" href="tel:109"><b>109</b><span>이야기하고 싶어요</span></a>
-  <a class="call" href="tel:15770199"><b>1577-0199</b><span>정신건강 위기 상담</span></a>
+  <a class="call hot" href="tel:109"><b>109</b><span>이야기하고 싶어요</span></a>
+  <a class="call hot" href="tel:15770199"><b>1577-0199</b><span>정신건강 위기 상담</span></a>
  </div>
 
  <div class="card" id="region">
@@ -332,17 +340,17 @@ details.more{margin-top:12px}details.more summary{cursor:pointer;color:var(--mut
 
 <section id="v-play" hidden>
  <h2>마음 연습</h2>
- <p class="lead">생각 · 감정 · 행동을 짧은 게임으로 연습해요.</p>
+ <p class="lead">생각 · 감정 · 행동을 짧은 활동으로 연습해요.</p>
  <div class="hud"><div><b id="xpLv">1</b><span>레벨</span></div><div class="grow"><div class="prog-bar"><i id="xpBar"></i></div><span class="note" id="xpTxt"></span></div><div><b id="streak">0</b><span>연속 정답</span></div></div>
  <div class="badges" id="badges"></div>
  <div class="games">
   <button class="game" type="button" data-game="trap"><span>🕵️</span><b>생각 탐정</b><small>생각 속 ‘생각의 덫’ 찾기</small></button>
   <button class="game" type="button" data-game="reframe"><span>🔄</span><b>생각 다시 쓰기</b><small>균형 잡힌 생각 고르기</small></button>
-  <button class="game" type="button" data-game="cope"><span>🎴</span><b>대처 카드</b><small>지금 해 볼 한 가지 뽑기</small></button>
+  <button class="game" type="button" data-game="cope"><span>🍀</span><b>대처 카드</b><small>지금 해 볼 한 가지 뽑기</small></button>
   <button class="game" type="button" data-game="record"><span>🌡️</span><b>생각 기록</b><small>감정 온도 낮추기 연습</small></button>
  </div>
  <div class="card" id="playCard" aria-live="polite"></div>
- <p class="note">게임은 치료를 대신하지 않아요. 힘들면 109 · 1577-0199.</p>
+ <p class="note">연습은 치료를 대신하지 않아요. 힘들면 109 · 1577-0199.</p>
 </section>
 
 <section id="v-rehab" hidden>
@@ -587,7 +595,7 @@ $('#famCard').addEventListener('click',e=>{
 });
 drawFam();
 
-/* ================= 마음 연습 (게임 CBT) ================= */
+/* ================= 마음 연습 (CBT 활동) ================= */
 const TRAPS={all:['흑백논리','중간 없이 전부 아니면 전무로 봐요'],cat:['파국화','가장 나쁜 결과를 확신해요'],mind:['독심술','다른 사람의 속마음을 안다고 확신해요'],over:['과잉일반화','한 번의 일을 ‘항상 · 절대’로 넓혀요'],emo:['감정적 추론','그렇게 느끼니까 사실이라고 믿어요'],should:['당위 진술','‘~해야만 해’로 나와 남을 몰아세워요'],label:['낙인찍기','한 행동으로 ‘나는 ○○한 사람’이라 이름 붙여요'],pers:['개인화','내 책임이 아닌 일까지 내 탓으로 돌려요'],filt:['정신적 여과','좋은 것은 빼고 나쁜 것만 봐요'],fort:['점쟁이 오류','앞일이 나쁘게 될 거라 단정해요']};
 const TRAP_Q=[
  ['발표에서 한 번 말을 더듬었다.','나는 완전히 망했어. 발표는 실패야.','all'],
@@ -629,7 +637,7 @@ const COPE=[
  ['🗒️','안전계획 펼치기','미리 적어 둔 나의 안전계획을 열어 2번부터 차례로 해 봐요.'],
  ['🤸','몸 풀기','어깨를 귀까지 올렸다 툭 떨어뜨리기 10번, 팔 크게 돌리기 10번.'],
  ['🌤️','창밖 보기','창문을 열고 1분 동안 하늘과 바깥 풍경을 바라봐요.']];
-const BADGES=[['first','🌱 첫걸음','처음으로 게임 완료'],['detect','🕵️ 생각 탐정','생각의 덫 10개 찾기'],['reframe','🔄 다시 쓰기 달인','균형 잡힌 생각 5개 고르기'],['cope','🎴 대처 수집가','대처 카드 5장 해 보기'],['record','🌡️ 온도 낮추기','생각 기록 3번'],['family','든든한 보호자','보호자 교실 전 장 읽기'],['streak','🔥 5연속','5문제 연속 정답']];
+const BADGES=[['first','🌱 첫걸음','처음으로 연습 완료'],['detect','🕵️ 생각 탐정','생각의 덫 10개 찾기'],['reframe','🔄 다시 쓰기 달인','균형 잡힌 생각 5개 고르기'],['cope','🍀 대처 수집가','대처 카드 5장 해 보기'],['record','🌡️ 온도 낮추기','생각 기록 3번'],['family','든든한 보호자','보호자 교실 전 장 읽기'],['streak','🔥 5연속','5문제 연속 정답']];
 const P=store.get('play',{xp:0,streak:0,trap:0,reframe:0,cope:0,record:0,badges:{}});
 const save=()=>store.set('play',P);
 const lv=()=>Math.floor(P.xp/50)+1;
@@ -654,7 +662,7 @@ function drawReframe(){const [th,opts,ans]=deck[qi];const ord=shuffle(opts.map((
  <div class="opts" style="flex-direction:column">${ord.map(([t,i])=>`<button class="opt" type="button" data-rf="${i}">${esc(t)}</button>`).join('')}</div><div class="fb" id="gfb"></div>`}
 function nextBtn(label){return `<div class="row"><button class="btn" type="button" id="gNext">${label}</button></div>`}
 function drawCope(){const c=COPE[Math.floor(Math.random()*COPE.length)];
- $('#playCard').innerHTML=`<h3>🎴 대처 카드</h3><div class="cardflip"><div><b>${c[0]}</b><strong style="font-size:20px">${c[1]}</strong><p style="margin:8px 0 0">${c[2]}</p></div></div>
+ $('#playCard').innerHTML=`<h3>🍀 대처 카드</h3><div class="cardflip"><div><b>${c[0]}</b><strong style="font-size:20px">${c[1]}</strong><p style="margin:8px 0 0">${c[2]}</p></div></div>
  <div class="row"><button class="btn" type="button" id="copeDone">✅ 해 봤어요</button><button class="btn ghost" type="button" id="copeAgain">🔀 다른 카드</button></div><p class="note">해 본 뒤 마음 점수가 어떻게 바뀌었는지 ‘생각 기록’에 남겨 보세요.</p>`}
 const REC=store.get('records',[]);
 function drawRecord(){
@@ -778,6 +786,15 @@ function show(){
   <details class="more"><summary>센터에 읽어 줄 의뢰 메모</summary><pre class="out">${esc(memo)}</pre><button class="btn ghost" type="button" id="rgCopy">복사</button></details>`;
  $('#rgCopy').onclick=async()=>{try{await navigator.clipboard.writeText(memo);$('#rgCopy').textContent='복사했어요'}catch(e){$('#rgCopy').textContent='길게 눌러 복사'}};
 }
+}
+</script>
+<script>
+{
+const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||window.IeumAndroid;
+document.addEventListener('click',e=>{const a=e.target.closest('a[href^="tel:"]');if(!a||mobile||a.dataset.confirm&&!a.dataset.ok)return;e.preventDefault();
+ const n=a.getAttribute('href').slice(4).replace(/^(\d{4})(\d{4})$/,'$1-$2');const bg=document.createElement('div');bg.className='sheetbg';
+ bg.innerHTML=`<div class="sheetbox" style="text-align:center"><p class="note">이 기기에서는 바로 걸 수 없어요. 휴대폰으로 걸어 주세요.</p><div style="font:700 48px 'Noto Serif KR',serif;color:var(--hot);margin:10px 0">${n}</div><button class="btn ghost" type="button">닫기</button></div>`;
+ document.body.appendChild(bg);bg.onclick=ev=>{if(ev.target===bg||ev.target.tagName==='BUTTON')bg.remove()}},true);
 }
 </script>
 </body>
